@@ -1,0 +1,12 @@
+{
+  "name": "petly",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Petly — pet services platform for Lebanon",
+  "scripts": {
+    "backend:dev": "npm run dev --prefix backend",
+    "backend:seed": "npm run db:seed --prefix backend",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down"
+  }
+}
