@@ -4,6 +4,15 @@ import { memoryStore } from '../../db/memory-store';
 import { AppError } from '../../middleware/errorHandler';
 import { CreatePetDto, Pet, UpdatePetDto } from './pets.types';
 
+/**
+ * PostgreSQL returns NUMERIC columns (pets.age) as strings via node-postgres.
+ * Coerce to a real number so the JSON contract matches the in-memory store and
+ * clients can parse `age` as a number.
+ */
+function normalizePet(row: Pet): Pet {
+  return { ...row, age: Number(row.age) };
+}
+
 export async function createPet(dto: CreatePetDto): Promise<Pet> {
   if (isMemoryMode()) return memoryStore.createPet(dto);
 
@@ -20,10 +29,10 @@ export async function createPet(dto: CreatePetDto): Promise<Pet> {
     `INSERT INTO pets (user_id, name, type, age)
      VALUES ($1, $2, $3, $4)
      RETURNING *`,
-    [dto.user_id, dto.name.trim(), dto.type.trim(), age],
+     [dto.user_id, dto.name.trim(), dto.type.trim(), age],
   );
 
-  return rows[0];
+  return normalizePet(rows[0]);
 }
 
 export async function listPetsByUser(userId: string): Promise<Pet[]> {
@@ -33,7 +42,7 @@ export async function listPetsByUser(userId: string): Promise<Pet[]> {
     'SELECT * FROM pets WHERE user_id = $1 ORDER BY created_at DESC',
     [userId],
   );
-  return rows;
+  return rows.map(normalizePet);
 }
 
 export async function getPetById(id: string): Promise<Pet> {
@@ -41,7 +50,7 @@ export async function getPetById(id: string): Promise<Pet> {
 
   const { rows } = await query<Pet>('SELECT * FROM pets WHERE id = $1', [id]);
   if (!rows[0]) throw new AppError(404, 'Pet not found');
-  return rows[0];
+  return normalizePet(rows[0]);
 }
 
 export async function updatePet(id: string, dto: UpdatePetDto): Promise<Pet> {
@@ -59,10 +68,10 @@ export async function updatePet(id: string, dto: UpdatePetDto): Promise<Pet> {
   const { rows } = await query<Pet>(
     `UPDATE pets SET name = $1, type = $2, age = $3, updated_at = NOW()
      WHERE id = $4 RETURNING *`,
-    [name, type, age, id],
+     [name, type, age, id],
   );
 
-  return rows[0];
+  return normalizePet(rows[0]);
 }
 
 export async function deletePet(id: string): Promise<void> {
