@@ -6,13 +6,16 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name VARCHAR(120) NOT NULL,
-  phone VARCHAR(32) NOT NULL UNIQUE,
+  phone VARCHAR(64) NOT NULL UNIQUE,
   device_id VARCHAR(64) UNIQUE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 ALTER TABLE users ADD COLUMN IF NOT EXISTS device_id VARCHAR(64) UNIQUE;
+-- The device-bound identity stores phone as "device:<uuid>" (43 chars), so the
+-- column must be wide enough for it (upgrades pre-existing 32-char columns).
+ALTER TABLE users ALTER COLUMN phone TYPE VARCHAR(64);
 
 CREATE TABLE IF NOT EXISTS pets (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
