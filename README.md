@@ -117,6 +117,8 @@ backend/src/
 
 ## Roadmap
 
+See [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) for the detailed, phased implementation plan (admin dashboard, auth/RBAC, chat, bookings, UI/UX polish, and more).
+
 1. **MVP** — list vets/stores, details, WhatsApp, pets, profile  
 1.5. **Validation readiness (done)** — GPS, click analytics, device user, offline UX  
 2. **Validation** — partner onboarding workflow, featured listings admin  

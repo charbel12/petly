@@ -1,55 +1,55 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../constants/app_constants.dart';
+import 'app_tokens.dart';
 
 class AppTheme {
   static ThemeData get light {
     final colorScheme = ColorScheme.fromSeed(
-      seedColor: const Color(AppColors.primary),
-      primary: const Color(AppColors.primary),
-      secondary: const Color(AppColors.secondary),
-      surface: const Color(AppColors.surface),
+      seedColor: AppTokens.brandPrimary,
+      primary: AppTokens.brandPrimary,
+      secondary: AppTokens.brandSecondary,
+      surface: AppTokens.surface,
       brightness: Brightness.light,
     );
 
     final base = ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
-      scaffoldBackgroundColor: const Color(AppColors.background),
+      scaffoldBackgroundColor: AppTokens.background,
     );
 
     return base.copyWith(
       textTheme: GoogleFonts.poppinsTextTheme(base.textTheme).apply(
-        bodyColor: const Color(AppColors.text),
-        displayColor: const Color(AppColors.text),
+        bodyColor: AppTokens.textPrimary,
+        displayColor: AppTokens.textPrimary,
       ),
       appBarTheme: AppBarTheme(
-        backgroundColor: const Color(AppColors.background),
-        foregroundColor: const Color(AppColors.text),
+        backgroundColor: AppTokens.background,
+        foregroundColor: AppTokens.textPrimary,
         elevation: 0,
         centerTitle: false,
         titleTextStyle: GoogleFonts.poppins(
           fontSize: 20,
           fontWeight: FontWeight.w600,
-          color: const Color(AppColors.text),
+          color: AppTokens.textPrimary,
         ),
       ),
       cardTheme: CardThemeData(
-        color: const Color(AppColors.surface),
+        color: AppTokens.surface,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppTokens.radiusLg),
         ),
         margin: EdgeInsets.zero,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(AppColors.primary),
-          foregroundColor: Colors.white,
+          backgroundColor: AppTokens.brandPrimary,
+          foregroundColor: AppTokens.onBrand,
           elevation: 0,
-          minimumSize: const Size.fromHeight(52),
+          minimumSize: const Size.fromHeight(AppTokens.controlHeight),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(AppTokens.radiusMd),
           ),
           textStyle: GoogleFonts.poppins(
             fontSize: 16,
@@ -59,11 +59,11 @@ class AppTheme {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: const Color(AppColors.primary),
-          minimumSize: const Size.fromHeight(52),
-          side: const BorderSide(color: Color(AppColors.primary), width: 1.5),
+          foregroundColor: AppTokens.brandPrimary,
+          minimumSize: const Size.fromHeight(AppTokens.controlHeight),
+          side: const BorderSide(color: AppTokens.brandPrimary, width: 1.5),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(AppTokens.radiusMd),
           ),
           textStyle: GoogleFonts.poppins(
             fontSize: 16,
@@ -73,39 +73,39 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: const Color(AppColors.surface),
+        fillColor: AppTokens.surface,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(AppColors.border)),
+          borderRadius: BorderRadius.circular(AppTokens.radiusMd),
+          borderSide: const BorderSide(color: AppTokens.border),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(AppColors.border)),
+          borderRadius: BorderRadius.circular(AppTokens.radiusMd),
+          borderSide: const BorderSide(color: AppTokens.border),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(AppColors.primary), width: 1.5),
+          borderRadius: BorderRadius.circular(AppTokens.radiusMd),
+          borderSide: const BorderSide(color: AppTokens.brandPrimary, width: 1.5),
         ),
         hintStyle: GoogleFonts.poppins(
-          color: const Color(AppColors.muted),
+          color: AppTokens.textMuted,
           fontSize: 14,
         ),
       ),
       chipTheme: ChipThemeData(
-        backgroundColor: const Color(AppColors.surface),
-        selectedColor: const Color(AppColors.primary).withValues(alpha: 0.15),
+        backgroundColor: AppTokens.surface,
+        selectedColor: AppTokens.brandPrimary.withValues(alpha: 0.15),
         labelStyle: GoogleFonts.poppins(fontSize: 13),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: const BorderSide(color: Color(AppColors.border)),
+          borderRadius: BorderRadius.circular(AppTokens.radiusSm),
+          side: const BorderSide(color: AppTokens.border),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       ),
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: const Color(AppColors.surface),
-        selectedItemColor: const Color(AppColors.primary),
-        unselectedItemColor: const Color(AppColors.muted),
+        backgroundColor: AppTokens.surface,
+        selectedItemColor: AppTokens.brandPrimary,
+        unselectedItemColor: AppTokens.textMuted,
         type: BottomNavigationBarType.fixed,
         elevation: 8,
         selectedLabelStyle: GoogleFonts.poppins(
@@ -115,8 +115,8 @@ class AppTheme {
         unselectedLabelStyle: GoogleFonts.poppins(fontSize: 12),
       ),
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: Color(AppColors.primary),
-        foregroundColor: Colors.white,
+        backgroundColor: AppTokens.brandPrimary,
+        foregroundColor: AppTokens.onBrand,
         elevation: 2,
       ),
     );
