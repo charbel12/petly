@@ -1,8 +1,12 @@
 import { query } from './pool';
 import { migrate } from './migrate';
+import { ensureAdmin } from '../modules/auth/auth.service';
 
 async function seed() {
   await migrate();
+
+  await ensureAdmin();
+  console.log('✓ Admin account ensured');
 
   const { rows: existingVets } = await query<{ count: string }>(
     'SELECT COUNT(*)::text AS count FROM vets',

@@ -2,6 +2,8 @@ import { Router } from 'express';
 import { z } from 'zod';
 import * as usersService from './users.service';
 import { validateBody } from '../../middleware/validate';
+import { requireAuth, requireRole } from '../../middleware/requireAuth';
+import { AppError } from '../../middleware/errorHandler';
 
 const router = Router();
 
@@ -20,7 +22,7 @@ router.post('/', validateBody(createUserSchema), async (req, res, next) => {
   }
 });
 
-router.get('/', async (_req, res, next) => {
+router.get('/', requireAuth, requireRole('admin'), async (_req, res, next) => {
   try {
     const users = await usersService.listUsers();
     res.json(users);
@@ -31,7 +33,8 @@ router.get('/', async (_req, res, next) => {
 
 router.get('/by-device/:deviceId', async (req, res, next) => {
   try {
-    const user = await usersService.getUserByDeviceId(req.params.deviceId);
+    const deviceId = String(req.params.deviceId);
+    const user = await usersService.getUserByDeviceId(deviceId);
     if (!user) {
       res.status(404).json({ error: 'User not found' });
       return;
@@ -42,9 +45,15 @@ router.get('/by-device/:deviceId', async (req, res, next) => {
   }
 });
 
-router.get('/:id', async (req, res, next) => {
+router.get('/:id', requireAuth, async (req, res, next) => {
   try {
-    const user = await usersService.getUserById(req.params.id);
+    const id = String(req.params.id);
+    const isSelf = req.auth!.userId === id;
+    const isAdmin = req.auth!.role === 'admin';
+    if (!isSelf && !isAdmin) {
+      throw new AppError(403, 'Insufficient permissions');
+    }
+    const user = await usersService.getUserById(id);
     res.json(user);
   } catch (err) {
     next(err);

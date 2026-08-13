@@ -7,6 +7,7 @@ import petsRoutes from './modules/pets/pets.routes';
 import vetsRoutes from './modules/vets/vets.routes';
 import storesRoutes from './modules/stores/stores.routes';
 import analyticsRoutes from './modules/analytics/analytics.routes';
+import authRoutes from './modules/auth/auth.routes';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import { isMemoryMode } from './db/mode';
 import { env } from './config/env';
@@ -44,11 +45,12 @@ export function createApp() {
     res.json({
       status: 'ok',
       service: 'petly-api',
-      version: '1.5.0',
+      version: '2.0.0',
       store: isMemoryMode() ? 'memory' : 'postgresql',
     });
   });
 
+  app.use('/auth', authRoutes);
   app.use('/users', usersRoutes);
   app.use('/pets', petsRoutes);
   app.use('/vets', vetsRoutes);

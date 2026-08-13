@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../core/providers/auth_provider.dart';
+import '../features/auth/presentation/forgot_password_screen.dart';
+import '../features/auth/presentation/login_screen.dart';
+import '../features/auth/presentation/register_screen.dart';
 import '../features/explore/presentation/explore_screen.dart';
 import '../features/home/presentation/home_screen.dart';
 import '../features/pets/presentation/add_pet_screen.dart';
@@ -11,11 +16,47 @@ import 'shell_screen.dart';
 
 final _rootKey = GlobalKey<NavigatorState>();
 
-GoRouter createRouter() {
+final routerProvider = Provider<GoRouter>((ref) {
+  final refresh = ValueNotifier<int>(0);
+  ref.listen(authProvider, (_, _) {
+    refresh.value++;
+  });
+  ref.onDispose(refresh.dispose);
+
   return GoRouter(
     navigatorKey: _rootKey,
     initialLocation: '/home',
+    refreshListenable: refresh,
+    redirect: (context, state) {
+      final auth = ref.read(authProvider);
+      if (auth.isLoading) return null;
+      final loggedIn = auth.asData?.value != null;
+      final loc = state.matchedLocation;
+      final onAuthPage = loc == '/login' ||
+          loc == '/register' ||
+          loc == '/forgot-password';
+      if (loggedIn && onAuthPage) return '/home';
+      return null;
+    },
     routes: [
+      GoRoute(
+        parentNavigatorKey: _rootKey,
+        path: '/login',
+        name: 'login',
+        builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootKey,
+        path: '/register',
+        name: 'register',
+        builder: (context, state) => const RegisterScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootKey,
+        path: '/forgot-password',
+        name: 'forgot-password',
+        builder: (context, state) => const ForgotPasswordScreen(),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return ShellScreen(navigationShell: navigationShell);
@@ -89,4 +130,4 @@ GoRouter createRouter() {
       ),
     ],
   );
-}
+});

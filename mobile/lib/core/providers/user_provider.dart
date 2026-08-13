@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import '../../data/models/user.dart';
 import 'app_providers.dart';
+import 'auth_provider.dart';
 
 const _kDeviceId = 'petly_device_id';
 const _kUserId = 'petly_user_id';
@@ -11,11 +12,26 @@ const _kUserPhone = 'petly_user_phone';
 
 class CurrentUserNotifier extends AsyncNotifier<User> {
   @override
-  Future<User> build() => _ensureUser();
+  Future<User> build() async {
+    final authUser = await ref.watch(authProvider.future);
+    if (authUser != null) {
+      final prefs = await SharedPreferences.getInstance();
+      await _persist(prefs, authUser);
+      return authUser;
+    }
+    return _ensureGuest();
+  }
 
   Future<void> refresh() async {
     state = const AsyncLoading();
-    state = AsyncData(await _ensureUser());
+    final authUser = await ref.read(authProvider.future);
+    if (authUser != null) {
+      final prefs = await SharedPreferences.getInstance();
+      await _persist(prefs, authUser);
+      state = AsyncData(authUser);
+      return;
+    }
+    state = AsyncData(await _ensureGuest());
   }
 
   Future<User> updateProfile({
@@ -35,7 +51,7 @@ class CurrentUserNotifier extends AsyncNotifier<User> {
     return user;
   }
 
-  Future<User> _ensureUser() async {
+  Future<User> _ensureGuest() async {
     final prefs = await SharedPreferences.getInstance();
     final deviceId = await _deviceId(prefs);
     final repo = ref.read(usersRepositoryProvider);
@@ -95,7 +111,7 @@ class CurrentUserNotifier extends AsyncNotifier<User> {
   Future<void> _persist(SharedPreferences prefs, User user) async {
     await prefs.setString(_kUserId, user.id);
     await prefs.setString(_kUserName, user.name);
-    await prefs.setString(_kUserPhone, user.phone);
+    await prefs.setString(_kUserPhone, user.phone ?? '');
     if (user.deviceId != null) {
       await prefs.setString(_kDeviceId, user.deviceId!);
     }

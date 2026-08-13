@@ -2,7 +2,13 @@ import { query } from '../../db/pool';
 import { isMemoryMode } from '../../db/mode';
 import { memoryStore } from '../../db/memory-store';
 import { AppError } from '../../middleware/errorHandler';
-import { CreateUserDto, User } from './users.types';
+import {
+  CreateUserDto,
+  PUBLIC_USER_COLUMNS,
+  toPublicUser,
+  User,
+  UserRecord,
+} from './users.types';
 
 export async function createUser(dto: CreateUserDto): Promise<User> {
   if (isMemoryMode()) return memoryStore.createUser(dto);
@@ -15,23 +21,23 @@ export async function createUser(dto: CreateUserDto): Promise<User> {
 
   // Prefer device_id match when provided (device-bound identity).
   if (deviceId) {
-    const { rows: byDevice } = await query<User>(
+    const { rows: byDevice } = await query<UserRecord>(
       'SELECT * FROM users WHERE device_id = $1',
       [deviceId],
     );
     if (byDevice[0]) {
-      const { rows } = await query<User>(
+      const { rows } = await query<UserRecord>(
         `UPDATE users
          SET name = $1, phone = $2, updated_at = NOW()
          WHERE id = $3
          RETURNING *`,
         [dto.name.trim(), dto.phone.trim(), byDevice[0].id],
       );
-      return rows[0];
+      return toPublicUser(rows[0]);
     }
   }
 
-  const { rows } = await query<User>(
+  const { rows } = await query<UserRecord>(
     `INSERT INTO users (name, phone, device_id)
      VALUES ($1, $2, $3)
      ON CONFLICT (phone) DO UPDATE SET
@@ -42,13 +48,16 @@ export async function createUser(dto: CreateUserDto): Promise<User> {
     [dto.name.trim(), dto.phone.trim(), deviceId],
   );
 
-  return rows[0];
+  return toPublicUser(rows[0]);
 }
 
 export async function getUserById(id: string): Promise<User> {
   if (isMemoryMode()) return memoryStore.getUser(id);
 
-  const { rows } = await query<User>('SELECT * FROM users WHERE id = $1', [id]);
+  const { rows } = await query<User>(
+    `SELECT ${PUBLIC_USER_COLUMNS} FROM users WHERE id = $1`,
+    [id],
+  );
   if (!rows[0]) throw new AppError(404, 'User not found');
   return rows[0];
 }
@@ -57,7 +66,7 @@ export async function getUserByDeviceId(deviceId: string): Promise<User | null> 
   if (isMemoryMode()) return memoryStore.getUserByDeviceId(deviceId);
 
   const { rows } = await query<User>(
-    'SELECT * FROM users WHERE device_id = $1',
+    `SELECT ${PUBLIC_USER_COLUMNS} FROM users WHERE device_id = $1`,
     [deviceId],
   );
   return rows[0] ?? null;
@@ -66,6 +75,8 @@ export async function getUserByDeviceId(deviceId: string): Promise<User | null> 
 export async function listUsers(): Promise<User[]> {
   if (isMemoryMode()) return memoryStore.listUsers();
 
-  const { rows } = await query<User>('SELECT * FROM users ORDER BY created_at DESC');
+  const { rows } = await query<User>(
+    `SELECT ${PUBLIC_USER_COLUMNS} FROM users ORDER BY created_at DESC`,
+  );
   return rows;
 }

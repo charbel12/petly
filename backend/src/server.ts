@@ -3,8 +3,14 @@ import { env } from './config/env';
 import { pool } from './db/pool';
 import { memoryStore } from './db/memory-store';
 import { setMemoryMode, isMemoryMode } from './db/mode';
+import { migrate } from './db/migrate';
+import { ensureAdmin } from './modules/auth/auth.service';
 
 async function bootstrap() {
+  if (env.isProduction && env.jwt.secret === 'dev-insecure-change-me') {
+    throw new Error('JWT_SECRET must be set in production');
+  }
+
   if (env.useMemoryStore) {
     setMemoryMode(true);
   } else {
@@ -22,7 +28,11 @@ async function bootstrap() {
 
   if (isMemoryMode()) {
     memoryStore.seed();
+  } else {
+    await migrate();
   }
+
+  await ensureAdmin();
 
   const app = createApp();
   app.listen(env.port, '0.0.0.0', () => {
