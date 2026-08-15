@@ -1,7 +1,6 @@
-import { query } from '../../db/pool';
-import { isMemoryMode } from '../../db/mode';
-import { memoryStore } from '../../db/memory-store';
+import { prisma } from '../../db/prisma';
 import { AppError } from '../../middleware/errorHandler';
+import { mapClick } from '../../db/mappers';
 import {
   ClickStats,
   TrackWhatsAppClickDto,
@@ -17,53 +16,37 @@ export async function trackWhatsAppClick(
     throw new AppError(400, 'entity_type must be vet, store, support, or partner');
   }
 
-  if (isMemoryMode()) {
-    return memoryStore.trackWhatsAppClick(dto);
-  }
+  const row = await prisma.whatsAppClick.create({
+    data: {
+      entityType: dto.entity_type,
+      entityId: dto.entity_id ?? null,
+      userId: dto.user_id ?? null,
+      deviceId: dto.device_id ?? null,
+      source: dto.source ?? null,
+    },
+  });
 
-  const { rows } = await query<WhatsAppClick>(
-    `INSERT INTO whatsapp_clicks (entity_type, entity_id, user_id, device_id, source)
-     VALUES ($1, $2, $3, $4, $5)
-     RETURNING *`,
-    [
-      dto.entity_type,
-      dto.entity_id ?? null,
-      dto.user_id ?? null,
-      dto.device_id ?? null,
-      dto.source ?? null,
-    ],
-  );
-
-  return rows[0];
+  return mapClick(row);
 }
 
 export async function getClickStats(): Promise<ClickStats> {
-  if (isMemoryMode()) {
-    return memoryStore.getClickStats();
-  }
-
-  const { rows: totalRows } = await query<{ count: string }>(
-    'SELECT COUNT(*)::text AS count FROM whatsapp_clicks',
-  );
-  const { rows: byType } = await query<{ entity_type: string; count: string }>(
-    `SELECT entity_type, COUNT(*)::text AS count
-     FROM whatsapp_clicks
-     GROUP BY entity_type`,
-  );
-  const { rows: recent } = await query<WhatsAppClick>(
-    `SELECT * FROM whatsapp_clicks
-     ORDER BY created_at DESC
-     LIMIT 20`,
-  );
+  const [total, clicks, recentRows] = await prisma.$transaction([
+    prisma.whatsAppClick.count(),
+    prisma.whatsAppClick.findMany({ select: { entityType: true } }),
+    prisma.whatsAppClick.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 20,
+    }),
+  ]);
 
   const by_entity_type: Record<string, number> = {};
-  for (const row of byType) {
-    by_entity_type[row.entity_type] = Number(row.count);
+  for (const row of clicks) {
+    by_entity_type[row.entityType] = (by_entity_type[row.entityType] ?? 0) + 1;
   }
 
   return {
-    total: Number(totalRows[0]?.count ?? 0),
+    total,
     by_entity_type,
-    recent,
+    recent: recentRows.map(mapClick),
   };
 }

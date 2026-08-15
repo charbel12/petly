@@ -1,12 +1,12 @@
-import { test, before } from 'node:test';
+import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import request from 'supertest';
-import { setMemoryMode } from '../../db/mode';
-import { memoryStore } from '../../db/memory-store';
+import { prisma, deployMigrations, disconnectPrisma } from '../../db/prisma';
 import { createApp } from '../../app';
 import { ensureAdmin } from './auth.service';
+import * as usersService from '../users/users.service';
+import * as petsService from '../pets/pets.service';
 
-setMemoryMode(true);
 const app = createApp();
 
 let seq = 0;
@@ -16,7 +16,13 @@ function uniqueEmail() {
 }
 
 before(async () => {
+  deployMigrations();
+  await prisma.$connect();
   await ensureAdmin();
+});
+
+after(async () => {
+  await disconnectPrisma();
 });
 
 test('register creates a client account and returns tokens', async () => {
@@ -123,12 +129,12 @@ test('refresh rotates tokens and logout revokes the refresh token', async () => 
 
 test('register with device_id upgrades a guest and keeps their pets', async () => {
   const deviceId = `device-${Date.now()}-${seq}`;
-  const guest = memoryStore.createUser({
+  const guest = await usersService.createUser({
     name: 'Guest',
     phone: `device:${deviceId}`,
     device_id: deviceId,
   });
-  memoryStore.createPet({
+  await petsService.createPet({
     user_id: guest.id,
     name: 'Nala',
     type: 'Cat',
@@ -147,7 +153,7 @@ test('register with device_id upgrades a guest and keeps their pets', async () =
     .expect(201);
 
   assert.equal(res.body.user.id, guest.id);
-  const pets = memoryStore.listPets(guest.id);
+  const pets = await petsService.listPetsByUser(guest.id);
   assert.equal(pets.length, 1);
   assert.equal(pets[0].name, 'Nala');
 });
@@ -198,7 +204,10 @@ test('suspended users cannot log in', async () => {
     .send({ name: 'Suspended', email, password: 'password1' })
     .expect(201);
 
-  memoryStore.patchUser(registered.body.user.id, { status: 'suspended' });
+  await prisma.user.update({
+    where: { id: registered.body.user.id },
+    data: { status: 'suspended' },
+  });
 
   await request(app)
     .post('/auth/login')

@@ -1,0 +1,120 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  client
+  partner
+  admin
+}
+
+enum UserStatus {
+  active
+  suspended
+}
+
+model User {
+  id           String     @id @default(uuid()) @db.Uuid
+  name         String     @db.VarChar(120)
+  phone        String?    @unique @db.VarChar(64)
+  deviceId     String?    @unique @map("device_id") @db.VarChar(64)
+  email        String?    @unique @db.VarChar(255)
+  passwordHash String?    @map("password_hash") @db.VarChar(255)
+  role         UserRole   @default(client)
+  status       UserStatus @default(active)
+  createdAt    DateTime   @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime   @updatedAt @map("updated_at") @db.Timestamptz
+
+  pets          Pet[]
+  refreshTokens RefreshToken[]
+
+  @@index([deviceId])
+  @@map("users")
+}
+
+model Pet {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  name      String   @db.VarChar(80)
+  type      String   @db.VarChar(40)
+  age       Decimal  @default(0) @db.Decimal(5, 1)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("pets")
+}
+
+model Vet {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @db.VarChar(160)
+  phone       String   @db.VarChar(32)
+  location    String   @db.VarChar(200)
+  latitude    Float?
+  longitude   Float?
+  services    String[] @default([])
+  verified    Boolean  @default(false)
+  isEmergency Boolean  @default(false) @map("is_emergency")
+  isOpenNow   Boolean  @default(true) @map("is_open_now")
+  featured    Boolean  @default(false)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@index([verified])
+  @@index([featured])
+  @@map("vets")
+}
+
+model Store {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @db.VarChar(160)
+  type      String   @db.VarChar(60)
+  location  String   @db.VarChar(200)
+  phone     String?  @db.VarChar(32)
+  latitude  Float?
+  longitude Float?
+  featured  Boolean  @default(false)
+  isOpenNow Boolean  @default(true) @map("is_open_now")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@index([featured])
+  @@index([type])
+  @@map("stores")
+}
+
+model WhatsAppClick {
+  id         String   @id @default(uuid()) @db.Uuid
+  entityType String   @map("entity_type") @db.VarChar(32)
+  entityId   String?  @map("entity_id") @db.VarChar(64)
+  userId     String?  @map("user_id") @db.Uuid
+  deviceId   String?  @map("device_id") @db.VarChar(64)
+  source     String?  @db.VarChar(64)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([createdAt(sort: Desc)])
+  @@index([entityType, entityId])
+  @@map("whatsapp_clicks")
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  tokenHash String    @unique @map("token_hash") @db.VarChar(64)
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz
+  revokedAt DateTime? @map("revoked_at") @db.Timestamptz
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("refresh_tokens")
+}

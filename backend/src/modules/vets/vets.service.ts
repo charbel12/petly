@@ -1,83 +1,28 @@
-import { query } from '../../db/pool';
-import { isMemoryMode } from '../../db/mode';
-import { memoryStore } from '../../db/memory-store';
+import { Prisma } from '@prisma/client';
+import { prisma } from '../../db/prisma';
 import { AppError } from '../../middleware/errorHandler';
+import { mapVet } from '../../db/mappers';
+import { withDistance } from '../../db/geo';
 import { Vet, VetFilters } from './vets.types';
 
-/** Haversine distance in SQL (km). */
-function distanceSelect(lat?: number, lng?: number): string {
-  if (lat === undefined || lng === undefined) {
-    return 'NULL::float AS distance_km';
-  }
-  return `
-    CASE
-      WHEN v.latitude IS NULL OR v.longitude IS NULL THEN NULL
-      ELSE (
-        6371 * acos(
-          LEAST(1.0, GREATEST(-1.0,
-            cos(radians(${lat})) * cos(radians(v.latitude)) *
-            cos(radians(v.longitude) - radians(${lng})) +
-            sin(radians(${lat})) * sin(radians(v.latitude))
-          ))
-        )
-      )
-    END AS distance_km`;
-}
-
 export async function listVets(filters: VetFilters = {}): Promise<Vet[]> {
-  if (isMemoryMode()) return memoryStore.listVets(filters);
-
-  const conditions: string[] = [];
-  const params: unknown[] = [];
-  let i = 1;
+  const where: Prisma.VetWhereInput = {};
 
   if (filters.search?.trim()) {
-    conditions.push(`(v.name ILIKE $${i} OR v.location ILIKE $${i})`);
-    params.push(`%${filters.search.trim()}%`);
-    i++;
+    const q = filters.search.trim();
+    where.OR = [
+      { name: { contains: q, mode: 'insensitive' } },
+      { location: { contains: q, mode: 'insensitive' } },
+    ];
   }
-  if (filters.open_now === true) {
-    conditions.push('v.is_open_now = TRUE');
-  }
-  if (filters.emergency === true) {
-    conditions.push('v.is_emergency = TRUE');
-  }
-  if (filters.verified === true) {
-    conditions.push('v.verified = TRUE');
-  }
-  if (filters.featured === true) {
-    conditions.push('v.featured = TRUE');
-  }
+  if (filters.open_now === true) where.isOpenNow = true;
+  if (filters.emergency === true) where.isEmergency = true;
+  if (filters.verified === true) where.verified = true;
+  if (filters.featured === true) where.featured = true;
 
-  const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
-  const distanceSql = distanceSelect(filters.lat, filters.lng);
-
-  const orderBy =
-    filters.lat !== undefined && filters.lng !== undefined
-      ? 'ORDER BY distance_km NULLS LAST, featured DESC, name ASC'
-      : 'ORDER BY featured DESC, name ASC';
-
-  let distanceFilter = '';
-  if (
-    filters.max_distance_km !== undefined &&
-    filters.lat !== undefined &&
-    filters.lng !== undefined
-  ) {
-    distanceFilter = `WHERE distance_km IS NOT NULL AND distance_km <= ${Number(filters.max_distance_km)}`;
-  }
-
-  const { rows } = await query<Vet>(
-    `SELECT * FROM (
-       SELECT v.*, ${distanceSql}
-       FROM vets v
-       ${where}
-     ) AS ranked
-     ${distanceFilter}
-     ${orderBy}`,
-    params,
-  );
-
-  return rows;
+  const rows = await prisma.vet.findMany({ where });
+  const mapped = rows.map((row) => mapVet(row));
+  return withDistance(mapped, filters.lat, filters.lng, filters.max_distance_km);
 }
 
 export async function getVetById(
@@ -85,15 +30,10 @@ export async function getVetById(
   lat?: number,
   lng?: number,
 ): Promise<Vet> {
-  if (isMemoryMode()) return memoryStore.getVet(id, lat, lng);
-
-  const distanceSql = distanceSelect(lat, lng);
-  const { rows } = await query<Vet>(
-    `SELECT v.*, ${distanceSql} FROM vets v WHERE v.id = $1`,
-    [id],
-  );
-  if (!rows[0]) throw new AppError(404, 'Vet not found');
-  return rows[0];
+  const row = await prisma.vet.findUnique({ where: { id } });
+  if (!row) throw new AppError(404, 'Vet not found');
+  const [mapped] = withDistance([mapVet(row)], lat, lng);
+  return mapped;
 }
 
 export async function listEmergencyVets(lat?: number, lng?: number): Promise<Vet[]> {
