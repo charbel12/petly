@@ -16,23 +16,17 @@ void main() {
   runApp(const ProviderScope(child: PetlyApp()));
 }
 
-class PetlyApp extends StatefulWidget {
+class PetlyApp extends ConsumerWidget {
   const PetlyApp({super.key});
 
   @override
-  State<PetlyApp> createState() => _PetlyAppState();
-}
-
-class _PetlyAppState extends State<PetlyApp> {
-  late final _router = createRouter();
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final router = ref.watch(routerProvider);
     return MaterialApp.router(
       title: AppConstants.appName,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
-      routerConfig: _router,
+      routerConfig: router,
     );
   }
 }

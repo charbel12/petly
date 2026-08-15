@@ -1,12 +1,22 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/api/api_client.dart';
 import '../../data/repositories/analytics_repository.dart';
+import '../../data/repositories/auth_repository.dart';
 import '../../data/repositories/pets_repository.dart';
 import '../../data/repositories/stores_repository.dart';
 import '../../data/repositories/users_repository.dart';
 import '../../data/repositories/vets_repository.dart';
+import '../auth/token_storage.dart';
 
-final apiClientProvider = Provider<ApiClient>((ref) => ApiClient());
+final tokenStorageProvider = Provider<TokenStorage>((ref) => TokenStorage());
+
+final apiClientProvider = Provider<ApiClient>(
+  (ref) => ApiClient(tokenStorage: ref.watch(tokenStorageProvider)),
+);
+
+final authRepositoryProvider = Provider<AuthRepository>(
+  (ref) => AuthRepository(ref.watch(apiClientProvider)),
+);
 
 final vetsRepositoryProvider = Provider<VetsRepository>(
   (ref) => VetsRepository(ref.watch(apiClientProvider)),

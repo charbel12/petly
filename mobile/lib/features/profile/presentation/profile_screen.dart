@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/providers/app_providers.dart';
+import '../../../core/providers/auth_provider.dart';
 import '../../../core/providers/location_provider.dart';
 import '../../../core/providers/user_provider.dart';
 import '../../../core/utils/whatsapp.dart';
@@ -35,6 +37,7 @@ class ProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final userAsync = ref.watch(currentUserProvider);
     final location = ref.watch(locationProvider);
+    final signedIn = ref.watch(isAuthenticatedProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Profile')),
@@ -78,9 +81,7 @@ class ProfileScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            user.phone.startsWith('device:')
-                                ? 'Guest account'
-                                : user.phone,
+                            user.displayContact,
                             style: Theme.of(context)
                                 .textTheme
                                 .bodyMedium
@@ -88,17 +89,56 @@ class ProfileScreen extends ConsumerWidget {
                                   color: const Color(AppColors.muted),
                                 ),
                           ),
+                          if (user.role != null && !user.isGuest) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              user.role!,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                    color: const Color(AppColors.primary),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                            ),
+                          ],
                         ],
                       ),
                     ),
                     IconButton(
                       tooltip: 'Edit profile',
-                      onPressed: () => _editProfile(context, ref, user.name, user.phone),
+                      onPressed: () => _editProfile(
+                        context,
+                        ref,
+                        user.name,
+                        user.phone ?? '',
+                      ),
                       icon: const Icon(Icons.edit_outlined),
                     ),
                   ],
                 ),
               ),
+              const SizedBox(height: 12),
+              if (signedIn)
+                OutlinedButton(
+                  onPressed: () => _signOut(context, ref),
+                  child: const Text('Sign out'),
+                )
+              else
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () => context.push('/login'),
+                      child: const Text('Sign in'),
+                    ),
+                    const SizedBox(height: 8),
+                    OutlinedButton(
+                      onPressed: () => context.push('/register'),
+                      child: const Text('Create an account'),
+                    ),
+                  ],
+                ),
               const SizedBox(height: 20),
               Text(
                 'Settings',
@@ -251,7 +291,7 @@ class ProfileScreen extends ConsumerWidget {
               const SizedBox(height: 24),
               Center(
                 child: Text(
-                  '${AppConstants.appName} · Phase 1.5\nDevice-bound guest account',
+                  '${AppConstants.appName} · Phase 1\n${signedIn ? 'Signed in' : 'Guest browsing'}',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: const Color(AppColors.muted),
@@ -262,6 +302,32 @@ class ProfileScreen extends ConsumerWidget {
           );
         },
       ),
+    );
+  }
+
+  Future<void> _signOut(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Sign out'),
+        content: const Text('You can still browse as a guest on this device.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Sign out'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    await ref.read(authProvider.notifier).logout();
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Signed out')),
     );
   }
 

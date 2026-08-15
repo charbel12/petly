@@ -51,15 +51,19 @@ Per-phase Definition of Done (testing gate):
 
 ## Current state (what exists)
 
-- Backend: Express + TS, modules `users, pets, vets, stores, analytics`; versioned
-  migrations under `backend/migrations` run by `backend/src/db/migrate.ts` (Phase 0); no
-  auth yet; vets/stores have `verified/featured/is_open_now/is_emergency` but no owner or
-  approval `status`.
-- Mobile/Web: Flutter (Riverpod + GoRouter + Dio), anonymous device user
-  (`mobile/lib/core/providers/user_provider.dart`), routes in
-  `mobile/lib/routes/app_router.dart`, theme in `mobile/lib/core/theme/app_theme.dart`,
-  design tokens in `mobile/lib/core/theme/app_tokens.dart` (Phase 0).
-- Geo-location already partially done (Phase 1.5); contact is via WhatsApp deep links.
+- Backend: Express + TS, modules `auth, users, pets, vets, stores, analytics`; versioned
+  migrations under `backend/migrations` (Phase 0 + Phase 1 auth columns / refresh
+  tokens). JWT access + refresh, bcrypt, `requireAuth` / `requireRole`, roles
+  `client | partner | admin`. Vets/stores still have `verified/featured/is_open_now/
+  is_emergency` but no owner or approval `status` (Phase 2).
+- Mobile/Web: Flutter (Riverpod + GoRouter + Dio), login/register/forgot-password,
+  secure token storage, bearer + refresh interceptor, route guards. Guest browsing
+  remains via device-bound users (`user_provider.dart`); registering with `device_id`
+  upgrades the guest so pets stay attached.
+- Seeded admin: `ADMIN_EMAIL` / `ADMIN_PASSWORD` (defaults `admin@petly.local` /
+  `changeme-admin`).
+- Geo-location already partially done (original Phase 1.5); contact is via WhatsApp
+  deep links.
 
 ## Target data model additions
 
@@ -104,7 +108,7 @@ flowchart TD
   wired into the theme.
 - CI: backend build + tests and `flutter analyze` + tests on PRs.
 
-## Phase 1 - Authentication & RBAC (foundational)
+## Phase 1 - Authentication & RBAC (foundational) — done
 
 - Backend `auth` module: `register`, `login`, `refresh`, `logout`, `me`; bcrypt hashing;
   JWT access + refresh; `requireAuth` and `requireRole` middleware. Extend `users` with
@@ -113,6 +117,7 @@ flowchart TD
 - Seed an initial `admin` account.
 - Flutter: login/register/forgot-password screens, auth state via Riverpod, secure token
   storage, Dio interceptor for bearer token + refresh on 401, route guards.
+- Forgot-password API is a non-enumerating stub (no email delivery yet).
 
 ## Phase 2 - Partner onboarding & approval workflow
 

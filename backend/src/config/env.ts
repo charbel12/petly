@@ -34,6 +34,11 @@ export const env = {
     accessTtl: process.env.JWT_ACCESS_TTL || '15m',
     refreshTtl: process.env.JWT_REFRESH_TTL || '30d',
   },
+  /** Seeded admin account (created/ensured on migrate+seed and memory bootstrap). */
+  admin: {
+    email: process.env.ADMIN_EMAIL || 'admin@petly.local',
+    password: process.env.ADMIN_PASSWORD || 'changeme-admin',
+  },
   /** Global rate limiter — generous by default so it never blocks normal dev use. */
   rateLimit: {
     windowMs: Number(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000,

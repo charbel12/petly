@@ -65,18 +65,25 @@ flutter run --dart-define=API_BASE_URL=http://127.0.0.1:3000
 flutter run --dart-define=API_BASE_URL=http://192.168.x.x:3000
 ```
 
-## API endpoints (Phase 1)
+## API endpoints
 
 | Method | Path | Description |
 |--------|------|-------------|
 | `GET` | `/health` | Health check |
+| `POST` | `/auth/register` | Create account (`name`, `email`, `password`, optional `phone`, `device_id`) |
+| `POST` | `/auth/login` | Email + password (optional `device_id` to link a guest) |
+| `POST` | `/auth/refresh` | Rotate tokens (`refresh_token`) |
+| `POST` | `/auth/logout` | Revoke a refresh token |
+| `GET` | `/auth/me` | Current user (Bearer access token) |
+| `POST` | `/auth/forgot-password` | Generic ack (email delivery not wired yet) |
 | `GET` | `/vets` | List vets (`search`, `open_now`, `emergency`, `lat`, `lng`, `max_distance_km`) |
 | `GET` | `/vets/emergency` | Open emergency clinics |
 | `GET` | `/vets/:id` | Vet details |
 | `GET` | `/stores` | List stores |
 | `GET` | `/stores/:id` | Store details |
-| `POST` | `/users` | Create / upsert user |
-| `GET` | `/users/:id` | Get user |
+| `POST` | `/users` | Create / upsert guest user |
+| `GET` | `/users` | List users (admin) |
+| `GET` | `/users/:id` | Get user (self or admin) |
 | `POST` | `/pets` | Add pet |
 | `GET` | `/pets?user_id=` | List pets for user |
 | `PATCH` | `/pets/:id` | Update pet |
@@ -86,12 +93,13 @@ flutter run --dart-define=API_BASE_URL=http://192.168.x.x:3000
 
 ```
 mobile/lib/
-  core/           # theme, constants, providers, widgets, WhatsApp util
+  core/           # theme, constants, providers, widgets, auth storage
   data/           # models, Dio client, repositories
-  features/       # home, explore, vets, stores, pets, profile
-  routes/         # GoRouter + bottom nav shell
+  features/       # auth, home, explore, vets, stores, pets, profile
+  routes/         # GoRouter + bottom nav shell + auth guards
 backend/src/
-  modules/        # users, pets, vets, stores
+  modules/        # auth, users, pets, vets, stores, analytics
+  middleware/     # validation, requireAuth / requireRole
   db/             # pool, migrate, seed, memory fallback
 ```
 
@@ -104,7 +112,8 @@ backend/src/
 
 - **GPS location** — requests when-in-use permission; falls back to Beirut if denied/unavailable. Tap the home location row to refresh.
 - **WhatsApp click analytics** — `POST /analytics/whatsapp-clicks` (fire-and-forget from the app). Stats: `GET /analytics/whatsapp-clicks/stats`.
-- **Device-bound user** — UUID stored in `shared_preferences`, upserted via `POST /users` with `device_id`. Pets stay tied to that user across launches.
+- **Device-bound user** — UUID stored in `shared_preferences`, upserted via `POST /users` with `device_id`. Pets stay tied to that user across launches. Registering/logging in with the same `device_id` upgrades or links the guest account.
+- **Auth (Phase 1)** — JWT access + refresh tokens, roles `client | partner | admin`. Default admin: `admin@petly.local` / `changeme-admin` (override with `ADMIN_EMAIL` / `ADMIN_PASSWORD`).
 - **Offline / error UX** — top offline banner, shared `AsyncErrorView`, clearer Dio error messages.
 
 ### New API endpoints
@@ -119,9 +128,10 @@ backend/src/
 
 See [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) for the detailed, phased implementation plan (admin dashboard, auth/RBAC, chat, bookings, UI/UX polish, and more).
 
-1. **MVP** — list vets/stores, details, WhatsApp, pets, profile  
+0. **Foundations (done)** — migrations, validation, security, tokens, CI  
+1. **Auth + RBAC (done)** — JWT, roles, login/register, guest linking  
 1.5. **Validation readiness (done)** — GPS, click analytics, device user, offline UX  
-2. **Validation** — partner onboarding workflow, featured listings admin  
+2. **Partner onboarding** — approval workflow, featured listings admin  
 3. **Platform core** — appointment requests, Firebase push, vet dashboard  
 4. **Marketplace** — products, cart, orders  
 5. **Scale** — in-app chat, payments, delivery  

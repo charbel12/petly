@@ -1,4 +1,11 @@
-﻿import { User, CreateUserDto } from '../modules/users/users.types';
+﻿import {
+  User,
+  UserRecord,
+  UserRole,
+  UserStatus,
+  CreateUserDto,
+  toPublicUser,
+} from '../modules/users/users.types';
 import { Pet, CreatePetDto, UpdatePetDto } from '../modules/pets/pets.types';
 import { Vet, VetFilters } from '../modules/vets/vets.types';
 import { Store, StoreFilters } from '../modules/stores/stores.types';
@@ -7,6 +14,7 @@ import {
   TrackWhatsAppClickDto,
   WhatsAppClick,
 } from '../modules/analytics/analytics.types';
+import { RefreshTokenRecord } from '../modules/auth/auth.types';
 import { AppError } from '../middleware/errorHandler';
 import { randomUUID } from 'crypto';
 
@@ -32,11 +40,12 @@ function now() {
 }
 
 class MemoryStore {
-  users: User[] = [];
+  users: UserRecord[] = [];
   pets: Pet[] = [];
   vets: Vet[] = [];
   stores: Store[] = [];
   whatsappClicks: WhatsAppClick[] = [];
+  refreshTokens: RefreshTokenRecord[] = [];
 
   seed() {
     if (this.vets.length > 0) return;
@@ -45,6 +54,10 @@ class MemoryStore {
       id: '11111111-1111-1111-1111-111111111111',
       name: 'Demo User',
       phone: '+96171123456',
+      email: null,
+      password_hash: null,
+      role: 'client',
+      status: 'active',
       device_id: null,
       created_at: now(),
       updated_at: now(),
@@ -227,7 +240,7 @@ class MemoryStore {
         byDevice.name = dto.name.trim();
         byDevice.phone = dto.phone.trim();
         byDevice.updated_at = now();
-        return byDevice;
+        return toPublicUser(byDevice);
       }
     }
 
@@ -236,14 +249,56 @@ class MemoryStore {
       existing.name = dto.name.trim();
       if (deviceId) existing.device_id = deviceId;
       existing.updated_at = now();
-      return existing;
+      return toPublicUser(existing);
     }
 
-    const user: User = {
+    const user: UserRecord = {
       id: randomUUID(),
       name: dto.name.trim(),
       phone: dto.phone.trim(),
+      email: null,
+      password_hash: null,
+      role: 'client',
+      status: 'active',
       device_id: deviceId,
+      created_at: now(),
+      updated_at: now(),
+    };
+    this.users.push(user);
+    return toPublicUser(user);
+  }
+
+  createRegisteredUser(input: {
+    name: string;
+    email: string;
+    phone: string | null;
+    password_hash: string;
+    role?: UserRole;
+    status?: UserStatus;
+    device_id?: string | null;
+  }): UserRecord {
+    if (
+      this.users.some(
+        (u) => u.email && u.email.toLowerCase() === input.email.toLowerCase(),
+      )
+    ) {
+      throw new AppError(409, 'An account with this email already exists');
+    }
+    if (
+      input.device_id &&
+      this.users.some((u) => u.device_id === input.device_id && u.password_hash)
+    ) {
+      input = { ...input, device_id: null };
+    }
+    const user: UserRecord = {
+      id: randomUUID(),
+      name: input.name,
+      email: input.email.toLowerCase(),
+      phone: input.phone,
+      password_hash: input.password_hash,
+      role: input.role ?? 'client',
+      status: input.status ?? 'active',
+      device_id: input.device_id ?? null,
       created_at: now(),
       updated_at: now(),
     };
@@ -251,20 +306,99 @@ class MemoryStore {
     return user;
   }
 
-  getUser(id: string): User {
+  getUserRecord(id: string): UserRecord {
     const user = this.users.find((u) => u.id === id);
     if (!user) throw new AppError(404, 'User not found');
     return user;
   }
 
+  getUser(id: string): User {
+    return toPublicUser(this.getUserRecord(id));
+  }
+
+  getUserRecordByEmail(email: string): UserRecord | null {
+    const normalized = email.toLowerCase();
+    return (
+      this.users.find((u) => u.email?.toLowerCase() === normalized) ?? null
+    );
+  }
+
   getUserByDeviceId(deviceId: string): User | null {
-    return this.users.find((u) => u.device_id === deviceId) ?? null;
+    const user = this.users.find((u) => u.device_id === deviceId);
+    return user ? toPublicUser(user) : null;
+  }
+
+  findGuestByDeviceId(deviceId: string): UserRecord | null {
+    return (
+      this.users.find(
+        (u) => u.device_id === deviceId && !u.password_hash,
+      ) ?? null
+    );
+  }
+
+  patchUser(
+    id: string,
+    patch: Partial<
+      Pick<
+        UserRecord,
+        | 'name'
+        | 'phone'
+        | 'email'
+        | 'password_hash'
+        | 'role'
+        | 'status'
+        | 'device_id'
+      >
+    >,
+  ): UserRecord {
+    const user = this.getUserRecord(id);
+    Object.assign(user, patch, { updated_at: now() });
+    return user;
+  }
+
+  reassignPets(fromUserId: string, toUserId: string): void {
+    for (const pet of this.pets) {
+      if (pet.user_id === fromUserId) pet.user_id = toUserId;
+    }
+  }
+
+  deleteUser(id: string): void {
+    this.users = this.users.filter((u) => u.id !== id);
+    this.refreshTokens = this.refreshTokens.filter((t) => t.user_id !== id);
   }
 
   listUsers(): User[] {
-    return [...this.users].sort(
-      (a, b) => b.created_at.getTime() - a.created_at.getTime(),
-    );
+    return [...this.users]
+      .sort((a, b) => b.created_at.getTime() - a.created_at.getTime())
+      .map(toPublicUser);
+  }
+
+  createRefreshToken(input: {
+    user_id: string;
+    token_hash: string;
+    expires_at: Date;
+  }): RefreshTokenRecord {
+    const record: RefreshTokenRecord = {
+      id: randomUUID(),
+      user_id: input.user_id,
+      token_hash: input.token_hash,
+      expires_at: input.expires_at,
+      revoked_at: null,
+      created_at: now(),
+    };
+    this.refreshTokens.push(record);
+    return record;
+  }
+
+  findRefreshTokenByHash(tokenHash: string): RefreshTokenRecord | null {
+    return this.refreshTokens.find((t) => t.token_hash === tokenHash) ?? null;
+  }
+
+  revokeRefreshToken(id: string): void {
+    const record = this.refreshTokens.find((t) => t.id === id);
+    if (record && !record.revoked_at) {
+      record.revoked_at = now();
+    }
   }
 
   createPet(dto: CreatePetDto): Pet {
