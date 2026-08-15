@@ -12,12 +12,22 @@ function parseOrigins(value: string | undefined): string[] | undefined {
     .filter(Boolean);
 }
 
+function buildDatabaseUrl(): string {
+  if (process.env.DATABASE_URL) return process.env.DATABASE_URL;
+  const user = process.env.DB_USER || 'petly';
+  const password = process.env.DB_PASSWORD || 'petly';
+  const host = process.env.DB_HOST || 'localhost';
+  const port = Number(process.env.DB_PORT) || 5432;
+  const name = process.env.DB_NAME || 'petly';
+  return `postgresql://${user}:${password}@${host}:${port}/${name}`;
+}
+
+process.env.DATABASE_URL = buildDatabaseUrl();
+
 export const env = {
   port: Number(process.env.PORT) || 3000,
   nodeEnv: process.env.NODE_ENV || 'development',
   isProduction: process.env.NODE_ENV === 'production',
-  /** When true (or when Postgres is unreachable), use in-memory seed data. */
-  useMemoryStore: process.env.USE_MEMORY_STORE === 'true',
   databaseUrl: process.env.DATABASE_URL,
   db: {
     host: process.env.DB_HOST || 'localhost',
@@ -34,7 +44,7 @@ export const env = {
     accessTtl: process.env.JWT_ACCESS_TTL || '15m',
     refreshTtl: process.env.JWT_REFRESH_TTL || '30d',
   },
-  /** Seeded admin account (created/ensured on migrate+seed and memory bootstrap). */
+  /** Seeded admin account (created/ensured on migrate+seed). */
   admin: {
     email: process.env.ADMIN_EMAIL || 'admin@petly.local',
     password: process.env.ADMIN_PASSWORD || 'changeme-admin',
@@ -45,4 +55,3 @@ export const env = {
     max: Number(process.env.RATE_LIMIT_MAX) || 1000,
   },
 };
-

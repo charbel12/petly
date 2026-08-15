@@ -18,9 +18,8 @@ date as phases land.
   fallback contact method.
 - Delivery service: EXPLORATORY / unconfirmed (Phase 8) — discovery and design spike
   only, no build until confirmed.
-- In-memory store: auth, ownership, and relational features make the memory fallback in
-  `backend/src/db/mode.ts` costly to maintain. Proposal: keep PostgreSQL as the source of
-  truth and restrict memory mode to read-only public browsing demos (or drop it).
+- Data layer: Prisma ORM against PostgreSQL 16 (no in-memory fallback). Docker Compose
+  Postgres is required for local development, CI, and tests.
 
 ## Execution model: one phase at a time, with a testing gate
 
@@ -43,18 +42,18 @@ Per-phase Definition of Done (testing gate):
 - Automated tests: backend unit/integration tests for new endpoints/services and Flutter
   widget/unit tests for new UI/logic, all passing in CI.
 - Lint & build: `tsc` build and `flutter analyze` clean; app builds for web and mobile.
-- Manual / E2E: the phase's core flow is exercised end to end against PostgreSQL (not the
-  in-memory store), with evidence captured (screenshots / short video).
+- Manual / E2E: the phase's core flow is exercised end to end against PostgreSQL, with
+  evidence captured (screenshots / short video).
 - Regression: key flows from prior phases still pass.
 - Sign-off: reviewer approves the PR and confirms exit criteria are met before the next
   phase begins.
 
 ## Current state (what exists)
 
-- Backend: Express + TS, modules `auth, users, pets, vets, stores, analytics`; versioned
-  migrations under `backend/migrations` (Phase 0 + Phase 1 auth columns / refresh
-  tokens). JWT access + refresh, bcrypt, `requireAuth` / `requireRole`, roles
-  `client | partner | admin`. Vets/stores still have `verified/featured/is_open_now/
+- Backend: Express + TS, modules `auth, users, pets, vets, stores, analytics`; Prisma 6
+  schema + migrations under `backend/prisma` (users, pets, vets, stores, whatsapp
+  clicks, refresh tokens). JWT access + refresh, bcrypt, `requireAuth` / `requireRole`,
+  roles `client | partner | admin`. Vets/stores still have `verified/featured/is_open_now/
   is_emergency` but no owner or approval `status` (Phase 2).
 - Mobile/Web: Flutter (Riverpod + GoRouter + Dio), login/register/forgot-password,
   secure token storage, bearer + refresh interceptor, route guards. Guest browsing
@@ -98,8 +97,8 @@ flowchart TD
 
 ## Phase 0 - Foundations & housekeeping
 
-- Replace hand-rolled schema-in-code with versioned migrations (`node-pg-migrate`, SQL
-  files under `backend/migrations`); `db:seed` still runs migrations first.
+- Prisma ORM + versioned Prisma Migrate (`backend/prisma`); `db:seed` runs
+  `prisma migrate deploy` first. PostgreSQL is required (in-memory fallback removed).
 - Add request validation (`zod`) via a reusable middleware, plus security middleware
   (`helmet`, rate limiting, configurable CORS).
 - Config/secrets: `JWT_SECRET`, token TTLs, and CORS origins in

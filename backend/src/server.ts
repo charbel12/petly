@@ -1,9 +1,6 @@
 import { createApp } from './app';
 import { env } from './config/env';
-import { pool } from './db/pool';
-import { memoryStore } from './db/memory-store';
-import { setMemoryMode, isMemoryMode } from './db/mode';
-import { migrate } from './db/migrate';
+import { prisma, deployMigrations } from './db/prisma';
 import { ensureAdmin } from './modules/auth/auth.service';
 
 async function bootstrap() {
@@ -11,34 +8,21 @@ async function bootstrap() {
     throw new Error('JWT_SECRET must be set in production');
   }
 
-  if (env.useMemoryStore) {
-    setMemoryMode(true);
-  } else {
-    try {
-      await pool.query('SELECT 1');
-      setMemoryMode(false);
-    } catch (err) {
-      console.warn(
-        '⚠ PostgreSQL unavailable — falling back to in-memory store.',
-      );
-      console.warn('  Start Docker (`docker compose up -d`) for persistent data.');
-      setMemoryMode(true);
-    }
+  try {
+    await prisma.$connect();
+  } catch (err) {
+    console.error('PostgreSQL unavailable. Start Docker (`docker compose up -d`) and retry.');
+    throw err;
   }
 
-  if (isMemoryMode()) {
-    memoryStore.seed();
-  } else {
-    await migrate();
-  }
-
+  deployMigrations();
   await ensureAdmin();
 
   const app = createApp();
   app.listen(env.port, '0.0.0.0', () => {
     console.log(`🐾 Petly API running on http://localhost:${env.port}`);
     console.log(`   Environment: ${env.nodeEnv}`);
-    console.log(`   Data store: ${isMemoryMode() ? 'memory' : 'postgresql'}`);
+    console.log(`   Data store: postgresql`);
   });
 }
 

@@ -12,6 +12,25 @@ jobs:
     defaults:
       run:
         working-directory: backend
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: petly
+          POSTGRES_PASSWORD: petly
+          POSTGRES_DB: petly
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U petly -d petly"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://petly:petly@localhost:5432/petly
+      JWT_SECRET: ci-test-secret
+      ADMIN_EMAIL: admin@petly.local
+      ADMIN_PASSWORD: changeme-admin
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -20,6 +39,7 @@ jobs:
           cache: npm
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
+      - run: npx prisma migrate deploy
       - run: npm run build
       - run: npm test
 

@@ -8,7 +8,7 @@ Pet services platform for Lebanon — connect pet owners with veterinary clinics
 |-------|------|
 | Mobile | Flutter 3 + Riverpod + GoRouter + Dio |
 | API | Node.js + Express + TypeScript |
-| Database | PostgreSQL 16 (with in-memory fallback for local demos) |
+| Database | PostgreSQL 16 (Prisma ORM) |
 
 ## Quick start
 
@@ -20,21 +20,23 @@ cp .env.example .env
 npm install
 ```
 
-**With PostgreSQL (recommended):**
+PostgreSQL is required (Docker Desktop):
 
 ```bash
-# from repo root — requires Docker Desktop
+# from repo root
 docker compose up -d
 cd backend
 npm run db:seed
 npm run dev
 ```
 
-**Without Docker:** the API auto-falls back to an in-memory store with Lebanon seed data:
+If you previously ran the older SQL migrations against the same Docker volume, reset it once:
 
 ```bash
+docker compose down -v
+docker compose up -d
 cd backend
-npm run dev
+npm run db:seed
 ```
 
 API: `http://localhost:3000`  
@@ -100,7 +102,8 @@ mobile/lib/
 backend/src/
   modules/        # auth, users, pets, vets, stores, analytics
   middleware/     # validation, requireAuth / requireRole
-  db/             # pool, migrate, seed, memory fallback
+  db/             # Prisma client, mappers, geo helpers
+backend/prisma/     # schema, migrations, seed
 ```
 
 ## Design system

@@ -9,7 +9,6 @@ import storesRoutes from './modules/stores/stores.routes';
 import analyticsRoutes from './modules/analytics/analytics.routes';
 import authRoutes from './modules/auth/auth.routes';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
-import { isMemoryMode } from './db/mode';
 import { env } from './config/env';
 
 export function createApp() {
@@ -46,7 +45,7 @@ export function createApp() {
       status: 'ok',
       service: 'petly-api',
       version: '2.0.0',
-      store: isMemoryMode() ? 'memory' : 'postgresql',
+      store: 'postgresql',
     });
   });
 
