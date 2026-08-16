@@ -46,7 +46,7 @@ class AppTokens {
   final double pawOpacity;
 
   static const light = AppTokens(
-    brandPrimary: Color(AppColors.oliveLeaf),
+    brandPrimary: Color(AppColors.blackForest),
     brandAccent: Color(AppColors.sunlitClay),
     brandSecondary: Color(AppColors.copperwood),
     brandSecondarySoft: Color(AppColors.sunlitClay),

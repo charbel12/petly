@@ -14,7 +14,7 @@ class AppColors {
   static const sageMist = 0xFFB7BA94;
 
   // Semantic — light
-  static const primary = oliveLeaf;
+  static const primary = blackForest;
   static const accent = sunlitClay;
   static const secondary = copperwood;
   static const secondarySoft = sunlitClay;
