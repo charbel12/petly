@@ -135,12 +135,13 @@ flowchart TD
   management, client management, featured listings, analytics reusing `whatsapp_clicks`
   plus new events.
 
-## Phase 4 - UI/UX polish: animations, backgrounds, colors — in progress
+## Phase 4 - UI/UX polish: animations, backgrounds, colors — done (palette refresh)
 
-- Palette retuned for WCAG AA: teal-700 `#0F766E` for buttons/text, orange-700
-  `#C2410C` for small accent text; original `#2EC4B6` / `#FF9F1C` kept as
-  decorative accents. Semantic tokens + system/light/dark theme.
-- Backgrounds: teal→cream (dark: teal→charcoal) gradient with 6 outline paw SVGs
+- Palette: olive-leaf `#606C38`, black-forest `#283618`, cornsilk `#FEFAE0`,
+  sunlit-clay `#DDA15E`, copperwood `#BC6C25`. Light pages use cornsilk + forest
+  text; dark pages invert to forest surfaces and cornsilk type. Copper/clay are
+  the warm accents (emergency, secondary). WhatsApp CTAs keep vendor green.
+- Backgrounds: cornsilk→clay wash (dark: forest canopy) with 6 outline paw SVGs
   on Home, Auth, and Explore.
 - Listing photos: `image_url` on vets/stores, seeded bundled assets, 16:9 photo
   cards, detail heroes, quieter WhatsApp on list cards (full green CTA on detail).

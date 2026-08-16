@@ -43,7 +43,11 @@ void main() {
     expect(find.byIcon(Icons.local_hospital_rounded), findsOneWidget);
   });
 
-  test('dark theme uses a distinct surface from light', () {
+  test('olive copper palette is wired into light and dark themes', () {
+    expect(AppTheme.light.scaffoldBackgroundColor, const Color(0xFFFEFAE0));
+    expect(AppTheme.light.colorScheme.primary, const Color(0xFF606C38));
+    expect(AppTheme.dark.scaffoldBackgroundColor, const Color(0xFF283618));
+    expect(AppTheme.dark.colorScheme.primary, const Color(0xFFDDA15E));
     expect(
       AppTheme.dark.scaffoldBackgroundColor,
       isNot(AppTheme.light.scaffoldBackgroundColor),

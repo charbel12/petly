@@ -108,7 +108,7 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
                       width: 22,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Colors.white,
+                        color: Color(0xFFFEFAE0),
                       ),
                     )
                   : const Text('Save pet'),

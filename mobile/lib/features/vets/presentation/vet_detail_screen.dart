@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/constants/app_constants.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/providers/user_provider.dart';
 import '../../../core/theme/app_tokens.dart';
@@ -185,7 +186,7 @@ class VetDetailScreen extends ConsumerWidget {
                     icon: const Icon(Icons.chat_rounded),
                     label: const Text('Chat on WhatsApp'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF25D366),
+                      backgroundColor: const Color(AppConstants.whatsappGreen),
                       foregroundColor: Colors.white,
                       minimumSize: const Size.fromHeight(56),
                     ),

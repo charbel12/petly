@@ -19,6 +19,8 @@ class AppTheme {
       error: tokens.danger,
       onSurface: tokens.textPrimary,
       onSurfaceVariant: tokens.textMuted,
+      outline: tokens.border,
+      outlineVariant: tokens.border,
     );
 
     final base = ThemeData(
