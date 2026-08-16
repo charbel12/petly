@@ -142,10 +142,10 @@ class _PetCard extends StatelessWidget {
             width: 56,
             height: 56,
             decoration: BoxDecoration(
-              color: tokens.brandPrimary.withValues(alpha: 0.12),
+              color: tokens.onCard.withValues(alpha: 0.14),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Icon(icon, color: tokens.brandPrimary, size: 28),
+            child: Icon(icon, color: tokens.onCard, size: 28),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -163,7 +163,7 @@ class _PetCard extends StatelessWidget {
                 Text(
                   '${pet.type} · ${pet.ageLabel}',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: tokens.textMuted,
+                        color: tokens.onCardMuted,
                       ),
                 ),
               ],
@@ -172,7 +172,7 @@ class _PetCard extends StatelessWidget {
           IconButton(
             onPressed: onDelete,
             icon: const Icon(Icons.delete_outline_rounded),
-            color: tokens.textMuted,
+            color: tokens.onCardMuted,
           ),
         ],
       ),

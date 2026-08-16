@@ -51,9 +51,9 @@ class _ShimmerBoxState extends State<ShimmerBox>
               begin: Alignment(-1 + 2 * _controller.value, 0),
               end: Alignment(2 * _controller.value, 0),
               colors: [
-                tokens.border,
-                tokens.surface,
-                tokens.border,
+                tokens.onCardMuted.withValues(alpha: 0.35),
+                tokens.card,
+                tokens.onCardMuted.withValues(alpha: 0.35),
               ],
             ),
           ),
@@ -75,7 +75,7 @@ class ListingCardSkeleton extends StatelessWidget {
       return Container(
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
-          color: tokens.surface,
+          color: tokens.card,
           borderRadius: BorderRadius.circular(16),
         ),
         clipBehavior: Clip.antiAlias,
@@ -140,7 +140,7 @@ class _StoreSkeletonCard extends StatelessWidget {
     return Container(
       width: 180,
       decoration: BoxDecoration(
-        color: tokens.surface,
+        color: tokens.card,
         borderRadius: BorderRadius.circular(16),
       ),
       clipBehavior: Clip.antiAlias,

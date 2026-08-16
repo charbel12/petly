@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:petly/core/providers/theme_provider.dart';
 import 'package:petly/core/theme/app_theme.dart';
+import 'package:petly/core/theme/app_tokens.dart';
 import 'package:petly/core/widgets/empty_state.dart';
 import 'package:petly/core/widgets/listing_image.dart';
 
@@ -45,6 +46,8 @@ void main() {
 
   test('olive copper palette is wired into light and dark themes', () {
     expect(AppTheme.light.scaffoldBackgroundColor, const Color(0xFFFEFAE0));
+    expect(AppTokens.light.card, const Color(0xFF606C38));
+    expect(AppTokens.light.card, isNot(AppTokens.light.background));
     expect(AppTheme.light.colorScheme.primary, const Color(0xFF283618));
     expect(AppTheme.dark.scaffoldBackgroundColor, const Color(0xFF283618));
     expect(AppTheme.dark.colorScheme.primary, const Color(0xFFDDA15E));

@@ -48,7 +48,7 @@ class AppTheme {
         ),
       ),
       cardTheme: CardThemeData(
-        color: tokens.surface,
+        color: tokens.card,
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppTokens.radiusLg),

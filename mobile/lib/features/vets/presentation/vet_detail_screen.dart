@@ -74,7 +74,7 @@ class VetDetailScreen extends ConsumerWidget {
                               if (vet.verified)
                                 Icon(
                                   Icons.verified_rounded,
-                                  color: tokens.brandPrimary,
+                                  color: tokens.onCard,
                                 ),
                             ],
                           ),
@@ -82,7 +82,7 @@ class VetDetailScreen extends ConsumerWidget {
                           Text(
                             vet.distanceAndLocation,
                             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: tokens.textMuted,
+                                  color: tokens.onCardMuted,
                                 ),
                           ),
                           const SizedBox(height: 16),
@@ -122,9 +122,12 @@ class VetDetailScreen extends ConsumerWidget {
                         children: vet.services
                             .map(
                               (s) => Chip(
-                                label: Text(s),
+                                label: Text(
+                                  s,
+                                  style: TextStyle(color: tokens.onCard),
+                                ),
                                 backgroundColor:
-                                    tokens.brandPrimary.withValues(alpha: 0.08),
+                                    tokens.onCard.withValues(alpha: 0.14),
                                 side: BorderSide.none,
                               ),
                             )
@@ -218,7 +221,7 @@ class _InfoRow extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 20, color: tokens.brandPrimary),
+        Icon(icon, size: 20, color: tokens.onCard),
         const SizedBox(width: 10),
         Expanded(
           child: Column(
@@ -227,7 +230,7 @@ class _InfoRow extends StatelessWidget {
               Text(
                 label,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: tokens.textMuted,
+                      color: tokens.onCardMuted,
                     ),
               ),
               Text(

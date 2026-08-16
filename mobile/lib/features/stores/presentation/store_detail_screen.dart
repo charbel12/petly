@@ -85,7 +85,7 @@ class StoreDetailScreen extends ConsumerWidget {
                           const SizedBox(height: 16),
                           Row(
                             children: [
-                              Icon(Icons.place_outlined, color: tokens.brandPrimary),
+                              Icon(Icons.place_outlined, color: tokens.onCard),
                               const SizedBox(width: 8),
                               Expanded(child: Text(store.location)),
                             ],
@@ -93,7 +93,7 @@ class StoreDetailScreen extends ConsumerWidget {
                           const SizedBox(height: 8),
                           Row(
                             children: [
-                              Icon(Icons.near_me_outlined, color: tokens.brandPrimary),
+                              Icon(Icons.near_me_outlined, color: tokens.onCard),
                               const SizedBox(width: 8),
                               Text(store.distanceAndLocation),
                             ],
@@ -101,7 +101,7 @@ class StoreDetailScreen extends ConsumerWidget {
                           const SizedBox(height: 8),
                           Row(
                             children: [
-                              Icon(Icons.schedule_rounded, color: tokens.brandPrimary),
+                              Icon(Icons.schedule_rounded, color: tokens.onCard),
                               const SizedBox(width: 8),
                               Text(store.isOpenNow ? 'Open now' : 'Closed'),
                             ],

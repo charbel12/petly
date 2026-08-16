@@ -103,7 +103,7 @@ class StoreCard extends ConsumerWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: tokens.textMuted,
+                            color: tokens.onCardMuted,
                             fontSize: 11,
                           ),
                     ),
@@ -147,7 +147,7 @@ class StoreCard extends ConsumerWidget {
                     child: Text(
                       'Open',
                       style: TextStyle(
-                        color: tokens.success,
+                        color: tokens.onCard,
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
                       ),
@@ -172,7 +172,7 @@ class StoreCard extends ConsumerWidget {
                 Text(
                   '${store.type} · ${store.distanceAndLocation}',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: tokens.textMuted,
+                        color: tokens.onCardMuted,
                       ),
                 ),
                 if (store.phone != null)
@@ -183,7 +183,7 @@ class StoreCard extends ConsumerWidget {
                       icon: const Icon(Icons.chat_outlined, size: 16),
                       label: const Text('WhatsApp'),
                       style: TextButton.styleFrom(
-                        foregroundColor: tokens.textMuted,
+                        foregroundColor: tokens.onCardMuted,
                         padding: const EdgeInsets.symmetric(horizontal: 0),
                         visualDensity: VisualDensity.compact,
                       ),

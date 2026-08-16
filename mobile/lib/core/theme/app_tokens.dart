@@ -12,6 +12,9 @@ class AppTokens {
     required this.brandSecondarySoft,
     required this.background,
     required this.surface,
+    required this.card,
+    required this.onCard,
+    required this.onCardMuted,
     required this.textPrimary,
     required this.textMuted,
     required this.border,
@@ -32,6 +35,9 @@ class AppTokens {
   final Color brandSecondarySoft;
   final Color background;
   final Color surface;
+  final Color card;
+  final Color onCard;
+  final Color onCardMuted;
   final Color textPrimary;
   final Color textMuted;
   final Color border;
@@ -52,6 +58,9 @@ class AppTokens {
     brandSecondarySoft: Color(AppColors.sunlitClay),
     background: Color(AppColors.cornsilk),
     surface: Color(AppColors.cornsilkSurface),
+    card: Color(AppColors.oliveLeaf),
+    onCard: Color(AppColors.cornsilk),
+    onCardMuted: Color(0xFFE8E4C0),
     textPrimary: Color(AppColors.blackForest),
     textMuted: Color(AppColors.oliveLeaf),
     border: Color(AppColors.oliveMist),
@@ -73,6 +82,9 @@ class AppTokens {
     brandSecondarySoft: Color(AppColors.sunlitClay),
     background: Color(AppColors.blackForest),
     surface: Color(AppColors.forestCanopy),
+    card: Color(AppColors.oliveLeaf),
+    onCard: Color(AppColors.cornsilk),
+    onCardMuted: Color(0xFFE8E4C0),
     textPrimary: Color(AppColors.cornsilk),
     textMuted: Color(AppColors.sageMist),
     border: Color(AppColors.oliveLeaf),
