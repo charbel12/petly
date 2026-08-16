@@ -134,10 +134,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             ElevatedButton(
               onPressed: _submitting ? null : _submit,
               child: _submitting
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 22,
                       height: 22,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Theme.of(context).colorScheme.onPrimary,
+                      ),
                     )
                   : const Text('Create account'),
             ),

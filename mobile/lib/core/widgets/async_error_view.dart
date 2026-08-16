@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../constants/app_constants.dart';
 import '../theme/app_tokens.dart';
 import '../utils/api_error.dart';
 
@@ -82,20 +83,24 @@ class OfflineBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: const Color(0xFF1A1A1A),
+      color: const Color(AppColors.blackForest),
       child: SafeArea(
         bottom: false,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(
             children: [
-              const Icon(Icons.wifi_off_rounded, color: Colors.white, size: 18),
+              const Icon(
+                Icons.wifi_off_rounded,
+                color: Color(AppColors.cornsilk),
+                size: 18,
+              ),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   'No internet connection',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.white,
+                        color: const Color(AppColors.cornsilk),
                         fontWeight: FontWeight.w600,
                       ),
                 ),

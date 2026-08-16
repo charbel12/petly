@@ -1,31 +1,38 @@
 /// Petly design tokens & app constants
 class AppColors {
-  /// Teal-700: AA contrast for white-on-teal buttons and teal-on-white text.
-  static const primary = 0xFF0F766E;
+  // Palette 3 — olive / forest / cornsilk / clay / copper
+  static const oliveLeaf = 0xFF606C38;
+  static const blackForest = 0xFF283618;
+  static const cornsilk = 0xFFFEFAE0;
+  static const sunlitClay = 0xFFDDA15E;
+  static const copperwood = 0xFFBC6C25;
 
-  /// Original brand teal for gradients, paw motifs, and decorative fills.
-  static const accent = 0xFF2EC4B6;
+  /// Tints and shades mixed only from the five palette colors.
+  static const cornsilkSurface = 0xFFFFFDF4;
+  static const oliveMist = 0xFFE1E0C2;
+  static const forestCanopy = 0xFF3C4923;
+  static const sageMist = 0xFFB7BA94;
 
-  /// Orange-700: small-text contrast on light surfaces.
-  static const secondary = 0xFFC2410C;
+  // Semantic — light
+  static const primary = blackForest;
+  static const accent = sunlitClay;
+  static const secondary = copperwood;
+  static const secondarySoft = sunlitClay;
+  static const background = cornsilk;
+  static const text = blackForest;
+  static const surface = cornsilkSurface;
+  static const muted = oliveLeaf;
+  static const border = oliveMist;
+  static const danger = copperwood;
+  static const success = oliveLeaf;
 
-  /// Soft orange for chips, banners, and decorative accents.
-  static const secondarySoft = 0xFFFF9F1C;
-
-  static const background = 0xFFF7F9FB;
-  static const text = 0xFF1A1A1A;
-  static const surface = 0xFFFFFFFF;
-  static const muted = 0xFF4B5563;
-  static const border = 0xFFE5E7EB;
-  static const danger = 0xFFDC2626;
-  static const success = 0xFF15803D;
-
-  static const darkBackground = 0xFF0F1716;
-  static const darkSurface = 0xFF1A2423;
-  static const darkText = 0xFFF3F4F6;
-  static const darkMuted = 0xFF9CA3AF;
-  static const darkBorder = 0xFF2A3A38;
-  static const darkPrimary = 0xFF2DD4BF;
+  // Semantic — dark
+  static const darkBackground = blackForest;
+  static const darkSurface = forestCanopy;
+  static const darkText = cornsilk;
+  static const darkMuted = sageMist;
+  static const darkBorder = oliveLeaf;
+  static const darkPrimary = sunlitClay;
 }
 
 class AppConstants {
@@ -52,4 +59,7 @@ class AppConstants {
       'Hello, I found you on Petly and would like to get in touch.';
 
   static const pawAsset = 'assets/paws/paw.svg';
+
+  /// WhatsApp brand green — kept as the vendor color, not part of the app palette.
+  static const whatsappGreen = 0xFF25D366;
 }

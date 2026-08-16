@@ -60,13 +60,13 @@ class ProfileScreen extends ConsumerWidget {
                   children: [
                     CircleAvatar(
                       radius: 32,
-                      backgroundColor: tokens.brandPrimary.withValues(alpha: 0.15),
+                      backgroundColor: tokens.onCard.withValues(alpha: 0.16),
                       child: Text(
                         user.name.isNotEmpty ? user.name[0].toUpperCase() : '?',
                         style: TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.w700,
-                          color: tokens.brandPrimary,
+                          color: tokens.onCard,
                         ),
                       ),
                     ),
@@ -89,7 +89,7 @@ class ProfileScreen extends ConsumerWidget {
                                 .textTheme
                                 .bodyMedium
                                 ?.copyWith(
-                                  color: tokens.textMuted,
+                                  color: tokens.onCardMuted,
                                 ),
                           ),
                           if (user.role != null && !user.isGuest) ...[
@@ -100,7 +100,7 @@ class ProfileScreen extends ConsumerWidget {
                                   .textTheme
                                   .bodySmall
                                   ?.copyWith(
-                                    color: tokens.brandPrimary,
+                                    color: tokens.brandAccent,
                                     fontWeight: FontWeight.w600,
                                   ),
                             ),
@@ -263,7 +263,7 @@ class ProfileScreen extends ConsumerWidget {
                             'List your clinic or store on Petly',
                             style:
                                 Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: tokens.textMuted,
+                                      color: tokens.onCardMuted,
                                     ),
                           ),
                         ],
@@ -284,7 +284,7 @@ class ProfileScreen extends ConsumerWidget {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.help_outline_rounded, color: tokens.brandPrimary),
+                    Icon(Icons.help_outline_rounded, color: tokens.onCard),
                     SizedBox(width: 14),
                     Expanded(
                       child: Text(
@@ -453,11 +453,11 @@ class _SettingsTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: Icon(icon, color: AppTokens.of(context).brandPrimary),
+      leading: Icon(icon, color: AppTokens.of(context).onCard),
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
       subtitle: Text(
         subtitle,
-        style: TextStyle(color: AppTokens.of(context).textMuted),
+        style: TextStyle(color: AppTokens.of(context).onCardMuted),
       ),
       trailing: const Icon(Icons.chevron_right_rounded),
       onTap: onTap,

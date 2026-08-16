@@ -12,6 +12,9 @@ class AppTokens {
     required this.brandSecondarySoft,
     required this.background,
     required this.surface,
+    required this.card,
+    required this.onCard,
+    required this.onCardMuted,
     required this.textPrimary,
     required this.textMuted,
     required this.border,
@@ -21,6 +24,8 @@ class AppTokens {
     required this.gradientStart,
     required this.gradientMid,
     required this.gradientEnd,
+    required this.emergencyStart,
+    required this.emergencyEnd,
     required this.pawOpacity,
   });
 
@@ -30,6 +35,9 @@ class AppTokens {
   final Color brandSecondarySoft;
   final Color background;
   final Color surface;
+  final Color card;
+  final Color onCard;
+  final Color onCardMuted;
   final Color textPrimary;
   final Color textMuted;
   final Color border;
@@ -39,44 +47,56 @@ class AppTokens {
   final Color gradientStart;
   final Color gradientMid;
   final Color gradientEnd;
+  final Color emergencyStart;
+  final Color emergencyEnd;
   final double pawOpacity;
 
   static const light = AppTokens(
-    brandPrimary: Color(AppColors.primary),
-    brandAccent: Color(AppColors.accent),
-    brandSecondary: Color(AppColors.secondary),
-    brandSecondarySoft: Color(AppColors.secondarySoft),
-    background: Color(AppColors.background),
-    surface: Color(AppColors.surface),
-    textPrimary: Color(AppColors.text),
-    textMuted: Color(AppColors.muted),
-    border: Color(AppColors.border),
-    danger: Color(AppColors.danger),
-    success: Color(AppColors.success),
-    onBrand: Colors.white,
-    gradientStart: Color(0xFFCFF5F1),
-    gradientMid: Color(0xFFFFF6EB),
-    gradientEnd: Color(0xFFF7F9FB),
-    pawOpacity: 0.14,
+    brandPrimary: Color(AppColors.blackForest),
+    brandAccent: Color(AppColors.sunlitClay),
+    brandSecondary: Color(AppColors.copperwood),
+    brandSecondarySoft: Color(AppColors.sunlitClay),
+    background: Color(AppColors.cornsilk),
+    surface: Color(AppColors.cornsilkSurface),
+    card: Color(AppColors.oliveLeaf),
+    onCard: Color(AppColors.cornsilk),
+    onCardMuted: Color(0xFFE8E4C0),
+    textPrimary: Color(AppColors.blackForest),
+    textMuted: Color(AppColors.oliveLeaf),
+    border: Color(AppColors.oliveMist),
+    danger: Color(AppColors.copperwood),
+    success: Color(AppColors.oliveLeaf),
+    onBrand: Color(AppColors.cornsilk),
+    gradientStart: Color(0xFFF3E6C0),
+    gradientMid: Color(AppColors.cornsilk),
+    gradientEnd: Color(0xFFF7F0D2),
+    emergencyStart: Color(AppColors.copperwood),
+    emergencyEnd: Color(AppColors.sunlitClay),
+    pawOpacity: 0.16,
   );
 
   static const dark = AppTokens(
-    brandPrimary: Color(AppColors.darkPrimary),
-    brandAccent: Color(AppColors.accent),
-    brandSecondary: Color(0xFFFB923C),
-    brandSecondarySoft: Color(AppColors.secondarySoft),
-    background: Color(AppColors.darkBackground),
-    surface: Color(AppColors.darkSurface),
-    textPrimary: Color(AppColors.darkText),
-    textMuted: Color(AppColors.darkMuted),
-    border: Color(AppColors.darkBorder),
-    danger: Color(0xFFF87171),
-    success: Color(0xFF4ADE80),
-    onBrand: Color(0xFF042F2E),
-    gradientStart: Color(0xFF0F2A28),
-    gradientMid: Color(0xFF15201F),
-    gradientEnd: Color(0xFF121212),
-    pawOpacity: 0.07,
+    brandPrimary: Color(AppColors.sunlitClay),
+    brandAccent: Color(AppColors.sunlitClay),
+    brandSecondary: Color(AppColors.copperwood),
+    brandSecondarySoft: Color(AppColors.sunlitClay),
+    background: Color(AppColors.blackForest),
+    surface: Color(AppColors.forestCanopy),
+    card: Color(AppColors.oliveLeaf),
+    onCard: Color(AppColors.cornsilk),
+    onCardMuted: Color(0xFFE8E4C0),
+    textPrimary: Color(AppColors.cornsilk),
+    textMuted: Color(AppColors.sageMist),
+    border: Color(AppColors.oliveLeaf),
+    danger: Color(AppColors.sunlitClay),
+    success: Color(AppColors.sageMist),
+    onBrand: Color(AppColors.blackForest),
+    gradientStart: Color(AppColors.blackForest),
+    gradientMid: Color(AppColors.forestCanopy),
+    gradientEnd: Color(0xFF1F2B13),
+    emergencyStart: Color(AppColors.copperwood),
+    emergencyEnd: Color(AppColors.sunlitClay),
+    pawOpacity: 0.10,
   );
 
   static AppTokens of(BuildContext context) {

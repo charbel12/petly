@@ -19,6 +19,8 @@ class AppTheme {
       error: tokens.danger,
       onSurface: tokens.textPrimary,
       onSurfaceVariant: tokens.textMuted,
+      outline: tokens.border,
+      outlineVariant: tokens.border,
     );
 
     final base = ThemeData(
@@ -46,7 +48,7 @@ class AppTheme {
         ),
       ),
       cardTheme: CardThemeData(
-        color: tokens.surface,
+        color: tokens.card,
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppTokens.radiusLg),

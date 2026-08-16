@@ -72,7 +72,7 @@ class VetCard extends ConsumerWidget {
                     if (vet.isOpenNow)
                       _OverlayChip(
                         label: 'Open',
-                        color: tokens.success,
+                        color: tokens.onCard,
                       ),
                     if (vet.isEmergency) ...[
                       if (vet.isOpenNow) const SizedBox(width: 6),
@@ -119,7 +119,7 @@ class VetCard extends ConsumerWidget {
                 Text(
                   vet.distanceAndLocation,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: tokens.textMuted,
+                        color: tokens.onCardMuted,
                       ),
                 ),
                 if (!compact && services.isNotEmpty) ...[
@@ -135,7 +135,7 @@ class VetCard extends ConsumerWidget {
                                 .textTheme
                                 .bodySmall
                                 ?.copyWith(
-                                  color: tokens.brandPrimary,
+                                  color: tokens.brandAccent,
                                   fontWeight: FontWeight.w600,
                                 ),
                           ),
@@ -150,7 +150,7 @@ class VetCard extends ConsumerWidget {
                     icon: const Icon(Icons.chat_outlined, size: 16),
                     label: const Text('WhatsApp'),
                     style: TextButton.styleFrom(
-                      foregroundColor: tokens.textMuted,
+                      foregroundColor: tokens.onCardMuted,
                       padding: const EdgeInsets.symmetric(horizontal: 0),
                       visualDensity: VisualDensity.compact,
                     ),

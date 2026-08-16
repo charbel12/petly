@@ -266,30 +266,31 @@ class _EmergencyButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppTokens.of(context);
     return ScaleOnTap(
       onTap: onPressed,
       child: Ink(
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFFDC2626), Color(0xFFEA580C)],
+          gradient: LinearGradient(
+            colors: [tokens.emergencyStart, tokens.emergencyEnd],
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
           ),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFEA580C).withValues(alpha: 0.35),
+              color: tokens.emergencyStart.withValues(alpha: 0.35),
               blurRadius: 16,
               offset: const Offset(0, 6),
             ),
           ],
         ),
-        child: const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
           child: Row(
             children: [
-              Icon(Icons.emergency_rounded, color: Colors.white, size: 28),
-              SizedBox(width: 12),
+              Icon(Icons.emergency_rounded, color: tokens.onBrand, size: 28),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -297,20 +298,23 @@ class _EmergencyButton extends StatelessWidget {
                     Text(
                       'Emergency Vet',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: tokens.onBrand,
                         fontWeight: FontWeight.w700,
                         fontSize: 16,
                       ),
                     ),
-                    SizedBox(height: 2),
+                    const SizedBox(height: 2),
                     Text(
                       'Find open emergency clinics nearby',
-                      style: TextStyle(color: Colors.white70, fontSize: 12),
+                      style: TextStyle(
+                        color: tokens.onBrand.withValues(alpha: 0.78),
+                        fontSize: 12,
+                      ),
                     ),
                   ],
                 ),
               ),
-              Icon(Icons.chevron_right_rounded, color: Colors.white),
+              Icon(Icons.chevron_right_rounded, color: tokens.onBrand),
             ],
           ),
         ),
