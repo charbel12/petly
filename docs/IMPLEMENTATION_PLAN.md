@@ -135,7 +135,17 @@ flowchart TD
   management, client management, featured listings, analytics reusing `whatsapp_clicks`
   plus new events.
 
-## Phase 4 - UI/UX polish: animations, backgrounds, colors
+## Phase 4 - UI/UX polish: animations, backgrounds, colors — in progress
+
+- Palette retuned for WCAG AA: teal-700 `#0F766E` for buttons/text, orange-700
+  `#C2410C` for small accent text; original `#2EC4B6` / `#FF9F1C` kept as
+  decorative accents. Semantic tokens + system/light/dark theme.
+- Backgrounds: teal→cream (dark: teal→charcoal) gradient with 6 outline paw SVGs
+  on Home, Auth, and Explore.
+- Listing photos: `image_url` on vets/stores, seeded bundled assets, 16:9 photo
+  cards, detail heroes, quieter WhatsApp on list cards (full green CTA on detail).
+- Motion: fade/slide page transitions, staggered lists, skeleton loaders,
+  button scale micro-interaction. Empty-search copy + Explore emergency chip.
 
 - Re-validate palette for WCAG AA contrast; semantic tokens + dark theme; refined
   gradients from `#2EC4B6`/`#FF9F1C`.

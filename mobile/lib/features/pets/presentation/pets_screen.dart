@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_constants.dart';
 import '../../../core/providers/app_providers.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/async_error_view.dart';
 import '../../../core/widgets/soft_card.dart';
 import '../../../data/models/pet.dart';
@@ -27,6 +27,7 @@ class PetsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final petsAsync = ref.watch(petsProvider);
+    final tokens = AppTokens.of(context);
 
     return Scaffold(
       appBar: AppBar(title: const Text('My Pets')),
@@ -52,7 +53,7 @@ class PetsScreen extends ConsumerWidget {
                     Icon(
                       Icons.pets_rounded,
                       size: 64,
-                      color: const Color(AppColors.primary).withValues(alpha: 0.4),
+                      color: tokens.brandPrimary.withValues(alpha: 0.4),
                     ),
                     const SizedBox(height: 16),
                     Text(
@@ -74,7 +75,7 @@ class PetsScreen extends ConsumerWidget {
           }
 
           return RefreshIndicator(
-            color: const Color(AppColors.primary),
+            color: tokens.brandPrimary,
             onRefresh: () async {
               ref.invalidate(petsProvider);
               await ref.read(petsProvider.future);
@@ -132,6 +133,7 @@ class _PetCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppTokens.of(context);
     return SoftCard(
       margin: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -140,10 +142,10 @@ class _PetCard extends StatelessWidget {
             width: 56,
             height: 56,
             decoration: BoxDecoration(
-              color: const Color(AppColors.primary).withValues(alpha: 0.12),
+              color: tokens.brandPrimary.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Icon(icon, color: const Color(AppColors.primary), size: 28),
+            child: Icon(icon, color: tokens.brandPrimary, size: 28),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -161,7 +163,7 @@ class _PetCard extends StatelessWidget {
                 Text(
                   '${pet.type} · ${pet.ageLabel}',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: const Color(AppColors.muted),
+                        color: tokens.textMuted,
                       ),
                 ),
               ],
@@ -170,7 +172,7 @@ class _PetCard extends StatelessWidget {
           IconButton(
             onPressed: onDelete,
             icon: const Icon(Icons.delete_outline_rounded),
-            color: const Color(AppColors.muted),
+            color: tokens.textMuted,
           ),
         ],
       ),

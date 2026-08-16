@@ -117,7 +117,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               onPressed: () => context.go('/home'),
               child: Text(
                 'Continue as guest',
-                style: TextStyle(color: AppTokens.textMuted),
+                style: TextStyle(color: AppTokens.of(context).textMuted),
               ),
             ),
           ],

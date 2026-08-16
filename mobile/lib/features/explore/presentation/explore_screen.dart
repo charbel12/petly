@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_constants.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/async_error_view.dart';
+import '../../../core/widgets/empty_state.dart';
+import '../../../core/widgets/motion.dart';
+import '../../../core/widgets/petly_background.dart';
+import '../../../core/widgets/skeleton.dart';
 import '../../../data/models/store.dart';
 import '../../../data/models/vet.dart';
 import '../../stores/providers/stores_providers.dart';
@@ -52,70 +56,85 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppTokens.of(context);
     final vetFilters = ref.watch(exploreVetsFiltersProvider);
     final storeFilters = ref.watch(exploreStoresFiltersProvider);
     final vetsAsync = ref.watch(exploreVetsProvider);
     final storesAsync = ref.watch(exploreStoresProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Explore'),
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: const Color(AppColors.primary),
-          unselectedLabelColor: const Color(AppColors.muted),
-          indicatorColor: const Color(AppColors.primary),
-          tabs: const [
-            Tab(text: 'Vets'),
-            Tab(text: 'Stores'),
-          ],
+    ref.listen(exploreVetsFiltersProvider, (prev, next) {
+      if (next.search != _searchController.text) {
+        _searchController.text = next.search;
+      }
+    });
+
+    return PetlyBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: const Text('Explore'),
+          bottom: TabBar(
+            controller: _tabController,
+            labelColor: tokens.brandPrimary,
+            unselectedLabelColor: tokens.textMuted,
+            indicatorColor: tokens.brandPrimary,
+            tabs: const [
+              Tab(text: 'Vets'),
+              Tab(text: 'Stores'),
+            ],
+          ),
         ),
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-            child: TextField(
-              controller: _searchController,
-              onChanged: _onSearchChanged,
-              decoration: const InputDecoration(
-                hintText: 'Search by name or area...',
-                prefixIcon: Icon(Icons.search_rounded),
+        body: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+              child: TextField(
+                controller: _searchController,
+                onChanged: _onSearchChanged,
+                decoration: const InputDecoration(
+                  hintText: 'Search by name or area...',
+                  prefixIcon: Icon(Icons.search_rounded),
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _VetsTab(
-                  filters: vetFilters,
-                  asyncList: vetsAsync,
-                  onToggleOpen: () =>
-                      ref.read(exploreVetsFiltersProvider.notifier).toggleOpenNow(),
-                  onDistance: (km) => ref
-                      .read(exploreVetsFiltersProvider.notifier)
-                      .setMaxDistance(km),
-                  onRetry: () => ref.invalidate(exploreVetsProvider),
-                ),
-                _StoresTab(
-                  filters: storeFilters,
-                  asyncList: storesAsync,
-                  onToggleOpen: () => ref
-                      .read(exploreStoresFiltersProvider.notifier)
-                      .toggleOpenNow(),
-                  onType: (type) =>
-                      ref.read(exploreStoresFiltersProvider.notifier).setType(type),
-                  onDistance: (km) => ref
-                      .read(exploreStoresFiltersProvider.notifier)
-                      .setMaxDistance(km),
-                  onRetry: () => ref.invalidate(exploreStoresProvider),
-                ),
-              ],
+            const SizedBox(height: 8),
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _VetsTab(
+                    filters: vetFilters,
+                    asyncList: vetsAsync,
+                    onToggleOpen: () => ref
+                        .read(exploreVetsFiltersProvider.notifier)
+                        .toggleOpenNow(),
+                    onToggleEmergency: () => ref
+                        .read(exploreVetsFiltersProvider.notifier)
+                        .toggleEmergency(),
+                    onDistance: (km) => ref
+                        .read(exploreVetsFiltersProvider.notifier)
+                        .setMaxDistance(km),
+                    onRetry: () => ref.invalidate(exploreVetsProvider),
+                  ),
+                  _StoresTab(
+                    filters: storeFilters,
+                    asyncList: storesAsync,
+                    onToggleOpen: () => ref
+                        .read(exploreStoresFiltersProvider.notifier)
+                        .toggleOpenNow(),
+                    onType: (type) => ref
+                        .read(exploreStoresFiltersProvider.notifier)
+                        .setType(type),
+                    onDistance: (km) => ref
+                        .read(exploreStoresFiltersProvider.notifier)
+                        .setMaxDistance(km),
+                    onRetry: () => ref.invalidate(exploreStoresProvider),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -146,6 +165,7 @@ class _VetsTab extends StatelessWidget {
     required this.filters,
     required this.asyncList,
     required this.onToggleOpen,
+    required this.onToggleEmergency,
     required this.onDistance,
     required this.onRetry,
   });
@@ -153,6 +173,7 @@ class _VetsTab extends StatelessWidget {
   final ExploreVetsFilters filters;
   final AsyncValue<List<Vet>> asyncList;
   final VoidCallback onToggleOpen;
+  final VoidCallback onToggleEmergency;
   final ValueChanged<double?> onDistance;
   final VoidCallback onRetry;
 
@@ -162,6 +183,13 @@ class _VetsTab extends StatelessWidget {
       children: [
         _FilterChipRow(
           children: [
+            _gapChip(
+              FilterChip(
+                label: const Text('Emergency'),
+                selected: filters.emergency,
+                onSelected: (_) => onToggleEmergency(),
+              ),
+            ),
             _gapChip(
               FilterChip(
                 label: const Text('Open now'),
@@ -187,23 +215,40 @@ class _VetsTab extends StatelessWidget {
         ),
         Expanded(
           child: asyncList.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
+            loading: () => const Padding(
+              padding: EdgeInsets.fromLTRB(20, 8, 20, 24),
+              child: ListingCardSkeleton(count: 4),
+            ),
             error: (error, stackTrace) => AsyncErrorView(
               error: error,
               onRetry: onRetry,
             ),
             data: (items) {
               if (items.isEmpty) {
-                return const Center(child: Text('No vets match your filters'));
+                final q = filters.search.trim();
+                if (q.isNotEmpty) {
+                  return EmptyState(
+                    title: 'No clinics match “$q”',
+                    message: 'Try another area or clear filters.',
+                  );
+                }
+                return const EmptyState(
+                  title: 'No vets match your filters',
+                  message: 'Adjust filters or search a different neighborhood.',
+                );
               }
               return ListView.builder(
                 padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
                 itemCount: items.length,
                 itemBuilder: (context, index) {
                   final vet = items[index];
-                  return VetCard(
-                    vet: vet,
-                    onTap: () => context.push('/vets/${vet.id}'),
+                  return StaggeredListItem(
+                    index: index,
+                    child: VetCard(
+                      vet: vet,
+                      source: 'explore',
+                      onTap: () => context.push('/vets/${vet.id}?src=explore'),
+                    ),
                   );
                 },
               );
@@ -270,23 +315,43 @@ class _StoresTab extends StatelessWidget {
         ),
         Expanded(
           child: asyncList.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
+            loading: () => const Padding(
+              padding: EdgeInsets.fromLTRB(20, 8, 20, 24),
+              child: ListingCardSkeleton(count: 4),
+            ),
             error: (error, stackTrace) => AsyncErrorView(
               error: error,
               onRetry: onRetry,
             ),
             data: (items) {
               if (items.isEmpty) {
-                return const Center(child: Text('No stores match your filters'));
+                final q = filters.search.trim();
+                if (q.isNotEmpty) {
+                  return EmptyState(
+                    title: 'No stores match “$q”',
+                    message: 'Try another area or clear filters.',
+                    icon: Icons.storefront_outlined,
+                  );
+                }
+                return const EmptyState(
+                  title: 'No stores match your filters',
+                  message: 'Adjust filters or search a different neighborhood.',
+                  icon: Icons.storefront_outlined,
+                );
               }
               return ListView.builder(
                 padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
                 itemCount: items.length,
                 itemBuilder: (context, index) {
                   final store = items[index];
-                  return StoreCard(
-                    store: store,
-                    onTap: () => context.push('/stores/${store.id}'),
+                  return StaggeredListItem(
+                    index: index,
+                    child: StoreCard(
+                      store: store,
+                      source: 'explore',
+                      onTap: () =>
+                          context.push('/stores/${store.id}?src=explore'),
+                    ),
                   );
                 },
               );

@@ -48,7 +48,10 @@ class ExploreStoresFiltersNotifier extends Notifier<ExploreStoresFilters> {
   @override
   ExploreStoresFilters build() => const ExploreStoresFilters();
 
-  void setSearch(String value) => state = state.copyWith(search: value);
+  void setSearch(String value) {
+    if (state.search == value) return;
+    state = state.copyWith(search: value);
+  }
   void toggleOpenNow() => state = state.copyWith(openNow: !state.openNow);
   void setType(String? type) =>
       state = state.copyWith(type: type, clearType: type == null);

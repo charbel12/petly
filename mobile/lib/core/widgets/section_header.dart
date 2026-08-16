@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../constants/app_constants.dart';
+import '../theme/app_tokens.dart';
 
 class SectionHeader extends StatelessWidget {
   const SectionHeader({
@@ -15,6 +15,7 @@ class SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppTokens.of(context);
     return Row(
       children: [
         Expanded(
@@ -30,8 +31,8 @@ class SectionHeader extends StatelessWidget {
             onPressed: onAction,
             child: Text(
               actionLabel!,
-              style: const TextStyle(
-                color: Color(AppColors.primary),
+              style: TextStyle(
+                color: tokens.brandPrimary,
                 fontWeight: FontWeight.w600,
               ),
             ),

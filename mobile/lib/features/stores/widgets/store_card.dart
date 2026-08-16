@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/constants/app_constants.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/providers/user_provider.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/whatsapp.dart';
+import '../../../core/widgets/listing_image.dart';
 import '../../../core/widgets/soft_card.dart';
 import '../../../data/models/store.dart';
 
@@ -56,54 +57,58 @@ class StoreCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final tokens = AppTokens.of(context);
     if (horizontal) {
       return SoftCard(
         onTap: onTap,
-        padding: const EdgeInsets.all(14),
+        padding: EdgeInsets.zero,
         child: SizedBox(
-          width: 160,
+          width: 180,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: double.infinity,
-                height: 72,
-                decoration: BoxDecoration(
-                  color: const Color(AppColors.secondary).withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Icon(
-                  _iconForType(store.type),
-                  color: const Color(AppColors.secondary),
-                  size: 32,
+              AspectRatio(
+                aspectRatio: 16 / 9,
+                child: ListingImage(
+                  imageUrl: store.imageUrl,
+                  heroTag: '${store.heroTag}-$source',
+                  placeholderIcon: _iconForType(store.type),
                 ),
               ),
-              const SizedBox(height: 12),
-              Text(
-                store.name,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context)
-                    .textTheme
-                    .titleSmall
-                    ?.copyWith(fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                store.type,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: const Color(AppColors.muted),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      store.name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleSmall
+                          ?.copyWith(fontWeight: FontWeight.w700),
                     ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                store.distanceLabel,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: const Color(AppColors.muted),
-                      fontSize: 11,
+                    const SizedBox(height: 4),
+                    Text(
+                      store.type,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: tokens.brandSecondary,
+                            fontWeight: FontWeight.w600,
+                          ),
                     ),
+                    const SizedBox(height: 2),
+                    Text(
+                      store.distanceAndLocation,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: tokens.textMuted,
+                            fontSize: 11,
+                          ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -113,59 +118,80 @@ class StoreCard extends ConsumerWidget {
 
     return SoftCard(
       onTap: onTap,
+      padding: EdgeInsets.zero,
       margin: const EdgeInsets.only(bottom: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          Stack(
             children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: const Color(AppColors.secondary).withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Icon(
-                  _iconForType(store.type),
-                  color: const Color(AppColors.secondary),
+              AspectRatio(
+                aspectRatio: 16 / 9,
+                child: ListingImage(
+                  imageUrl: store.imageUrl,
+                  heroTag: '${store.heroTag}-$source',
+                  placeholderIcon: _iconForType(store.type),
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      store.name,
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleSmall
-                          ?.copyWith(fontWeight: FontWeight.w700),
+              if (store.isOpenNow)
+                Positioned(
+                  top: 10,
+                  left: 10,
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.55),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${store.type} · ${store.distanceLabel}',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: const Color(AppColors.muted),
-                          ),
+                    child: Text(
+                      'Open',
+                      style: TextStyle(
+                        color: tokens.success,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
-                  ],
+                  ),
                 ),
-              ),
             ],
           ),
-          if (store.phone != null) ...[
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: () => _openWhatsApp(context, ref),
-                icon: const Icon(Icons.chat_rounded, size: 18),
-                label: const Text('WhatsApp'),
-              ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  store.name,
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleSmall
+                      ?.copyWith(fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${store.type} · ${store.distanceAndLocation}',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: tokens.textMuted,
+                      ),
+                ),
+                if (store.phone != null)
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton.icon(
+                      onPressed: () => _openWhatsApp(context, ref),
+                      icon: const Icon(Icons.chat_outlined, size: 16),
+                      label: const Text('WhatsApp'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: tokens.textMuted,
+                        padding: const EdgeInsets.symmetric(horizontal: 0),
+                        visualDensity: VisualDensity.compact,
+                      ),
+                    ),
+                  ),
+              ],
             ),
-          ],
+          ),
         ],
       ),
     );

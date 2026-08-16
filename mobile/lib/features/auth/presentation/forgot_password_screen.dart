@@ -86,7 +86,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
               const SizedBox(height: 16),
               Text(
                 _message!,
-                style: const TextStyle(color: AppTokens.success),
+                style: TextStyle(color: AppTokens.of(context).success),
               ),
             ],
             const SizedBox(height: 16),

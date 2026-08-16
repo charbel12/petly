@@ -16,6 +16,34 @@ import 'shell_screen.dart';
 
 final _rootKey = GlobalKey<NavigatorState>();
 
+CustomTransitionPage<void> _fadeSlidePage({
+  required LocalKey key,
+  required Widget child,
+}) {
+  return CustomTransitionPage<void>(
+    key: key,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 280),
+    reverseTransitionDuration: const Duration(milliseconds: 220),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      final curved = CurvedAnimation(
+        parent: animation,
+        curve: Curves.easeOutCubic,
+      );
+      return FadeTransition(
+        opacity: curved,
+        child: SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0, 0.04),
+            end: Offset.zero,
+          ).animate(curved),
+          child: child,
+        ),
+      );
+    },
+  );
+}
+
 final routerProvider = Provider<GoRouter>((ref) {
   final refresh = ValueNotifier<int>(0);
   ref.listen(authProvider, (_, _) {
@@ -43,19 +71,28 @@ final routerProvider = Provider<GoRouter>((ref) {
         parentNavigatorKey: _rootKey,
         path: '/login',
         name: 'login',
-        builder: (context, state) => const LoginScreen(),
+        pageBuilder: (context, state) => _fadeSlidePage(
+          key: state.pageKey,
+          child: const LoginScreen(),
+        ),
       ),
       GoRoute(
         parentNavigatorKey: _rootKey,
         path: '/register',
         name: 'register',
-        builder: (context, state) => const RegisterScreen(),
+        pageBuilder: (context, state) => _fadeSlidePage(
+          key: state.pageKey,
+          child: const RegisterScreen(),
+        ),
       ),
       GoRoute(
         parentNavigatorKey: _rootKey,
         path: '/forgot-password',
         name: 'forgot-password',
-        builder: (context, state) => const ForgotPasswordScreen(),
+        pageBuilder: (context, state) => _fadeSlidePage(
+          key: state.pageKey,
+          child: const ForgotPasswordScreen(),
+        ),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
@@ -108,25 +145,36 @@ final routerProvider = Provider<GoRouter>((ref) {
         parentNavigatorKey: _rootKey,
         path: '/vets/:id',
         name: 'vet-detail',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final id = state.pathParameters['id']!;
-          return VetDetailScreen(vetId: id);
+          final src = state.uri.queryParameters['src'] ?? 'list';
+          return _fadeSlidePage(
+            key: state.pageKey,
+            child: VetDetailScreen(vetId: id, heroSource: src),
+          );
         },
       ),
       GoRoute(
         parentNavigatorKey: _rootKey,
         path: '/stores/:id',
         name: 'store-detail',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final id = state.pathParameters['id']!;
-          return StoreDetailScreen(storeId: id);
+          final src = state.uri.queryParameters['src'] ?? 'list';
+          return _fadeSlidePage(
+            key: state.pageKey,
+            child: StoreDetailScreen(storeId: id, heroSource: src),
+          );
         },
       ),
       GoRoute(
         parentNavigatorKey: _rootKey,
         path: '/pets/add',
         name: 'add-pet',
-        builder: (context, state) => const AddPetScreen(),
+        pageBuilder: (context, state) => _fadeSlidePage(
+          key: state.pageKey,
+          child: const AddPetScreen(),
+        ),
       ),
     ],
   );
