@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/constants/app_constants.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/providers/user_provider.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/whatsapp.dart';
+import '../../../core/widgets/listing_image.dart';
 import '../../../core/widgets/soft_card.dart';
 import '../../../data/models/vet.dart';
 
@@ -43,93 +44,119 @@ class VetCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final tokens = AppTokens.of(context);
+    final services = vet.services.take(2).toList();
+
     return SoftCard(
       onTap: onTap,
+      padding: EdgeInsets.zero,
       margin: const EdgeInsets.only(bottom: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          Stack(
             children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: const Color(AppColors.primary).withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: const Icon(
-                  Icons.local_hospital_rounded,
-                  color: Color(AppColors.primary),
+              AspectRatio(
+                aspectRatio: 16 / 9,
+                child: ListingImage(
+                  imageUrl: vet.imageUrl,
+                  heroTag: '${vet.heroTag}-$source',
+                  placeholderIcon: Icons.local_hospital_rounded,
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              Positioned(
+                top: 10,
+                left: 10,
+                child: Row(
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            vet.name,
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleSmall
-                                ?.copyWith(fontWeight: FontWeight.w700),
-                          ),
-                        ),
-                        if (vet.verified)
-                          const Icon(
-                            Icons.verified_rounded,
-                            size: 18,
-                            color: Color(AppColors.primary),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      vet.distanceLabel,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: const Color(AppColors.muted),
-                          ),
-                    ),
-                    if (!compact) ...[
-                      const SizedBox(height: 6),
-                      Wrap(
-                        spacing: 6,
-                        runSpacing: 4,
-                        children: [
-                          if (vet.isOpenNow)
-                            _Badge(
-                              label: 'Open now',
-                              color: const Color(AppColors.success),
-                            ),
-                          if (vet.isEmergency)
-                            _Badge(
-                              label: 'Emergency',
-                              color: const Color(AppColors.danger),
-                            ),
-                        ],
+                    if (vet.isOpenNow)
+                      _OverlayChip(
+                        label: 'Open',
+                        color: tokens.success,
+                      ),
+                    if (vet.isEmergency) ...[
+                      if (vet.isOpenNow) const SizedBox(width: 6),
+                      _OverlayChip(
+                        label: 'Emergency',
+                        color: tokens.danger,
                       ),
                     ],
                   ],
                 ),
               ),
+              if (vet.verified)
+                Positioned(
+                  top: 10,
+                  right: 10,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: tokens.surface.withValues(alpha: 0.92),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.verified_rounded,
+                      size: 18,
+                      color: tokens.brandPrimary,
+                    ),
+                  ),
+                ),
             ],
           ),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () => _openWhatsApp(context, ref),
-              icon: const Icon(Icons.chat_rounded, size: 18),
-              label: const Text('WhatsApp'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF25D366),
-                minimumSize: const Size.fromHeight(44),
-              ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  vet.name,
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleSmall
+                      ?.copyWith(fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  vet.distanceAndLocation,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: tokens.textMuted,
+                      ),
+                ),
+                if (!compact && services.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 4,
+                    children: services
+                        .map(
+                          (s) => Text(
+                            s,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(
+                                  color: tokens.brandPrimary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                ],
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    onPressed: () => _openWhatsApp(context, ref),
+                    icon: const Icon(Icons.chat_outlined, size: 16),
+                    label: const Text('WhatsApp'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: tokens.textMuted,
+                      padding: const EdgeInsets.symmetric(horizontal: 0),
+                      visualDensity: VisualDensity.compact,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -138,8 +165,8 @@ class VetCard extends ConsumerWidget {
   }
 }
 
-class _Badge extends StatelessWidget {
-  const _Badge({required this.label, required this.color});
+class _OverlayChip extends StatelessWidget {
+  const _OverlayChip({required this.label, required this.color});
 
   final String label;
   final Color color;
@@ -147,9 +174,9 @@ class _Badge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
+        color: Colors.black.withValues(alpha: 0.55),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
@@ -157,7 +184,7 @@ class _Badge extends StatelessWidget {
         style: TextStyle(
           color: color,
           fontSize: 11,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );

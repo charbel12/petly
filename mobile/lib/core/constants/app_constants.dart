@@ -1,14 +1,31 @@
 /// Petly design tokens & app constants
 class AppColors {
-  static const primary = 0xFF2EC4B6;
-  static const secondary = 0xFFFF9F1C;
+  /// Teal-700: AA contrast for white-on-teal buttons and teal-on-white text.
+  static const primary = 0xFF0F766E;
+
+  /// Original brand teal for gradients, paw motifs, and decorative fills.
+  static const accent = 0xFF2EC4B6;
+
+  /// Orange-700: small-text contrast on light surfaces.
+  static const secondary = 0xFFC2410C;
+
+  /// Soft orange for chips, banners, and decorative accents.
+  static const secondarySoft = 0xFFFF9F1C;
+
   static const background = 0xFFF7F9FB;
   static const text = 0xFF1A1A1A;
   static const surface = 0xFFFFFFFF;
-  static const muted = 0xFF6B7280;
+  static const muted = 0xFF4B5563;
   static const border = 0xFFE5E7EB;
-  static const danger = 0xFFEF4444;
-  static const success = 0xFF22C55E;
+  static const danger = 0xFFDC2626;
+  static const success = 0xFF15803D;
+
+  static const darkBackground = 0xFF0F1716;
+  static const darkSurface = 0xFF1A2423;
+  static const darkText = 0xFFF3F4F6;
+  static const darkMuted = 0xFF9CA3AF;
+  static const darkBorder = 0xFF2A3A38;
+  static const darkPrimary = 0xFF2DD4BF;
 }
 
 class AppConstants {
@@ -33,4 +50,6 @@ class AppConstants {
 
   static const whatsappMessage =
       'Hello, I found you on Petly and would like to get in touch.';
+
+  static const pawAsset = 'assets/paws/paw.svg';
 }

@@ -9,6 +9,7 @@ class Vet {
     required this.isEmergency,
     required this.isOpenNow,
     required this.featured,
+    this.imageUrl,
     this.latitude,
     this.longitude,
     this.distanceKm,
@@ -23,6 +24,7 @@ class Vet {
   final bool isEmergency;
   final bool isOpenNow;
   final bool featured;
+  final String? imageUrl;
   final double? latitude;
   final double? longitude;
   final double? distanceKm;
@@ -40,17 +42,30 @@ class Vet {
       isEmergency: json['is_emergency'] as bool? ?? false,
       isOpenNow: json['is_open_now'] as bool? ?? true,
       featured: json['featured'] as bool? ?? false,
+      imageUrl: json['image_url'] as String?,
       latitude: (json['latitude'] as num?)?.toDouble(),
       longitude: (json['longitude'] as num?)?.toDouble(),
       distanceKm: (json['distance_km'] as num?)?.toDouble(),
     );
   }
 
-  String get distanceLabel {
-    if (distanceKm == null) return location;
+  String get heroTag => 'vet-$id';
+
+  String get distanceOnly {
+    if (distanceKm == null) return '';
     if (distanceKm! < 1) {
       return '${(distanceKm! * 1000).round()} m away';
     }
     return '${distanceKm!.toStringAsFixed(1)} km away';
+  }
+
+  String get distanceLabel {
+    if (distanceKm == null) return location;
+    return distanceOnly;
+  }
+
+  String get distanceAndLocation {
+    if (distanceKm == null) return location;
+    return '$distanceOnly · $location';
   }
 }

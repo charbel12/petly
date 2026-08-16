@@ -1,26 +1,44 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/constants/app_constants.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/providers/user_provider.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/whatsapp.dart';
 import '../../../core/widgets/async_error_view.dart';
+import '../../../core/widgets/listing_image.dart';
+import '../../../core/widgets/skeleton.dart';
 import '../../../core/widgets/soft_card.dart';
 import '../providers/stores_providers.dart';
 
 class StoreDetailScreen extends ConsumerWidget {
-  const StoreDetailScreen({super.key, required this.storeId});
+  const StoreDetailScreen({
+    super.key,
+    required this.storeId,
+    this.heroSource = 'list',
+  });
 
   final String storeId;
+  final String heroSource;
+
+  IconData _iconForType(String type) {
+    final t = type.toLowerCase();
+    if (t.contains('groom')) return Icons.content_cut_rounded;
+    if (t.contains('aqua')) return Icons.water_rounded;
+    return Icons.storefront_rounded;
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final storeAsync = ref.watch(storeDetailProvider(storeId));
+    final tokens = AppTokens.of(context);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Store details')),
       body: storeAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Padding(
+          padding: EdgeInsets.all(20),
+          child: ListingCardSkeleton(count: 1),
+        ),
         error: (error, stackTrace) => AsyncErrorView(
           error: error,
           onRetry: () => ref.invalidate(storeDetailProvider(storeId)),
@@ -32,6 +50,18 @@ class StoreDetailScreen extends ConsumerWidget {
                 child: ListView(
                   padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
                   children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: AspectRatio(
+                        aspectRatio: 16 / 9,
+                        child: ListingImage(
+                          imageUrl: store.imageUrl,
+                          heroTag: '${store.heroTag}-$heroSource',
+                          placeholderIcon: _iconForType(store.type),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
                     SoftCard(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -47,17 +77,14 @@ class StoreDetailScreen extends ConsumerWidget {
                           Text(
                             store.type,
                             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: const Color(AppColors.secondary),
+                                  color: tokens.brandSecondary,
                                   fontWeight: FontWeight.w600,
                                 ),
                           ),
                           const SizedBox(height: 16),
                           Row(
                             children: [
-                              const Icon(
-                                Icons.place_outlined,
-                                color: Color(AppColors.primary),
-                              ),
+                              Icon(Icons.place_outlined, color: tokens.brandPrimary),
                               const SizedBox(width: 8),
                               Expanded(child: Text(store.location)),
                             ],
@@ -65,21 +92,15 @@ class StoreDetailScreen extends ConsumerWidget {
                           const SizedBox(height: 8),
                           Row(
                             children: [
-                              const Icon(
-                                Icons.near_me_outlined,
-                                color: Color(AppColors.primary),
-                              ),
+                              Icon(Icons.near_me_outlined, color: tokens.brandPrimary),
                               const SizedBox(width: 8),
-                              Text(store.distanceLabel),
+                              Text(store.distanceAndLocation),
                             ],
                           ),
                           const SizedBox(height: 8),
                           Row(
                             children: [
-                              const Icon(
-                                Icons.schedule_rounded,
-                                color: Color(AppColors.primary),
-                              ),
+                              Icon(Icons.schedule_rounded, color: tokens.brandPrimary),
                               const SizedBox(width: 8),
                               Text(store.isOpenNow ? 'Open now' : 'Closed'),
                             ],
@@ -121,6 +142,7 @@ class StoreDetailScreen extends ConsumerWidget {
                       label: const Text('Chat on WhatsApp'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF25D366),
+                        foregroundColor: Colors.white,
                         minimumSize: const Size.fromHeight(56),
                       ),
                     ),

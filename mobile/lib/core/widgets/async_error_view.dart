@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../constants/app_constants.dart';
+import '../theme/app_tokens.dart';
 import '../utils/api_error.dart';
 
 class AsyncErrorView extends StatelessWidget {
@@ -16,6 +16,7 @@ class AsyncErrorView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppTokens.of(context);
     final message = friendlyErrorMessage(error);
     final isOffline = error is ApiException && (error as ApiException).isOffline;
 
@@ -23,7 +24,7 @@ class AsyncErrorView extends StatelessWidget {
       return Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(AppColors.danger).withValues(alpha: 0.08),
+          color: tokens.danger.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(14),
         ),
         child: Column(
@@ -45,7 +46,7 @@ class AsyncErrorView extends StatelessWidget {
             Icon(
               isOffline ? Icons.wifi_off_rounded : Icons.error_outline_rounded,
               size: 48,
-              color: const Color(AppColors.muted),
+              color: tokens.textMuted,
             ),
             const SizedBox(height: 16),
             Text(
@@ -60,7 +61,7 @@ class AsyncErrorView extends StatelessWidget {
               message,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: const Color(AppColors.muted),
+                    color: tokens.textMuted,
                   ),
             ),
             const SizedBox(height: 16),

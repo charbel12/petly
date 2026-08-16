@@ -5,7 +5,9 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/providers/auth_provider.dart';
 import '../../../core/providers/location_provider.dart';
+import '../../../core/providers/theme_provider.dart';
 import '../../../core/providers/user_provider.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/whatsapp.dart';
 import '../../../core/widgets/async_error_view.dart';
 import '../../../core/widgets/soft_card.dart';
@@ -48,6 +50,8 @@ class ProfileScreen extends ConsumerWidget {
           onRetry: () => ref.read(currentUserProvider.notifier).refresh(),
         ),
         data: (user) {
+          final tokens = AppTokens.of(context);
+          final themeMode = ref.watch(themeModeProvider);
           return ListView(
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
             children: [
@@ -56,14 +60,13 @@ class ProfileScreen extends ConsumerWidget {
                   children: [
                     CircleAvatar(
                       radius: 32,
-                      backgroundColor: const Color(AppColors.primary)
-                          .withValues(alpha: 0.15),
+                      backgroundColor: tokens.brandPrimary.withValues(alpha: 0.15),
                       child: Text(
                         user.name.isNotEmpty ? user.name[0].toUpperCase() : '?',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.w700,
-                          color: Color(AppColors.primary),
+                          color: tokens.brandPrimary,
                         ),
                       ),
                     ),
@@ -86,7 +89,7 @@ class ProfileScreen extends ConsumerWidget {
                                 .textTheme
                                 .bodyMedium
                                 ?.copyWith(
-                                  color: const Color(AppColors.muted),
+                                  color: tokens.textMuted,
                                 ),
                           ),
                           if (user.role != null && !user.isGuest) ...[
@@ -97,7 +100,7 @@ class ProfileScreen extends ConsumerWidget {
                                   .textTheme
                                   .bodySmall
                                   ?.copyWith(
-                                    color: const Color(AppColors.primary),
+                                    color: tokens.brandPrimary,
                                     fontWeight: FontWeight.w600,
                                   ),
                             ),
@@ -167,6 +170,13 @@ class ProfileScreen extends ConsumerWidget {
                     ),
                     const Divider(height: 1),
                     _SettingsTile(
+                      icon: Icons.palette_outlined,
+                      title: 'Appearance',
+                      subtitle: themeModeLabel(themeMode),
+                      onTap: () => _pickThemeMode(context, ref, themeMode),
+                    ),
+                    const Divider(height: 1),
+                    _SettingsTile(
                       icon: Icons.my_location_rounded,
                       title: 'Location',
                       subtitle: location.when(
@@ -228,13 +238,12 @@ class ProfileScreen extends ConsumerWidget {
                       width: 48,
                       height: 48,
                       decoration: BoxDecoration(
-                        color: const Color(AppColors.secondary)
-                            .withValues(alpha: 0.15),
+                        color: tokens.brandSecondary.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(14),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.handshake_rounded,
-                        color: Color(AppColors.secondary),
+                        color: tokens.brandSecondary,
                       ),
                     ),
                     const SizedBox(width: 14),
@@ -254,7 +263,7 @@ class ProfileScreen extends ConsumerWidget {
                             'List your clinic or store on Petly',
                             style:
                                 Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: const Color(AppColors.muted),
+                                      color: tokens.textMuted,
                                     ),
                           ),
                         ],
@@ -273,10 +282,9 @@ class ProfileScreen extends ConsumerWidget {
                   message: 'Hi Petly support',
                   source: 'profile_help',
                 ),
-                child: const Row(
+                child: Row(
                   children: [
-                    Icon(Icons.help_outline_rounded,
-                        color: Color(AppColors.primary)),
+                    Icon(Icons.help_outline_rounded, color: tokens.brandPrimary),
                     SizedBox(width: 14),
                     Expanded(
                       child: Text(
@@ -291,10 +299,10 @@ class ProfileScreen extends ConsumerWidget {
               const SizedBox(height: 24),
               Center(
                 child: Text(
-                  '${AppConstants.appName} · Phase 1\n${signedIn ? 'Signed in' : 'Guest browsing'}',
+                  '${AppConstants.appName} · Phase 4\n${signedIn ? 'Signed in' : 'Guest browsing'}',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: const Color(AppColors.muted),
+                        color: tokens.textMuted,
                       ),
                 ),
               ),
@@ -303,6 +311,38 @@ class ProfileScreen extends ConsumerWidget {
         },
       ),
     );
+  }
+
+  Future<void> _pickThemeMode(
+    BuildContext context,
+    WidgetRef ref,
+    ThemeMode current,
+  ) async {
+    final selected = await showDialog<ThemeMode>(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        title: const Text('Appearance'),
+        children: [
+          RadioGroup<ThemeMode>(
+            groupValue: current,
+            onChanged: (value) {
+              if (value != null) Navigator.pop(ctx, value);
+            },
+            child: Column(
+              children: [
+                for (final mode in ThemeMode.values)
+                  RadioListTile<ThemeMode>(
+                    value: mode,
+                    title: Text(themeModeLabel(mode)),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+    if (selected == null) return;
+    await ref.read(themeModeProvider.notifier).setMode(selected);
   }
 
   Future<void> _signOut(BuildContext context, WidgetRef ref) async {
@@ -413,9 +453,12 @@ class _SettingsTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: Icon(icon, color: const Color(AppColors.primary)),
+      leading: Icon(icon, color: AppTokens.of(context).brandPrimary),
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
-      subtitle: Text(subtitle),
+      subtitle: Text(
+        subtitle,
+        style: TextStyle(color: AppTokens.of(context).textMuted),
+      ),
       trailing: const Icon(Icons.chevron_right_rounded),
       onTap: onTap,
     );

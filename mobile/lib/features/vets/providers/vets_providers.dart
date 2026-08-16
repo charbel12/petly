@@ -33,22 +33,26 @@ class ExploreVetsFilters {
   const ExploreVetsFilters({
     this.search = '',
     this.openNow = false,
+    this.emergency = false,
     this.maxDistanceKm,
   });
 
   final String search;
   final bool openNow;
+  final bool emergency;
   final double? maxDistanceKm;
 
   ExploreVetsFilters copyWith({
     String? search,
     bool? openNow,
+    bool? emergency,
     double? maxDistanceKm,
     bool clearDistance = false,
   }) {
     return ExploreVetsFilters(
       search: search ?? this.search,
       openNow: openNow ?? this.openNow,
+      emergency: emergency ?? this.emergency,
       maxDistanceKm:
           clearDistance ? null : (maxDistanceKm ?? this.maxDistanceKm),
     );
@@ -59,8 +63,15 @@ class ExploreVetsFiltersNotifier extends Notifier<ExploreVetsFilters> {
   @override
   ExploreVetsFilters build() => const ExploreVetsFilters();
 
-  void setSearch(String value) => state = state.copyWith(search: value);
+  void setSearch(String value) {
+    if (state.search == value) return;
+    state = state.copyWith(search: value);
+  }
   void toggleOpenNow() => state = state.copyWith(openNow: !state.openNow);
+  void toggleEmergency() =>
+      state = state.copyWith(emergency: !state.emergency);
+  void setEmergency(bool value) =>
+      state = state.copyWith(emergency: value);
   void setMaxDistance(double? km) =>
       state = state.copyWith(maxDistanceKm: km, clearDistance: km == null);
 }
@@ -76,6 +87,7 @@ final exploreVetsProvider = FutureProvider.autoDispose<List<Vet>>((ref) async {
   return repo.list(
     search: filters.search,
     openNow: filters.openNow ? true : null,
+    emergency: filters.emergency ? true : null,
     maxDistanceKm: filters.maxDistanceKm,
     lat: ref.watch(userLatProvider),
     lng: ref.watch(userLngProvider),

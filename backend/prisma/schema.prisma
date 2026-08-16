@@ -64,6 +64,7 @@ model Vet {
   isEmergency Boolean  @default(false) @map("is_emergency")
   isOpenNow   Boolean  @default(true) @map("is_open_now")
   featured    Boolean  @default(false)
+  imageUrl    String?  @map("image_url") @db.VarChar(500)
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
@@ -82,6 +83,7 @@ model Store {
   longitude Float?
   featured  Boolean  @default(false)
   isOpenNow Boolean  @default(true) @map("is_open_now")
+  imageUrl  String?  @map("image_url") @db.VarChar(500)
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
 

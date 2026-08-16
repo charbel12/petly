@@ -1,26 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/constants/app_constants.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/providers/user_provider.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/whatsapp.dart';
 import '../../../core/widgets/async_error_view.dart';
+import '../../../core/widgets/listing_image.dart';
+import '../../../core/widgets/skeleton.dart';
 import '../../../core/widgets/soft_card.dart';
 import '../providers/vets_providers.dart';
 
 class VetDetailScreen extends ConsumerWidget {
-  const VetDetailScreen({super.key, required this.vetId});
+  const VetDetailScreen({
+    super.key,
+    required this.vetId,
+    this.heroSource = 'list',
+  });
 
   final String vetId;
+  final String heroSource;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final vetAsync = ref.watch(vetDetailProvider(vetId));
+    final tokens = AppTokens.of(context);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Clinic details')),
       body: vetAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Padding(
+          padding: EdgeInsets.all(20),
+          child: ListingCardSkeleton(count: 1),
+        ),
         error: (error, stackTrace) => AsyncErrorView(
           error: error,
           onRetry: () => ref.invalidate(vetDetailProvider(vetId)),
@@ -32,65 +43,46 @@ class VetDetailScreen extends ConsumerWidget {
                 child: ListView(
                   padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
                   children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: AspectRatio(
+                        aspectRatio: 16 / 9,
+                        child: ListingImage(
+                          imageUrl: vet.imageUrl,
+                          heroTag: '${vet.heroTag}-$heroSource',
+                          placeholderIcon: Icons.local_hospital_rounded,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
                     SoftCard(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
                             children: [
-                              Container(
-                                width: 56,
-                                height: 56,
-                                decoration: BoxDecoration(
-                                  color: const Color(AppColors.primary)
-                                      .withValues(alpha: 0.12),
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                child: const Icon(
-                                  Icons.local_hospital_rounded,
-                                  color: Color(AppColors.primary),
-                                  size: 28,
-                                ),
-                              ),
-                              const SizedBox(width: 14),
                               Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            vet.name,
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .titleLarge
-                                                ?.copyWith(
-                                                  fontWeight: FontWeight.w700,
-                                                ),
-                                          ),
-                                        ),
-                                        if (vet.verified)
-                                          const Icon(
-                                            Icons.verified_rounded,
-                                            color: Color(AppColors.primary),
-                                          ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      vet.distanceLabel,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyMedium
-                                          ?.copyWith(
-                                            color: const Color(AppColors.muted),
-                                          ),
-                                    ),
-                                  ],
+                                child: Text(
+                                  vet.name,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleLarge
+                                      ?.copyWith(fontWeight: FontWeight.w700),
                                 ),
                               ),
+                              if (vet.verified)
+                                Icon(
+                                  Icons.verified_rounded,
+                                  color: tokens.brandPrimary,
+                                ),
                             ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            vet.distanceAndLocation,
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  color: tokens.textMuted,
+                                ),
                           ),
                           const SizedBox(height: 16),
                           _InfoRow(
@@ -130,8 +122,8 @@ class VetDetailScreen extends ConsumerWidget {
                             .map(
                               (s) => Chip(
                                 label: Text(s),
-                                backgroundColor: const Color(AppColors.primary)
-                                    .withValues(alpha: 0.08),
+                                backgroundColor:
+                                    tokens.brandPrimary.withValues(alpha: 0.08),
                                 side: BorderSide.none,
                               ),
                             )
@@ -143,9 +135,9 @@ class VetDetailScreen extends ConsumerWidget {
                       SoftCard(
                         child: Row(
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.emergency_rounded,
-                              color: Color(AppColors.danger),
+                              color: tokens.danger,
                             ),
                             const SizedBox(width: 12),
                             Expanded(
@@ -194,6 +186,7 @@ class VetDetailScreen extends ConsumerWidget {
                     label: const Text('Chat on WhatsApp'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF25D366),
+                      foregroundColor: Colors.white,
                       minimumSize: const Size.fromHeight(56),
                     ),
                   ),
@@ -220,10 +213,11 @@ class _InfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppTokens.of(context);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 20, color: const Color(AppColors.primary)),
+        Icon(icon, size: 20, color: tokens.brandPrimary),
         const SizedBox(width: 10),
         Expanded(
           child: Column(
@@ -232,7 +226,7 @@ class _InfoRow extends StatelessWidget {
               Text(
                 label,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: const Color(AppColors.muted),
+                      color: tokens.textMuted,
                     ),
               ),
               Text(

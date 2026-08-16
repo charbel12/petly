@@ -8,6 +8,7 @@ export interface Store {
   longitude: number | null;
   featured: boolean;
   is_open_now: boolean;
+  image_url: string | null;
   created_at: Date;
   updated_at: Date;
   distance_km?: number | null;
