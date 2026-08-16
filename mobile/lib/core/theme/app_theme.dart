@@ -17,6 +17,8 @@ class AppTheme {
     ).copyWith(
       onPrimary: tokens.onBrand,
       error: tokens.danger,
+      onSurface: tokens.textPrimary,
+      onSurfaceVariant: tokens.textMuted,
     );
 
     final base = ThemeData(
@@ -140,6 +142,14 @@ class AppTheme {
         elevation: 2,
       ),
       dividerColor: tokens.border,
+      listTileTheme: ListTileThemeData(
+        iconColor: tokens.brandPrimary,
+        textColor: tokens.textPrimary,
+        subtitleTextStyle: GoogleFonts.poppins(
+          fontSize: 13,
+          color: tokens.textMuted,
+        ),
+      ),
     );
   }
 }

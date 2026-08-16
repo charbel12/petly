@@ -455,7 +455,10 @@ class _SettingsTile extends StatelessWidget {
     return ListTile(
       leading: Icon(icon, color: AppTokens.of(context).brandPrimary),
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
-      subtitle: Text(subtitle),
+      subtitle: Text(
+        subtitle,
+        style: TextStyle(color: AppTokens.of(context).textMuted),
+      ),
       trailing: const Icon(Icons.chevron_right_rounded),
       onTap: onTap,
     );

@@ -32,16 +32,18 @@ class PetlyBackground extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                tokens.gradientStart,
-                tokens.gradientMid,
-                tokens.gradientEnd,
-              ],
+        Positioned.fill(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  tokens.gradientStart,
+                  tokens.gradientMid,
+                  tokens.gradientEnd,
+                ],
+              ),
             ),
           ),
         ),
@@ -76,7 +78,7 @@ class PetlyBackground extends StatelessWidget {
             ),
           ),
         ),
-        child,
+        Positioned.fill(child: child),
       ],
     );
   }

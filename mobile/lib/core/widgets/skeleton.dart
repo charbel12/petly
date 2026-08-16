@@ -71,36 +71,44 @@ class ListingCardSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = AppTokens.of(context);
-    return Column(
-      children: List.generate(count, (index) {
-        return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          decoration: BoxDecoration(
-            color: tokens.surface,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          clipBehavior: Clip.antiAlias,
-          child: const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ShimmerBox(height: 148, borderRadius: 0),
-              Padding(
-                padding: EdgeInsets.all(14),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ShimmerBox(width: 180, height: 16),
-                    SizedBox(height: 10),
-                    ShimmerBox(width: 120, height: 12),
-                    SizedBox(height: 10),
-                    ShimmerBox(width: 90, height: 12),
-                  ],
-                ),
+    final cards = List.generate(count, (index) {
+      return Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        decoration: BoxDecoration(
+          color: tokens.surface,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ShimmerBox(height: 148, borderRadius: 0),
+            Padding(
+              padding: EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ShimmerBox(width: 180, height: 16),
+                  SizedBox(height: 10),
+                  ShimmerBox(width: 120, height: 12),
+                  SizedBox(height: 10),
+                  ShimmerBox(width: 90, height: 12),
+                ],
               ),
-            ],
-          ),
-        );
-      }),
+            ),
+          ],
+        ),
+      );
+    });
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final column = Column(children: cards);
+        if (constraints.maxHeight.isFinite) {
+          return SingleChildScrollView(child: column);
+        }
+        return column;
+      },
     );
   }
 }
