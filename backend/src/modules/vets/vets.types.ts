@@ -10,6 +10,7 @@ export interface Vet {
   is_emergency: boolean;
   is_open_now: boolean;
   featured: boolean;
+  image_url: string | null;
   created_at: Date;
   updated_at: Date;
   distance_km?: number | null;

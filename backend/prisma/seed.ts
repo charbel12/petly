@@ -3,6 +3,33 @@ import { ensureAdmin } from '../src/modules/auth/auth.service';
 
 const DEMO_USER_ID = '11111111-1111-1111-1111-111111111111';
 
+const VET_IMAGES: Record<string, string> = {
+  'Beirut Pet Care Clinic': 'asset:listings/vet_beirut_pet_care.jpg',
+  'Paws & Claws Veterinary': 'asset:listings/vet_paws_claws.jpg',
+  'Lebanon Animal Hospital': 'asset:listings/vet_lebanon_animal.jpg',
+  'Happy Tails Vet Center': 'asset:listings/vet_happy_tails.jpg',
+  'Mountain Pets Clinic': 'asset:listings/vet_mountain_pets.jpg',
+  'Saida Veterinary Services': 'asset:listings/vet_saida.jpg',
+};
+
+const STORE_IMAGES: Record<string, string> = {
+  'Pet World Lebanon': 'asset:listings/store_pet_world.jpg',
+  'Bark & Meow Supplies': 'asset:listings/store_bark_meow.jpg',
+  'Aqua Pets Beirut': 'asset:listings/store_aqua_pets.jpg',
+  'Farm & Fur Market': 'asset:listings/store_farm_fur.jpg',
+  'Groom & Glow Salon': 'asset:listings/store_groom_glow.jpg',
+};
+
+async function backfillListingImages() {
+  for (const [name, imageUrl] of Object.entries(VET_IMAGES)) {
+    await prisma.vet.updateMany({ where: { name }, data: { imageUrl } });
+  }
+  for (const [name, imageUrl] of Object.entries(STORE_IMAGES)) {
+    await prisma.store.updateMany({ where: { name }, data: { imageUrl } });
+  }
+  console.log('✓ Listing photos backfilled');
+}
+
 async function seed() {
   deployMigrations();
   await prisma.$connect();
@@ -12,6 +39,7 @@ async function seed() {
 
   const existingVets = await prisma.vet.count();
   if (existingVets > 0) {
+    await backfillListingImages();
     console.log('✓ Seed skipped — data already present');
     return;
   }
@@ -47,6 +75,7 @@ async function seed() {
         isEmergency: true,
         isOpenNow: true,
         featured: true,
+        imageUrl: VET_IMAGES['Beirut Pet Care Clinic'],
       },
       {
         name: 'Paws & Claws Veterinary',
@@ -59,6 +88,7 @@ async function seed() {
         isEmergency: false,
         isOpenNow: true,
         featured: true,
+        imageUrl: VET_IMAGES['Paws & Claws Veterinary'],
       },
       {
         name: 'Lebanon Animal Hospital',
@@ -71,6 +101,7 @@ async function seed() {
         isEmergency: true,
         isOpenNow: true,
         featured: false,
+        imageUrl: VET_IMAGES['Lebanon Animal Hospital'],
       },
       {
         name: 'Happy Tails Vet Center',
@@ -83,6 +114,7 @@ async function seed() {
         isEmergency: false,
         isOpenNow: false,
         featured: false,
+        imageUrl: VET_IMAGES['Happy Tails Vet Center'],
       },
       {
         name: 'Mountain Pets Clinic',
@@ -95,6 +127,7 @@ async function seed() {
         isEmergency: true,
         isOpenNow: true,
         featured: false,
+        imageUrl: VET_IMAGES['Mountain Pets Clinic'],
       },
       {
         name: 'Saida Veterinary Services',
@@ -107,6 +140,7 @@ async function seed() {
         isEmergency: false,
         isOpenNow: true,
         featured: false,
+        imageUrl: VET_IMAGES['Saida Veterinary Services'],
       },
     ],
   });
@@ -122,6 +156,7 @@ async function seed() {
         longitude: 35.481,
         featured: true,
         isOpenNow: true,
+        imageUrl: STORE_IMAGES['Pet World Lebanon'],
       },
       {
         name: 'Bark & Meow Supplies',
@@ -132,6 +167,7 @@ async function seed() {
         longitude: 35.52,
         featured: true,
         isOpenNow: true,
+        imageUrl: STORE_IMAGES['Bark & Meow Supplies'],
       },
       {
         name: 'Aqua Pets Beirut',
@@ -142,6 +178,7 @@ async function seed() {
         longitude: 35.484,
         featured: false,
         isOpenNow: true,
+        imageUrl: STORE_IMAGES['Aqua Pets Beirut'],
       },
       {
         name: 'Farm & Fur Market',
@@ -152,6 +189,7 @@ async function seed() {
         longitude: 35.6185,
         featured: false,
         isOpenNow: false,
+        imageUrl: STORE_IMAGES['Farm & Fur Market'],
       },
       {
         name: 'Groom & Glow Salon',
@@ -162,10 +200,12 @@ async function seed() {
         longitude: 35.59,
         featured: true,
         isOpenNow: true,
+        imageUrl: STORE_IMAGES['Groom & Glow Salon'],
       },
     ],
   });
 
+  await backfillListingImages();
   console.log('✓ Seed data inserted');
 }
 
