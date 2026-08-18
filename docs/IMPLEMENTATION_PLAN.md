@@ -121,6 +121,10 @@ flowchart TD
 
 ## Phase 2 - Partner onboarding & approval workflow — done
 
+**Runbook for a new agent:** [PHASE_2_PLAN.md](./PHASE_2_PLAN.md) (locked decisions, API
+contracts, files, tests, and Definition of Done). Implement from that file; do not
+start Phase 3 in the same PR.
+
 - Schema: add `owner_user_id`, `status`, `rejection_reason`, `submitted_at`,
   `reviewed_at`, `reviewer_id` to `vets` and `stores`.
 - Public listings filter to `status = approved`.

@@ -148,8 +148,8 @@ See [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) for the detailed,
 0. **Foundations (done)** — migrations, validation, security, tokens, CI  
 1. **Auth + RBAC (done)** — JWT, roles, login/register, guest linking  
 1.5. **Validation readiness (done)** — GPS, click analytics, device user, offline UX  
-2. **Partner onboarding (done)** — approval workflow, partner dashboard, admin review API  
-3. **Admin dashboard** — approvals queue UI, listings/client management, featured, audit log  
+2. **Partner onboarding** — approval workflow, partner dashboard ([plan](docs/PHASE_2_PLAN.md))  
+3. **Platform core** — appointment requests, Firebase push, vet dashboard  
 4. **Marketplace** — products, cart, orders  
 5. **Scale** — in-app chat, bookings, payments, delivery  
 

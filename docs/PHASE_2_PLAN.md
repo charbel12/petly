@@ -5,31 +5,6 @@ Hand this file to a **new Cloud Agent**. It is the runbook for implementing Phas
 **Source of truth for sequencing:** `docs/IMPLEMENTATION_PLAN.md`  
 **This file:** locked product decisions, API contracts, files to touch, tests, and Definition of Done.
 
-Status: **implemented** on the Phase 2 branch (schema, public filter, partner + admin-review APIs, Flutter partner screens). Keep this file as the historical runbook.
-
----
-
-## Plan polish (locked before implementation)
-
-These stay inside Phase 2. They do not add admin UI, chat, bookings, push, marketplace, or delivery.
-
-**Reuse existing UI (do not invent a new design system):**
-
-- Screens: `PetlyBackground`, `HeroPanel`, `SoftCard`, `SectionHeader`, `EmptyState`, `AsyncErrorView`, `ListingImage`.
-- Forms: same `InputDecoration` / validators as `register_screen.dart` and `add_pet_screen.dart`.
-- Lists: `Chip` + existing `AppTokens` (pending = honey/accent, approved = sage/success, rejected = terracotta/danger).
-- One shared listing form for vet and store (kind switch), one `HoursEditor`, one `StatusChip`.
-
-**In-scope improvements:**
-
-1. Public vet/store **detail** screens show `hours` (and store `services`) when present. List cards stay as they are.
-2. Hours editor starts from a Lebanon-friendly template: timezone `Asia/Beirut`, Sunday closed, Mon–Sat `09:00–18:00`. Partners can still clear/edit every day. Hours remain optional on the API.
-3. Any partner create/patch **resubmits**: `status = pending`, `submitted_at = now()`, review fields cleared. Rejected listings are edited back into the queue the same way.
-4. Public JSON includes `status` + `hours` and never `rejection_reason` / `reviewer_id` / `reviewed_at`. Owner/admin payloads include review fields.
-5. Seed **and** API boot ensure `partner@petly.local` (same pattern as admin). Optional demo row `Pending Partner Clinic` must not appear on Home/Explore.
-6. After register-as-partner or Profile “List your clinic or store”, persist rotated tokens and open `/partner`.
-7. `EmptyState` gets an optional actions slot so the empty dashboard can offer Add clinic / Add store without a new empty-state widget.
-
 ---
 
 ## Prompt for the implementing agent

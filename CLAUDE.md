@@ -66,4 +66,4 @@ flutter test                                                     # or: flutter t
 ### Cross-cutting
 
 - The mobile app and backend are versioned/deployed independently; the mobile default `apiBaseUrl` points at a hosted Render deployment (`petly-6f6c.onrender.com`), which cold-starts after idling — expect the first request after inactivity to take up to a minute.
-- See `docs/IMPLEMENTATION_PLAN.md` for the full phased roadmap (admin dashboard, chat, bookings, UI/UX polish, and more) — current state is Phase 2 (partner onboarding + approval). Next is Phase 3 (admin dashboard UI).
+- See `docs/IMPLEMENTATION_PLAN.md` for the full phased roadmap (partner onboarding, appointment requests/push, marketplace, in-app chat/payments) — current state is Phase 1.5 (auth/RBAC + GPS + click analytics + device-bound guest users), described in README.md. Next implementation: Phase 2 — follow `docs/PHASE_2_PLAN.md`.
