@@ -12,6 +12,7 @@ class AuthRepository {
     required String password,
     String? phone,
     String? deviceId,
+    String? role,
   }) {
     return _authenticate(
       '/auth/register',
@@ -21,8 +22,13 @@ class AuthRepository {
         'password': password,
         if (phone != null && phone.isNotEmpty) 'phone': phone,
         'device_id': ?deviceId,
+        'role': ?role,
       },
     );
+  }
+
+  Future<User> becomePartner() {
+    return _authenticate('/auth/become-partner', const {});
   }
 
   Future<User> login({

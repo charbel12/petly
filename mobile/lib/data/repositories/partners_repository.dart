@@ -1,0 +1,128 @@
+import '../api/api_client.dart';
+import '../models/listing_hours.dart';
+import '../models/store.dart';
+import '../models/vet.dart';
+
+class PartnerListings {
+  const PartnerListings({required this.vets, required this.stores});
+
+  final List<Vet> vets;
+  final List<Store> stores;
+
+  bool get isEmpty => vets.isEmpty && stores.isEmpty;
+}
+
+class PartnersRepository {
+  PartnersRepository(this._api);
+
+  final ApiClient _api;
+
+  Future<PartnerListings> listMine() async {
+    final response = await _api.get<Map<String, dynamic>>('/partners/me/listings');
+    final body = response.data ?? {};
+    return PartnerListings(
+      vets: (body['vets'] as List<dynamic>? ?? [])
+          .whereType<Map<String, dynamic>>()
+          .map(Vet.fromJson)
+          .toList(),
+      stores: (body['stores'] as List<dynamic>? ?? [])
+          .whereType<Map<String, dynamic>>()
+          .map(Store.fromJson)
+          .toList(),
+    );
+  }
+
+  Future<Vet> getVet(String id) async {
+    final response = await _api.get<Map<String, dynamic>>('/partners/vets/$id');
+    return Vet.fromJson(response.data!);
+  }
+
+  Future<Store> getStore(String id) async {
+    final response = await _api.get<Map<String, dynamic>>('/partners/stores/$id');
+    return Store.fromJson(response.data!);
+  }
+
+  Future<Vet> createVet(Map<String, dynamic> body) async {
+    final response = await _api.post<Map<String, dynamic>>(
+      '/partners/vets',
+      data: body,
+    );
+    return Vet.fromJson(response.data!);
+  }
+
+  Future<Vet> updateVet(String id, Map<String, dynamic> body) async {
+    final response = await _api.patch<Map<String, dynamic>>(
+      '/partners/vets/$id',
+      data: body,
+    );
+    return Vet.fromJson(response.data!);
+  }
+
+  Future<Store> createStore(Map<String, dynamic> body) async {
+    final response = await _api.post<Map<String, dynamic>>(
+      '/partners/stores',
+      data: body,
+    );
+    return Store.fromJson(response.data!);
+  }
+
+  Future<Store> updateStore(String id, Map<String, dynamic> body) async {
+    final response = await _api.patch<Map<String, dynamic>>(
+      '/partners/stores/$id',
+      data: body,
+    );
+    return Store.fromJson(response.data!);
+  }
+
+  static Map<String, dynamic> vetPayload({
+    required String name,
+    required String phone,
+    required String location,
+    required List<String> services,
+    required bool isEmergency,
+    required bool isOpenNow,
+    double? latitude,
+    double? longitude,
+    String? imageUrl,
+    ListingHours? hours,
+  }) {
+    return {
+      'name': name,
+      'phone': phone,
+      'location': location,
+      'services': services,
+      'is_emergency': isEmergency,
+      'is_open_now': isOpenNow,
+      'latitude': ?latitude,
+      'longitude': ?longitude,
+      if (imageUrl != null && imageUrl.isNotEmpty) 'image_url': imageUrl,
+      if (hours != null) 'hours': hours.toJson(),
+    };
+  }
+
+  static Map<String, dynamic> storePayload({
+    required String name,
+    required String type,
+    required String location,
+    required List<String> services,
+    required bool isOpenNow,
+    String? phone,
+    double? latitude,
+    double? longitude,
+    String? imageUrl,
+    ListingHours? hours,
+  }) {
+    return {
+      'name': name,
+      'type': type,
+      'location': location,
+      'services': services,
+      'is_open_now': isOpenNow,
+      if (phone != null && phone.isNotEmpty) 'phone': phone,
+      'latitude': ?latitude,
+      'longitude': ?longitude,
+      if (imageUrl != null && imageUrl.isNotEmpty) 'image_url': imageUrl,
+      if (hours != null) 'hours': hours.toJson(),
+    };
+  }
+}

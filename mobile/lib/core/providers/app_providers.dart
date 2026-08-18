@@ -5,6 +5,7 @@ import '../../data/repositories/auth_repository.dart';
 import '../../data/repositories/pets_repository.dart';
 import '../../data/repositories/stores_repository.dart';
 import '../../data/repositories/users_repository.dart';
+import '../../data/repositories/partners_repository.dart';
 import '../../data/repositories/vets_repository.dart';
 import '../auth/token_storage.dart';
 
@@ -36,4 +37,8 @@ final usersRepositoryProvider = Provider<UsersRepository>(
 
 final analyticsRepositoryProvider = Provider<AnalyticsRepository>(
   (ref) => AnalyticsRepository(ref.watch(apiClientProvider)),
+);
+
+final partnersRepositoryProvider = Provider<PartnersRepository>(
+  (ref) => PartnersRepository(ref.watch(apiClientProvider)),
 );

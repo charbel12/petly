@@ -1,3 +1,5 @@
+import 'listing_hours.dart';
+
 class Store {
   const Store({
     required this.id,
@@ -11,6 +13,11 @@ class Store {
     this.latitude,
     this.longitude,
     this.distanceKm,
+    this.services = const [],
+    this.status,
+    this.hours,
+    this.rejectionReason,
+    this.submittedAt,
   });
 
   final String id;
@@ -24,6 +31,11 @@ class Store {
   final double? latitude;
   final double? longitude;
   final double? distanceKm;
+  final List<String> services;
+  final String? status;
+  final ListingHours? hours;
+  final String? rejectionReason;
+  final DateTime? submittedAt;
 
   factory Store.fromJson(Map<String, dynamic> json) {
     return Store(
@@ -38,6 +50,15 @@ class Store {
       latitude: (json['latitude'] as num?)?.toDouble(),
       longitude: (json['longitude'] as num?)?.toDouble(),
       distanceKm: (json['distance_km'] as num?)?.toDouble(),
+      services: (json['services'] as List<dynamic>? ?? [])
+          .map((e) => e.toString())
+          .toList(),
+      status: json['status'] as String?,
+      hours: ListingHours.tryParse(json['hours']),
+      rejectionReason: json['rejection_reason'] as String?,
+      submittedAt: json['submitted_at'] != null
+          ? DateTime.tryParse(json['submitted_at'].toString())
+          : null,
     );
   }
 

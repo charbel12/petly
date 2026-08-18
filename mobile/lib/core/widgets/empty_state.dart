@@ -7,11 +7,13 @@ class EmptyState extends StatelessWidget {
     required this.title,
     required this.message,
     this.icon = Icons.search_off_rounded,
+    this.action,
   });
 
   final String title;
   final String message;
   final IconData icon;
+  final Widget? action;
 
   @override
   Widget build(BuildContext context) {
@@ -40,6 +42,10 @@ class EmptyState extends StatelessWidget {
                     color: tokens.textMuted,
                   ),
             ),
+            if (action != null) ...[
+              const SizedBox(height: 20),
+              action!,
+            ],
           ],
         ),
       ),

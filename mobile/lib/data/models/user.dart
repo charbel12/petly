@@ -19,6 +19,10 @@ class User {
 
   bool get isGuest => email == null || email!.isEmpty;
 
+  bool get isPartner => role == 'partner';
+  bool get isAdmin => role == 'admin';
+  bool get isClient => role == 'client';
+
   String get displayContact {
     if (email != null && email!.isNotEmpty) return email!;
     final phoneValue = phone;

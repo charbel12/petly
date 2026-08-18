@@ -6,6 +6,7 @@ import '../../../core/providers/user_provider.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/whatsapp.dart';
 import '../../../core/widgets/async_error_view.dart';
+import '../../../core/widgets/hours_schedule.dart';
 import '../../../core/widgets/listing_image.dart';
 import '../../../core/widgets/skeleton.dart';
 import '../../../core/widgets/soft_card.dart';
@@ -109,6 +110,40 @@ class StoreDetailScreen extends ConsumerWidget {
                         ],
                       ),
                     ),
+                    if (store.hours != null) ...[
+                      const SizedBox(height: 20),
+                      HoursScheduleCard(hours: store.hours!),
+                    ],
+                    if (store.services.isNotEmpty) ...[
+                      const SizedBox(height: 20),
+                      Text(
+                        'Services',
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w700),
+                      ),
+                      const SizedBox(height: 10),
+                      SoftCard(
+                        child: Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: store.services
+                              .map(
+                                (s) => Chip(
+                                  label: Text(
+                                    s,
+                                    style: TextStyle(color: tokens.onCard),
+                                  ),
+                                  backgroundColor:
+                                      tokens.onCard.withValues(alpha: 0.14),
+                                  side: BorderSide.none,
+                                ),
+                              )
+                              .toList(),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
