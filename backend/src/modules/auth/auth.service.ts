@@ -3,7 +3,7 @@ import { prisma } from '../../db/prisma';
 import { env } from '../../config/env';
 import { AppError } from '../../middleware/errorHandler';
 import { isUniqueViolation, mapUser } from '../../db/mappers';
-import { toPublicUser, User, UserRecord } from '../users/users.types';
+import { toPublicUser, User, UserRecord, UserRole } from '../users/users.types';
 import { AuthResponse, LoginDto, RegisterDto } from './auth.types';
 import {
   generateRefreshToken,
@@ -110,6 +110,7 @@ export async function register(dto: RegisterDto): Promise<AuthResponse> {
 
   const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
   const guest = deviceId ? await findGuestByDeviceId(deviceId) : null;
+  const role = dto.role === 'partner' ? 'partner' : 'client';
 
   let user: UserRecord;
 
@@ -122,7 +123,7 @@ export async function register(dto: RegisterDto): Promise<AuthResponse> {
           email,
           phone: phone ?? guest.phone,
           passwordHash,
-          role: 'client',
+          role,
           status: 'active',
         },
       });
@@ -141,7 +142,7 @@ export async function register(dto: RegisterDto): Promise<AuthResponse> {
           email,
           phone,
           passwordHash,
-          role: 'client',
+          role,
           status: 'active',
           deviceId: deviceId ?? null,
         },
@@ -225,6 +226,62 @@ export async function forgotPassword(_email: string): Promise<{ message: string 
     message:
       'If an account exists for that email, password reset instructions have been sent.',
   };
+}
+
+export async function becomePartner(
+  userId: string,
+  currentRole: UserRole,
+): Promise<AuthResponse> {
+  if (currentRole === 'admin') {
+    throw new AppError(403, 'Admins cannot become partners');
+  }
+
+  const user = await findRecordById(userId);
+  if (!user) throw new AppError(404, 'User not found');
+  if (user.status === 'suspended') {
+    throw new AppError(403, 'Account is suspended');
+  }
+
+  if (user.role === 'partner') {
+    return issueSession(user);
+  }
+
+  const row = await prisma.user.update({
+    where: { id: user.id },
+    data: { role: 'partner' },
+  });
+  return issueSession(mapUser(row));
+}
+
+export const DEMO_PARTNER_EMAIL = 'partner@petly.local';
+export const DEMO_PARTNER_PASSWORD = 'changeme-partner';
+
+export async function ensurePartner(): Promise<UserRecord> {
+  const email = DEMO_PARTNER_EMAIL;
+  const existing = await findRecordByEmail(email);
+  if (existing) {
+    if (existing.role !== 'partner') {
+      const row = await prisma.user.update({
+        where: { id: existing.id },
+        data: { role: 'partner', status: 'active' },
+      });
+      return mapUser(row);
+    }
+    return existing;
+  }
+
+  const passwordHash = await bcrypt.hash(DEMO_PARTNER_PASSWORD, BCRYPT_ROUNDS);
+  const row = await prisma.user.create({
+    data: {
+      name: 'Demo Partner',
+      email,
+      phone: null,
+      passwordHash,
+      role: 'partner',
+      status: 'active',
+    },
+  });
+  return mapUser(row);
 }
 
 export async function ensureAdmin(): Promise<void> {

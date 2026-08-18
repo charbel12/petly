@@ -7,6 +7,8 @@ import '../features/auth/presentation/login_screen.dart';
 import '../features/auth/presentation/register_screen.dart';
 import '../features/explore/presentation/explore_screen.dart';
 import '../features/home/presentation/home_screen.dart';
+import '../features/partner/presentation/listing_form_screen.dart';
+import '../features/partner/presentation/partner_dashboard_screen.dart';
 import '../features/pets/presentation/add_pet_screen.dart';
 import '../features/pets/presentation/pets_screen.dart';
 import '../features/profile/presentation/profile_screen.dart';
@@ -59,11 +61,16 @@ final routerProvider = Provider<GoRouter>((ref) {
       final auth = ref.read(authProvider);
       if (auth.isLoading) return null;
       final loggedIn = auth.asData?.value != null;
+      final role = auth.asData?.value?.role;
       final loc = state.matchedLocation;
       final onAuthPage = loc == '/login' ||
           loc == '/register' ||
           loc == '/forgot-password';
       if (loggedIn && onAuthPage) return '/home';
+      if (loc.startsWith('/partner')) {
+        if (!loggedIn) return '/login';
+        if (role != 'partner') return '/profile';
+      }
       return null;
     },
     routes: [
@@ -174,6 +181,57 @@ final routerProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) => _fadeSlidePage(
           key: state.pageKey,
           child: const AddPetScreen(),
+        ),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootKey,
+        path: '/partner',
+        name: 'partner-dashboard',
+        pageBuilder: (context, state) => _fadeSlidePage(
+          key: state.pageKey,
+          child: const PartnerDashboardScreen(),
+        ),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootKey,
+        path: '/partner/vets/new',
+        name: 'partner-vet-new',
+        pageBuilder: (context, state) => _fadeSlidePage(
+          key: state.pageKey,
+          child: const ListingFormScreen(kind: PartnerListingKind.vet),
+        ),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootKey,
+        path: '/partner/vets/:id/edit',
+        name: 'partner-vet-edit',
+        pageBuilder: (context, state) => _fadeSlidePage(
+          key: state.pageKey,
+          child: ListingFormScreen(
+            kind: PartnerListingKind.vet,
+            listingId: state.pathParameters['id'],
+          ),
+        ),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootKey,
+        path: '/partner/stores/new',
+        name: 'partner-store-new',
+        pageBuilder: (context, state) => _fadeSlidePage(
+          key: state.pageKey,
+          child: const ListingFormScreen(kind: PartnerListingKind.store),
+        ),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootKey,
+        path: '/partner/stores/:id/edit',
+        name: 'partner-store-edit',
+        pageBuilder: (context, state) => _fadeSlidePage(
+          key: state.pageKey,
+          child: ListingFormScreen(
+            kind: PartnerListingKind.store,
+            listingId: state.pathParameters['id'],
+          ),
         ),
       ),
     ],

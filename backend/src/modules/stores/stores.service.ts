@@ -6,7 +6,7 @@ import { withDistance } from '../../db/geo';
 import { Store, StoreFilters } from './stores.types';
 
 export async function listStores(filters: StoreFilters = {}): Promise<Store[]> {
-  const where: Prisma.StoreWhereInput = {};
+  const where: Prisma.StoreWhereInput = { status: 'approved' };
 
   if (filters.search?.trim()) {
     const q = filters.search.trim();
@@ -32,7 +32,7 @@ export async function getStoreById(
   lng?: number,
 ): Promise<Store> {
   const row = await prisma.store.findUnique({ where: { id } });
-  if (!row) throw new AppError(404, 'Store not found');
+  if (!row || row.status !== 'approved') throw new AppError(404, 'Store not found');
   const [mapped] = withDistance([mapStore(row)], lat, lng);
   return mapped;
 }

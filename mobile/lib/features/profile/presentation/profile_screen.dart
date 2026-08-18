@@ -8,6 +8,7 @@ import '../../../core/providers/location_provider.dart';
 import '../../../core/providers/theme_provider.dart';
 import '../../../core/providers/user_provider.dart';
 import '../../../core/theme/app_tokens.dart';
+import '../../../core/utils/api_error.dart';
 import '../../../core/utils/whatsapp.dart';
 import '../../../core/widgets/async_error_view.dart';
 import '../../../core/widgets/soft_card.dart';
@@ -198,81 +199,109 @@ class ProfileScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 20),
-              SoftCard(
-                onTap: () {
-                  showDialog(
-                    context: context,
-                    builder: (ctx) => AlertDialog(
-                      title: const Text('Become a Partner'),
-                      content: const Text(
-                        'Are you a vet clinic or pet store in Lebanon?\n\n'
-                        'Message us on WhatsApp and we\'ll onboard you manually '
-                        '(Phase 2).',
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(ctx),
-                          child: const Text('Close'),
+              if (signedIn && user.isPartner)
+                SoftCard(
+                  onTap: () => context.push('/partner'),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: tokens.brandSecondary.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(14),
                         ),
-                        ElevatedButton(
-                          onPressed: () async {
-                            Navigator.pop(ctx);
-                            await _openTrackedWhatsApp(
-                              ref: ref,
-                              phone: '96171123456',
-                              entityType: 'partner',
-                              message:
-                                  'Hi, I want to become a Petly partner',
-                              source: 'profile_partner',
-                            );
-                          },
-                          child: const Text('Contact us'),
+                        child: Icon(
+                          Icons.storefront_rounded,
+                          color: tokens.brandSecondary,
                         ),
-                      ],
-                    ),
-                  );
-                },
-                child: Row(
-                  children: [
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: tokens.brandSecondary.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(14),
                       ),
-                      child: Icon(
-                        Icons.handshake_rounded,
-                        color: tokens.brandSecondary,
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Partner dashboard',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleSmall
+                                  ?.copyWith(fontWeight: FontWeight.w700),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Manage your clinics and stores',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(color: tokens.onCardMuted),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Become a Partner',
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleSmall
-                                ?.copyWith(fontWeight: FontWeight.w700),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            'List your clinic or store on Petly',
-                            style:
-                                Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: tokens.onCardMuted,
-                                    ),
-                          ),
-                        ],
+                      const Icon(Icons.chevron_right_rounded),
+                    ],
+                  ),
+                )
+              else if (signedIn && !user.isGuest && !user.isAdmin)
+                SoftCard(
+                  onTap: () => _becomePartner(context, ref),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: tokens.brandSecondary.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Icon(
+                          Icons.handshake_rounded,
+                          color: tokens.brandSecondary,
+                        ),
                       ),
-                    ),
-                    const Icon(Icons.chevron_right_rounded),
-                  ],
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'List your clinic or store',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleSmall
+                                  ?.copyWith(fontWeight: FontWeight.w700),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Become a partner to submit listings for review',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(color: tokens.onCardMuted),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.chevron_right_rounded),
+                    ],
+                  ),
+                )
+              else if (!signedIn)
+                SoftCard(
+                  child: Row(
+                    children: [
+                      Icon(Icons.handshake_rounded, color: tokens.onCard),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Text(
+                          'Sign in or register as a partner to list your clinic or store.',
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
               const SizedBox(height: 12),
               SoftCard(
                 onTap: () => _openTrackedWhatsApp(
@@ -299,7 +328,7 @@ class ProfileScreen extends ConsumerWidget {
               const SizedBox(height: 24),
               Center(
                 child: Text(
-                  '${AppConstants.appName} · Phase 4\n${signedIn ? 'Signed in' : 'Guest browsing'}',
+                  '${AppConstants.appName} · Phase 2\n${signedIn ? 'Signed in' : 'Guest browsing'}',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: tokens.textMuted,
@@ -311,6 +340,40 @@ class ProfileScreen extends ConsumerWidget {
         },
       ),
     );
+  }
+
+  Future<void> _becomePartner(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('List your clinic or store'),
+        content: const Text(
+          'This upgrades your account to a partner so you can submit listings '
+          'for review. Clients will only see them after approval.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Become a partner'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    try {
+      await ref.read(authProvider.notifier).becomePartner();
+      if (!context.mounted) return;
+      context.go('/partner');
+    } catch (error) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(friendlyErrorMessage(error))),
+      );
+    }
   }
 
   Future<void> _pickThemeMode(

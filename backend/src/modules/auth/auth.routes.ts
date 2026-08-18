@@ -23,6 +23,7 @@ const registerSchema = z.object({
   password: z.string().min(8, 'password must be at least 8 characters'),
   phone: z.string().trim().min(1).optional(),
   device_id: z.string().trim().min(1).optional(),
+  role: z.enum(['client', 'partner']).optional(),
 });
 
 const loginSchema = z.object({
@@ -119,5 +120,17 @@ router.post(
     }
   },
 );
+
+router.post('/become-partner', requireAuth, async (req, res, next) => {
+  try {
+    const result = await authService.becomePartner(
+      req.auth!.userId,
+      req.auth!.role,
+    );
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+});
 
 export default router;

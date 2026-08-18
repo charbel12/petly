@@ -1,3 +1,7 @@
+import { ListingHours } from '../listings/hours.schema';
+
+export type ListingStatus = 'pending' | 'approved' | 'rejected';
+
 export interface Vet {
   id: string;
   name: string;
@@ -11,9 +15,19 @@ export interface Vet {
   is_open_now: boolean;
   featured: boolean;
   image_url: string | null;
+  status: ListingStatus;
+  hours: ListingHours | null;
   created_at: Date;
   updated_at: Date;
   distance_km?: number | null;
+}
+
+export interface OwnedVet extends Vet {
+  owner_user_id: string | null;
+  rejection_reason: string | null;
+  submitted_at: Date | null;
+  reviewed_at: Date | null;
+  reviewer_id: string | null;
 }
 
 export interface VetFilters {

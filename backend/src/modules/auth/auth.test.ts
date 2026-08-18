@@ -214,3 +214,70 @@ test('suspended users cannot log in', async () => {
     .send({ email, password: 'password1' })
     .expect(403);
 });
+
+test('register accepts role partner and rejects admin', async () => {
+  const partnerEmail = uniqueEmail();
+  const partner = await request(app)
+    .post('/auth/register')
+    .send({
+      name: 'Clinic Owner',
+      email: partnerEmail,
+      password: 'password1',
+      role: 'partner',
+    })
+    .expect(201);
+  assert.equal(partner.body.user.role, 'partner');
+
+  await request(app)
+    .post('/auth/register')
+    .send({
+      name: 'Nope',
+      email: uniqueEmail(),
+      password: 'password1',
+      role: 'admin',
+    })
+    .expect(400);
+});
+
+test('become-partner upgrades a client and rotates tokens', async () => {
+  const email = uniqueEmail();
+  const registered = await request(app)
+    .post('/auth/register')
+    .send({ name: 'Soon Partner', email, password: 'password1' })
+    .expect(201);
+  assert.equal(registered.body.user.role, 'client');
+
+  const upgraded = await request(app)
+    .post('/auth/become-partner')
+    .set('Authorization', `Bearer ${registered.body.access_token}`)
+    .expect(200);
+
+  assert.equal(upgraded.body.user.role, 'partner');
+  assert.equal(typeof upgraded.body.access_token, 'string');
+  assert.notEqual(upgraded.body.access_token, registered.body.access_token);
+
+  const me = await request(app)
+    .get('/auth/me')
+    .set('Authorization', `Bearer ${upgraded.body.access_token}`)
+    .expect(200);
+  assert.equal(me.body.role, 'partner');
+
+  const again = await request(app)
+    .post('/auth/become-partner')
+    .set('Authorization', `Bearer ${upgraded.body.access_token}`)
+    .expect(200);
+  assert.equal(again.body.user.role, 'partner');
+
+  const admin = await request(app)
+    .post('/auth/login')
+    .send({
+      email: process.env.ADMIN_EMAIL || 'admin@petly.local',
+      password: process.env.ADMIN_PASSWORD || 'changeme-admin',
+    })
+    .expect(200);
+
+  await request(app)
+    .post('/auth/become-partner')
+    .set('Authorization', `Bearer ${admin.body.access_token}`)
+    .expect(403);
+});

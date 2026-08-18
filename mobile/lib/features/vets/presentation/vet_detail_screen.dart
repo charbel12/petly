@@ -6,6 +6,7 @@ import '../../../core/providers/user_provider.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/whatsapp.dart';
 import '../../../core/widgets/async_error_view.dart';
+import '../../../core/widgets/hours_schedule.dart';
 import '../../../core/widgets/listing_image.dart';
 import '../../../core/widgets/skeleton.dart';
 import '../../../core/widgets/soft_card.dart';
@@ -107,6 +108,10 @@ class VetDetailScreen extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(height: 20),
+                    if (vet.hours != null) ...[
+                      HoursScheduleCard(hours: vet.hours!),
+                      const SizedBox(height: 20),
+                    ],
                     Text(
                       'Services',
                       style: Theme.of(context)

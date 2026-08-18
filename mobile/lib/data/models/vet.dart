@@ -1,3 +1,5 @@
+import 'listing_hours.dart';
+
 class Vet {
   const Vet({
     required this.id,
@@ -13,6 +15,10 @@ class Vet {
     this.latitude,
     this.longitude,
     this.distanceKm,
+    this.status,
+    this.hours,
+    this.rejectionReason,
+    this.submittedAt,
   });
 
   final String id;
@@ -28,6 +34,10 @@ class Vet {
   final double? latitude;
   final double? longitude;
   final double? distanceKm;
+  final String? status;
+  final ListingHours? hours;
+  final String? rejectionReason;
+  final DateTime? submittedAt;
 
   factory Vet.fromJson(Map<String, dynamic> json) {
     return Vet(
@@ -46,6 +56,12 @@ class Vet {
       latitude: (json['latitude'] as num?)?.toDouble(),
       longitude: (json['longitude'] as num?)?.toDouble(),
       distanceKm: (json['distance_km'] as num?)?.toDouble(),
+      status: json['status'] as String?,
+      hours: ListingHours.tryParse(json['hours']),
+      rejectionReason: json['rejection_reason'] as String?,
+      submittedAt: json['submitted_at'] != null
+          ? DateTime.tryParse(json['submitted_at'].toString())
+          : null,
     );
   }
 

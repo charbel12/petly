@@ -42,6 +42,7 @@ class AuthNotifier extends AsyncNotifier<User?> {
     required String email,
     required String password,
     String? phone,
+    String? role,
   }) async {
     state = const AsyncLoading();
     try {
@@ -52,7 +53,19 @@ class AuthNotifier extends AsyncNotifier<User?> {
             password: password,
             phone: phone,
             deviceId: deviceId,
+            role: role,
           );
+      state = AsyncData(user);
+    } catch (error, stack) {
+      state = AsyncError(error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> becomePartner() async {
+    state = const AsyncLoading();
+    try {
+      final user = await ref.read(authRepositoryProvider).becomePartner();
       state = AsyncData(user);
     } catch (error, stack) {
       state = AsyncError(error, stack);

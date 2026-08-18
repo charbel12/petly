@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/providers/auth_provider.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/api_error.dart';
 import '../widgets/auth_scaffold.dart';
 
@@ -20,6 +21,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _password = TextEditingController();
   final _confirm = TextEditingController();
   bool _obscure = true;
+  bool _asPartner = false;
   bool _submitting = false;
 
   @override
@@ -41,9 +43,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             email: _email.text.trim(),
             password: _password.text,
             phone: _phone.text.trim().isEmpty ? null : _phone.text.trim(),
+            role: _asPartner ? 'partner' : null,
           );
       if (!mounted) return;
-      context.go('/home');
+      context.go(_asPartner ? '/partner' : '/home');
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -130,7 +133,36 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 return null;
               },
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "I'm a clinic or store owner",
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Create a partner account to list your business',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: AppTokens.of(context).textMuted,
+                            ),
+                      ),
+                    ],
+                  ),
+                ),
+                Switch(
+                  value: _asPartner,
+                  onChanged: (value) => setState(() => _asPartner = value),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _submitting ? null : _submit,
               child: _submitting

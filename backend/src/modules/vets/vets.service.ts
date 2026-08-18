@@ -6,7 +6,7 @@ import { withDistance } from '../../db/geo';
 import { Vet, VetFilters } from './vets.types';
 
 export async function listVets(filters: VetFilters = {}): Promise<Vet[]> {
-  const where: Prisma.VetWhereInput = {};
+  const where: Prisma.VetWhereInput = { status: 'approved' };
 
   if (filters.search?.trim()) {
     const q = filters.search.trim();
@@ -31,7 +31,7 @@ export async function getVetById(
   lng?: number,
 ): Promise<Vet> {
   const row = await prisma.vet.findUnique({ where: { id } });
-  if (!row) throw new AppError(404, 'Vet not found');
+  if (!row || row.status !== 'approved') throw new AppError(404, 'Vet not found');
   const [mapped] = withDistance([mapVet(row)], lat, lng);
   return mapped;
 }

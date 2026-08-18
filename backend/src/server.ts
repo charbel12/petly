@@ -1,7 +1,7 @@
 import { createApp } from './app';
 import { env } from './config/env';
 import { prisma, deployMigrations } from './db/prisma';
-import { ensureAdmin } from './modules/auth/auth.service';
+import { ensureAdmin, ensurePartner } from './modules/auth/auth.service';
 
 async function bootstrap() {
   if (env.isProduction && env.jwt.secret === 'dev-insecure-change-me') {
@@ -17,6 +17,7 @@ async function bootstrap() {
 
   deployMigrations();
   await ensureAdmin();
+  await ensurePartner();
 
   const app = createApp();
   app.listen(env.port, '0.0.0.0', () => {

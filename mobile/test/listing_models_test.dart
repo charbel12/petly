@@ -36,6 +36,33 @@ void main() {
       expect(vet.heroTag, 'vet-1');
     });
 
+    test('Vet.fromJson reads status, hours, and rejection_reason', () {
+      final vet = Vet.fromJson({
+        'id': 'v2',
+        'name': 'Pending Partner Clinic',
+        'phone': '96171109901',
+        'location': 'Hamra, Beirut',
+        'services': ['General checkup'],
+        'verified': false,
+        'is_emergency': false,
+        'is_open_now': true,
+        'featured': false,
+        'status': 'rejected',
+        'rejection_reason': 'Need a clearer address',
+        'hours': {
+          'timezone': 'Asia/Beirut',
+          'weekly': [
+            {'day': 0, 'closed': true},
+            {'day': 1, 'open': '09:00', 'close': '18:00'},
+          ],
+        },
+      });
+      expect(vet.status, 'rejected');
+      expect(vet.rejectionReason, 'Need a clearer address');
+      expect(vet.hours?.timezone, 'Asia/Beirut');
+      expect(vet.hours?.entryFor(1).summary, '09:00–18:00');
+    });
+
     test('Store.fromJson reads image_url', () {
       final store = Store.fromJson({
         'id': 's1',
@@ -50,6 +77,28 @@ void main() {
       });
       expect(store.imageUrl, 'asset:listings/store_pet_world.jpg');
       expect(store.distanceAndLocation, '400 m away · Hamra, Beirut');
+    });
+
+    test('Store.fromJson reads services and hours when present', () {
+      final store = Store.fromJson({
+        'id': 's2',
+        'name': 'Groom & Glow Salon',
+        'type': 'Grooming',
+        'location': 'Dbayeh',
+        'featured': true,
+        'is_open_now': true,
+        'services': ['Bath', 'Haircut'],
+        'status': 'approved',
+        'hours': {
+          'timezone': 'Asia/Beirut',
+          'weekly': [
+            {'day': 1, 'open': '10:00', 'close': '19:00'},
+          ],
+        },
+      });
+      expect(store.services, ['Bath', 'Haircut']);
+      expect(store.status, 'approved');
+      expect(store.hours?.entryFor(1).open, '10:00');
     });
   });
 }

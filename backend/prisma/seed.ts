@@ -1,5 +1,5 @@
 import { prisma, deployMigrations, disconnectPrisma } from '../src/db/prisma';
-import { ensureAdmin } from '../src/modules/auth/auth.service';
+import { ensureAdmin, ensurePartner } from '../src/modules/auth/auth.service';
 
 const DEMO_USER_ID = '11111111-1111-1111-1111-111111111111';
 
@@ -30,6 +30,44 @@ async function backfillListingImages() {
   console.log('✓ Listing photos backfilled');
 }
 
+async function ensurePendingDemoListing(partnerId: string) {
+  const pendingName = 'Pending Partner Clinic';
+  const existingPending = await prisma.vet.findFirst({
+    where: { name: pendingName, ownerUserId: partnerId },
+  });
+  if (existingPending) return;
+  await prisma.vet.create({
+    data: {
+      name: pendingName,
+      phone: '96171109901',
+      location: 'Hamra, Beirut',
+      latitude: 33.8972,
+      longitude: 35.4822,
+      services: ['General checkup'],
+      isEmergency: false,
+      isOpenNow: true,
+      featured: false,
+      verified: false,
+      ownerUserId: partnerId,
+      status: 'pending',
+      submittedAt: new Date(),
+      hours: {
+        timezone: 'Asia/Beirut',
+        weekly: [
+          { day: 0, closed: true },
+          { day: 1, open: '09:00', close: '18:00' },
+          { day: 2, open: '09:00', close: '18:00' },
+          { day: 3, open: '09:00', close: '18:00' },
+          { day: 4, open: '09:00', close: '18:00' },
+          { day: 5, open: '09:00', close: '18:00' },
+          { day: 6, open: '09:00', close: '14:00' },
+        ],
+      },
+    },
+  });
+  console.log('✓ Demo pending listing ensured');
+}
+
 async function seed() {
   deployMigrations();
   await prisma.$connect();
@@ -37,9 +75,16 @@ async function seed() {
   await ensureAdmin();
   console.log('✓ Admin account ensured');
 
-  const existingVets = await prisma.vet.count();
-  if (existingVets > 0) {
+  const partner = await ensurePartner();
+  console.log('✓ Partner account ensured');
+
+  const catalogExists = await prisma.vet.findFirst({
+    where: { name: 'Beirut Pet Care Clinic' },
+    select: { id: true },
+  });
+  if (catalogExists) {
     await backfillListingImages();
+    await ensurePendingDemoListing(partner.id);
     console.log('✓ Seed skipped — data already present');
     return;
   }
@@ -206,6 +251,7 @@ async function seed() {
   });
 
   await backfillListingImages();
+  await ensurePendingDemoListing(partner.id);
   console.log('✓ Seed data inserted');
 }
 
