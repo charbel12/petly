@@ -74,17 +74,28 @@ flutter run --dart-define=API_BASE_URL=http://127.0.0.1:3000
 | Method | Path | Description |
 |--------|------|-------------|
 | `GET` | `/health` | Health check |
-| `POST` | `/auth/register` | Create account (`name`, `email`, `password`, optional `phone`, `device_id`) |
+| `POST` | `/auth/register` | Create account (`name`, `email`, `password`, optional `phone`, `device_id`, `role`: `client` or `partner`) |
 | `POST` | `/auth/login` | Email + password (optional `device_id` to link a guest) |
 | `POST` | `/auth/refresh` | Rotate tokens (`refresh_token`) |
 | `POST` | `/auth/logout` | Revoke a refresh token |
 | `GET` | `/auth/me` | Current user (Bearer access token) |
 | `POST` | `/auth/forgot-password` | Generic ack (email delivery not wired yet) |
-| `GET` | `/vets` | List vets (`search`, `open_now`, `emergency`, `lat`, `lng`, `max_distance_km`) |
-| `GET` | `/vets/emergency` | Open emergency clinics |
-| `GET` | `/vets/:id` | Vet details |
-| `GET` | `/stores` | List stores |
-| `GET` | `/stores/:id` | Store details |
+| `POST` | `/auth/become-partner` | Upgrade a signed-in client to partner (rotates tokens) |
+| `GET` | `/vets` | List **approved** vets (`search`, `open_now`, `emergency`, `lat`, `lng`, `max_distance_km`) |
+| `GET` | `/vets/emergency` | Open emergency clinics (approved only) |
+| `GET` | `/vets/:id` | Vet details (404 if missing or not approved) |
+| `GET` | `/stores` | List **approved** stores |
+| `GET` | `/stores/:id` | Store details (404 if missing or not approved) |
+| `GET` | `/partners/me/listings` | Partner: own vets + stores (all statuses) |
+| `POST` | `/partners/vets` | Partner: create clinic (`pending`) |
+| `GET` | `/partners/vets/:id` | Partner: own clinic |
+| `PATCH` | `/partners/vets/:id` | Partner: edit clinic (resubmits as `pending`) |
+| `POST` | `/partners/stores` | Partner: create store (`pending`) |
+| `GET` | `/partners/stores/:id` | Partner: own store |
+| `PATCH` | `/partners/stores/:id` | Partner: edit store (resubmits as `pending`) |
+| `GET` | `/admin/listings` | Admin: listings by `status` (default `pending`) |
+| `PATCH` | `/admin/vets/:id/review` | Admin: approve or reject a clinic |
+| `PATCH` | `/admin/stores/:id/review` | Admin: approve or reject a store |
 | `POST` | `/users` | Create / upsert guest user |
 | `GET` | `/users` | List users (admin) |
 | `GET` | `/users/:id` | Get user (self or admin) |
@@ -99,10 +110,10 @@ flutter run --dart-define=API_BASE_URL=http://127.0.0.1:3000
 mobile/lib/
   core/           # theme, constants, providers, widgets, auth storage
   data/           # models, Dio client, repositories
-  features/       # auth, home, explore, vets, stores, pets, profile
+  features/       # auth, home, explore, vets, stores, pets, profile, partner
   routes/         # GoRouter + bottom nav shell + auth guards
 backend/src/
-  modules/        # auth, users, pets, vets, stores, analytics
+  modules/        # auth, users, pets, vets, stores, analytics, partners, admin
   middleware/     # validation, requireAuth / requireRole
   db/             # Prisma client, mappers, geo helpers
 backend/prisma/     # schema, migrations, seed
@@ -119,6 +130,7 @@ backend/prisma/     # schema, migrations, seed
 - **WhatsApp click analytics** — `POST /analytics/whatsapp-clicks` (fire-and-forget from the app). Stats: `GET /analytics/whatsapp-clicks/stats`.
 - **Device-bound user** — UUID stored in `shared_preferences`, upserted via `POST /users` with `device_id`. Pets stay tied to that user across launches. Registering/logging in with the same `device_id` upgrades or links the guest account.
 - **Auth (Phase 1)** — JWT access + refresh tokens, roles `client | partner | admin`. Default admin: `admin@petly.local` / `changeme-admin` (override with `ADMIN_EMAIL` / `ADMIN_PASSWORD`).
+- **Partner onboarding (Phase 2)** — register as partner or upgrade from Profile; submit clinics/stores for review; public Explore only shows `approved` listings. Demo partner: `partner@petly.local` / `changeme-partner`. Admin review is API-only (`/admin/...`).
 - **Offline / error UX** — top offline banner, shared `AsyncErrorView`, clearer Dio error messages.
 
 ### New API endpoints
@@ -136,8 +148,8 @@ See [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) for the detailed,
 0. **Foundations (done)** — migrations, validation, security, tokens, CI  
 1. **Auth + RBAC (done)** — JWT, roles, login/register, guest linking  
 1.5. **Validation readiness (done)** — GPS, click analytics, device user, offline UX  
-2. **Partner onboarding** — approval workflow, featured listings admin  
-3. **Platform core** — appointment requests, Firebase push, vet dashboard  
+2. **Partner onboarding (done)** — approval workflow, partner dashboard, admin review API  
+3. **Admin dashboard** — approvals queue UI, listings/client management, featured, audit log  
 4. **Marketplace** — products, cart, orders  
-5. **Scale** — in-app chat, payments, delivery  
+5. **Scale** — in-app chat, bookings, payments, delivery  
 

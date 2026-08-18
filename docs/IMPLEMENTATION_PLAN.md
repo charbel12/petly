@@ -50,17 +50,18 @@ Per-phase Definition of Done (testing gate):
 
 ## Current state (what exists)
 
-- Backend: Express + TS, modules `auth, users, pets, vets, stores, analytics`; Prisma 6
-  schema + migrations under `backend/prisma` (users, pets, vets, stores, whatsapp
-  clicks, refresh tokens). JWT access + refresh, bcrypt, `requireAuth` / `requireRole`,
-  roles `client | partner | admin`. Vets/stores still have `verified/featured/is_open_now/
-  is_emergency` but no owner or approval `status` (Phase 2).
+- Backend: Express + TS, modules `auth, users, pets, vets, stores, analytics,
+  partners, admin`; Prisma 6 schema + migrations under `backend/prisma` (users, pets,
+  vets, stores, whatsapp clicks, refresh tokens, listing ownership/status/hours).
+  JWT access + refresh, bcrypt, `requireAuth` / `requireRole`, roles
+  `client | partner | admin`. Public `GET /vets` and `GET /stores` return
+  `status = approved` only.
 - Mobile/Web: Flutter (Riverpod + GoRouter + Dio), login/register/forgot-password,
-  secure token storage, bearer + refresh interceptor, route guards. Guest browsing
-  remains via device-bound users (`user_provider.dart`); registering with `device_id`
-  upgrades the guest so pets stay attached.
+  partner dashboard + listing forms, secure token storage, bearer + refresh interceptor,
+  route guards. Guest browsing remains via device-bound users (`user_provider.dart`);
+  registering with `device_id` upgrades the guest so pets stay attached.
 - Seeded admin: `ADMIN_EMAIL` / `ADMIN_PASSWORD` (defaults `admin@petly.local` /
-  `changeme-admin`).
+  `changeme-admin`). Seeded partner: `partner@petly.local` / `changeme-partner`.
 - Geo-location already partially done (original Phase 1.5); contact is via WhatsApp
   deep links.
 
@@ -118,13 +119,15 @@ flowchart TD
   storage, Dio interceptor for bearer token + refresh on 401, route guards.
 - Forgot-password API is a non-enumerating stub (no email delivery yet).
 
-## Phase 2 - Partner onboarding & approval workflow
+## Phase 2 - Partner onboarding & approval workflow — done
 
 - Schema: add `owner_user_id`, `status`, `rejection_reason`, `submitted_at`,
   `reviewed_at`, `reviewer_id` to `vets` and `stores`.
 - Public listings filter to `status = approved`.
 - Partner self-service: submit/edit their vet/store (goes `pending`), manage
   hours/services; partner dashboard screens.
+- Minimal admin review API (`GET /admin/listings`, `PATCH /admin/vets|:stores/:id/review`).
+  Flutter admin UI is Phase 3.
 
 ## Phase 3 - Admin dashboard (web + mobile, role-gated)
 
