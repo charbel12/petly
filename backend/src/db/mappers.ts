@@ -5,11 +5,11 @@ import {
   User,
   UserRecord,
 } from '../modules/users/users.types';
-import { Pet } from '../modules/pets/pets.types';
-import { Vet } from '../modules/vets/vets.types';
-import { Store } from '../modules/stores/stores.types';
+import { OwnedVet, Vet } from '../modules/vets/vets.types';
+import { OwnedStore, Store } from '../modules/stores/stores.types';
 import { EntityType, WhatsAppClick } from '../modules/analytics/analytics.types';
 import { RefreshTokenRecord } from '../modules/auth/auth.types';
+import { parseHours } from '../modules/listings/hours.schema';
 import type {
   User as PrismaUser,
   Pet as PrismaPet,
@@ -18,6 +18,7 @@ import type {
   WhatsAppClick as PrismaClick,
   RefreshToken as PrismaRefreshToken,
 } from '@prisma/client';
+import { Pet } from '../modules/pets/pets.types';
 
 export function isUniqueViolation(err: unknown): boolean {
   return (
@@ -63,7 +64,7 @@ export function mapPet(p: PrismaPet): Pet {
   };
 }
 
-export function mapVet(v: PrismaVet, distanceKm: number | null = null): Vet {
+function publicVetFields(v: PrismaVet, distanceKm: number | null = null): Vet {
   return {
     id: v.id,
     name: v.name,
@@ -77,13 +78,30 @@ export function mapVet(v: PrismaVet, distanceKm: number | null = null): Vet {
     is_open_now: v.isOpenNow,
     featured: v.featured,
     image_url: v.imageUrl,
+    status: v.status,
+    hours: parseHours(v.hours),
     created_at: v.createdAt,
     updated_at: v.updatedAt,
     distance_km: distanceKm,
   };
 }
 
-export function mapStore(s: PrismaStore, distanceKm: number | null = null): Store {
+export function mapVet(v: PrismaVet, distanceKm: number | null = null): Vet {
+  return publicVetFields(v, distanceKm);
+}
+
+export function mapOwnedVet(v: PrismaVet, distanceKm: number | null = null): OwnedVet {
+  return {
+    ...publicVetFields(v, distanceKm),
+    owner_user_id: v.ownerUserId,
+    rejection_reason: v.rejectionReason,
+    submitted_at: v.submittedAt,
+    reviewed_at: v.reviewedAt,
+    reviewer_id: v.reviewerId,
+  };
+}
+
+function publicStoreFields(s: PrismaStore, distanceKm: number | null = null): Store {
   return {
     id: s.id,
     name: s.name,
@@ -95,9 +113,27 @@ export function mapStore(s: PrismaStore, distanceKm: number | null = null): Stor
     featured: s.featured,
     is_open_now: s.isOpenNow,
     image_url: s.imageUrl,
+    services: s.services,
+    status: s.status,
+    hours: parseHours(s.hours),
     created_at: s.createdAt,
     updated_at: s.updatedAt,
     distance_km: distanceKm,
+  };
+}
+
+export function mapStore(s: PrismaStore, distanceKm: number | null = null): Store {
+  return publicStoreFields(s, distanceKm);
+}
+
+export function mapOwnedStore(s: PrismaStore, distanceKm: number | null = null): OwnedStore {
+  return {
+    ...publicStoreFields(s, distanceKm),
+    owner_user_id: s.ownerUserId,
+    rejection_reason: s.rejectionReason,
+    submitted_at: s.submittedAt,
+    reviewed_at: s.reviewedAt,
+    reviewer_id: s.reviewerId,
   };
 }
 

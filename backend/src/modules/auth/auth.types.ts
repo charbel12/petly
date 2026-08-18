@@ -6,6 +6,7 @@ export interface RegisterDto {
   password: string;
   phone?: string;
   device_id?: string;
+  role?: 'client' | 'partner';
 }
 
 export interface LoginDto {

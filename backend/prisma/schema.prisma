@@ -18,6 +18,12 @@ enum UserStatus {
   suspended
 }
 
+enum ListingStatus {
+  pending
+  approved
+  rejected
+}
+
 model User {
   id           String     @id @default(uuid()) @db.Uuid
   name         String     @db.VarChar(120)
@@ -30,8 +36,12 @@ model User {
   createdAt    DateTime   @default(now()) @map("created_at") @db.Timestamptz
   updatedAt    DateTime   @updatedAt @map("updated_at") @db.Timestamptz
 
-  pets          Pet[]
-  refreshTokens RefreshToken[]
+  pets           Pet[]
+  refreshTokens  RefreshToken[]
+  ownedVets      Vet[]          @relation("VetOwner")
+  ownedStores    Store[]        @relation("StoreOwner")
+  reviewedVets   Vet[]          @relation("VetReviewer")
+  reviewedStores Store[]        @relation("StoreReviewer")
 
   @@index([deviceId])
   @@map("users")
@@ -53,42 +63,67 @@ model Pet {
 }
 
 model Vet {
-  id          String   @id @default(uuid()) @db.Uuid
-  name        String   @db.VarChar(160)
-  phone       String   @db.VarChar(32)
-  location    String   @db.VarChar(200)
-  latitude    Float?
-  longitude   Float?
-  services    String[] @default([])
-  verified    Boolean  @default(false)
-  isEmergency Boolean  @default(false) @map("is_emergency")
-  isOpenNow   Boolean  @default(true) @map("is_open_now")
-  featured    Boolean  @default(false)
-  imageUrl    String?  @map("image_url") @db.VarChar(500)
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  id               String        @id @default(uuid()) @db.Uuid
+  name             String        @db.VarChar(160)
+  phone            String        @db.VarChar(32)
+  location         String        @db.VarChar(200)
+  latitude         Float?
+  longitude        Float?
+  services         String[]      @default([])
+  verified         Boolean       @default(false)
+  isEmergency      Boolean       @default(false) @map("is_emergency")
+  isOpenNow        Boolean       @default(true) @map("is_open_now")
+  featured         Boolean       @default(false)
+  imageUrl         String?       @map("image_url") @db.VarChar(500)
+  ownerUserId      String?       @map("owner_user_id") @db.Uuid
+  status           ListingStatus @default(approved)
+  rejectionReason  String?       @map("rejection_reason") @db.VarChar(500)
+  submittedAt      DateTime?     @map("submitted_at") @db.Timestamptz
+  reviewedAt       DateTime?     @map("reviewed_at") @db.Timestamptz
+  reviewerId       String?       @map("reviewer_id") @db.Uuid
+  hours            Json?
+  createdAt        DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime      @updatedAt @map("updated_at") @db.Timestamptz
+
+  owner    User? @relation("VetOwner", fields: [ownerUserId], references: [id], onDelete: SetNull)
+  reviewer User? @relation("VetReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
 
   @@index([verified])
   @@index([featured])
+  @@index([status])
+  @@index([ownerUserId])
   @@map("vets")
 }
 
 model Store {
-  id        String   @id @default(uuid()) @db.Uuid
-  name      String   @db.VarChar(160)
-  type      String   @db.VarChar(60)
-  location  String   @db.VarChar(200)
-  phone     String?  @db.VarChar(32)
-  latitude  Float?
-  longitude Float?
-  featured  Boolean  @default(false)
-  isOpenNow Boolean  @default(true) @map("is_open_now")
-  imageUrl  String?  @map("image_url") @db.VarChar(500)
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  id               String        @id @default(uuid()) @db.Uuid
+  name             String        @db.VarChar(160)
+  type             String        @db.VarChar(60)
+  location         String        @db.VarChar(200)
+  phone            String?       @db.VarChar(32)
+  latitude         Float?
+  longitude        Float?
+  featured         Boolean       @default(false)
+  isOpenNow        Boolean       @default(true) @map("is_open_now")
+  imageUrl         String?       @map("image_url") @db.VarChar(500)
+  services         String[]      @default([])
+  ownerUserId      String?       @map("owner_user_id") @db.Uuid
+  status           ListingStatus @default(approved)
+  rejectionReason  String?       @map("rejection_reason") @db.VarChar(500)
+  submittedAt      DateTime?     @map("submitted_at") @db.Timestamptz
+  reviewedAt       DateTime?     @map("reviewed_at") @db.Timestamptz
+  reviewerId       String?       @map("reviewer_id") @db.Uuid
+  hours            Json?
+  createdAt        DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime      @updatedAt @map("updated_at") @db.Timestamptz
+
+  owner    User? @relation("StoreOwner", fields: [ownerUserId], references: [id], onDelete: SetNull)
+  reviewer User? @relation("StoreReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
 
   @@index([featured])
   @@index([type])
+  @@index([status])
+  @@index([ownerUserId])
   @@map("stores")
 }
 

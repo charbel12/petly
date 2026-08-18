@@ -8,6 +8,8 @@ import vetsRoutes from './modules/vets/vets.routes';
 import storesRoutes from './modules/stores/stores.routes';
 import analyticsRoutes from './modules/analytics/analytics.routes';
 import authRoutes from './modules/auth/auth.routes';
+import partnersRoutes from './modules/partners/partners.routes';
+import adminRoutes from './modules/admin/admin.routes';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import { env } from './config/env';
 
@@ -55,6 +57,8 @@ export function createApp() {
   app.use('/vets', vetsRoutes);
   app.use('/stores', storesRoutes);
   app.use('/analytics', analyticsRoutes);
+  app.use('/partners', partnersRoutes);
+  app.use('/admin', adminRoutes);
 
   app.use(notFoundHandler);
   app.use(errorHandler);
