@@ -44,13 +44,14 @@ void main() {
     expect(find.byIcon(Icons.local_hospital_rounded), findsOneWidget);
   });
 
-  test('olive copper palette is wired into light and dark themes', () {
-    expect(AppTheme.light.scaffoldBackgroundColor, const Color(0xFFFEFAE0));
-    expect(AppTokens.light.card, const Color(0xFF606C38));
+  test('cozy cream/terracotta palette is wired into light and dark themes',
+      () {
+    expect(AppTheme.light.scaffoldBackgroundColor, const Color(0xFFFBF1DF));
+    expect(AppTokens.light.card, const Color(0xFF7E9473));
     expect(AppTokens.light.card, isNot(AppTokens.light.background));
-    expect(AppTheme.light.colorScheme.primary, const Color(0xFF283618));
-    expect(AppTheme.dark.scaffoldBackgroundColor, const Color(0xFF283618));
-    expect(AppTheme.dark.colorScheme.primary, const Color(0xFFDDA15E));
+    expect(AppTheme.light.colorScheme.primary, const Color(0xFFC1592E));
+    expect(AppTheme.dark.scaffoldBackgroundColor, const Color(0xFF2B1D12));
+    expect(AppTheme.dark.colorScheme.primary, const Color(0xFFECA83D));
     expect(
       AppTheme.dark.scaffoldBackgroundColor,
       isNot(AppTheme.light.scaffoldBackgroundColor),

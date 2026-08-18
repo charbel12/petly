@@ -1,38 +1,42 @@
 /// Petly design tokens & app constants
 class AppColors {
-  // Palette 3 — olive / forest / cornsilk / clay / copper
-  static const oliveLeaf = 0xFF606C38;
-  static const blackForest = 0xFF283618;
-  static const cornsilk = 0xFFFEFAE0;
-  static const sunlitClay = 0xFFDDA15E;
-  static const copperwood = 0xFFBC6C25;
+  // Cozy pet-friendly palette — cream / terracotta / sage / honey / cocoa
+  static const cream = 0xFFFBF1DF;
+  static const terracotta = 0xFFC1592E;
+  static const sage = 0xFF7E9473;
+  static const honey = 0xFFECA83D;
+  static const cocoa = 0xFF4A3324;
 
   /// Tints and shades mixed only from the five palette colors.
-  static const cornsilkSurface = 0xFFFFFDF4;
-  static const oliveMist = 0xFFE1E0C2;
-  static const forestCanopy = 0xFF3C4923;
-  static const sageMist = 0xFFB7BA94;
+  static const creamSurface = 0xFFFFF8EC;
+  static const sandMist = 0xFFEEDFC0;
+  static const cocoaDeep = 0xFF2B1D12;
+  static const cocoaSurface = 0xFF3C2A1B;
+  static const terracottaDeep = 0xFF8E3E22;
+  static const terracottaBright = 0xFFD9663F;
+  static const sageDeep = 0xFF5C7052;
+  static const sageLight = 0xFF9AB58C;
 
   // Semantic — light
-  static const primary = blackForest;
-  static const accent = sunlitClay;
-  static const secondary = copperwood;
-  static const secondarySoft = sunlitClay;
-  static const background = cornsilk;
-  static const text = blackForest;
-  static const surface = cornsilkSurface;
-  static const muted = oliveLeaf;
-  static const border = oliveMist;
-  static const danger = copperwood;
-  static const success = oliveLeaf;
+  static const primary = terracotta;
+  static const accent = honey;
+  static const secondary = cocoa;
+  static const secondarySoft = honey;
+  static const background = cream;
+  static const text = cocoa;
+  static const surface = creamSurface;
+  static const muted = terracotta;
+  static const border = sandMist;
+  static const danger = terracottaDeep;
+  static const success = sage;
 
   // Semantic — dark
-  static const darkBackground = blackForest;
-  static const darkSurface = forestCanopy;
-  static const darkText = cornsilk;
-  static const darkMuted = sageMist;
-  static const darkBorder = oliveLeaf;
-  static const darkPrimary = sunlitClay;
+  static const darkBackground = cocoaDeep;
+  static const darkSurface = cocoaSurface;
+  static const darkText = cream;
+  static const darkMuted = honey;
+  static const darkBorder = terracotta;
+  static const darkPrimary = honey;
 }
 
 class AppConstants {
@@ -49,10 +53,10 @@ class AppConstants {
   static const demoUserName = 'Demo User';
   static const demoUserPhone = '+96171123456';
 
-  /// Android emulator → host machine. Override via --dart-define=API_BASE_URL=...
+  /// Hosted API. Override locally via --dart-define=API_BASE_URL=...
   static const apiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://10.0.2.2:3000',
+    defaultValue: 'https://petly-6f6c.onrender.com',
   );
 
   static const whatsappMessage =

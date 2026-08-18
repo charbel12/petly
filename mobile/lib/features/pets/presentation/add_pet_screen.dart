@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/providers/user_provider.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/api_error.dart';
 import '../providers/pets_providers.dart';
 
@@ -55,6 +56,7 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppTokens.of(context);
     return Scaffold(
       appBar: AppBar(title: const Text('Add pet')),
       body: Form(
@@ -103,12 +105,12 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
             ElevatedButton(
               onPressed: _saving ? null : _save,
               child: _saving
-                  ? const SizedBox(
+                  ? SizedBox(
                       height: 22,
                       width: 22,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Color(0xFFFEFAE0),
+                        color: tokens.onBrand,
                       ),
                     )
                   : const Text('Save pet'),

@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.petly.petly"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
     compileOptions {

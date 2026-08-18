@@ -82,8 +82,10 @@ class OfflineBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Always a dark cocoa strip with light text, regardless of theme —
+    // a status banner, not a themed surface.
     return Material(
-      color: const Color(AppColors.blackForest),
+      color: const Color(AppColors.cocoa),
       child: SafeArea(
         bottom: false,
         child: Padding(
@@ -92,7 +94,7 @@ class OfflineBanner extends StatelessWidget {
             children: [
               const Icon(
                 Icons.wifi_off_rounded,
-                color: Color(AppColors.cornsilk),
+                color: Color(AppColors.cream),
                 size: 18,
               ),
               const SizedBox(width: 10),
@@ -100,7 +102,7 @@ class OfflineBanner extends StatelessWidget {
                 child: Text(
                   'No internet connection',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: const Color(AppColors.cornsilk),
+                        color: const Color(AppColors.cream),
                         fontWeight: FontWeight.w600,
                       ),
                 ),

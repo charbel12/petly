@@ -49,22 +49,24 @@ cd mobile
 flutter pub get
 ```
 
-**Android emulator** (default API URL `http://10.0.2.2:3000`):
+**Android emulator / physical device** (default API `https://petly-6f6c.onrender.com`):
 
 ```bash
 flutter run
 ```
 
-**iOS simulator / Windows desktop** (host loopback):
+The first request after the Render service has been idle can take up to a minute (cold start).
+
+**Local API** (Android emulator → host machine):
+
+```bash
+flutter run --dart-define=API_BASE_URL=http://10.0.2.2:3000
+```
+
+**iOS simulator / Windows desktop** (local API):
 
 ```bash
 flutter run --dart-define=API_BASE_URL=http://127.0.0.1:3000
-```
-
-**Physical device** (replace with your machine LAN IP):
-
-```bash
-flutter run --dart-define=API_BASE_URL=http://192.168.x.x:3000
 ```
 
 ## API endpoints

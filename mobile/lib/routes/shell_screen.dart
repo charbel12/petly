@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../core/providers/connectivity_provider.dart';
-import '../../core/theme/app_tokens.dart';
-import '../../core/widgets/async_error_view.dart';
+import '../core/providers/connectivity_provider.dart';
+import '../core/theme/app_tokens.dart';
+import '../core/widgets/async_error_view.dart';
 
 class ShellScreen extends ConsumerWidget {
   const ShellScreen({super.key, required this.navigationShell});

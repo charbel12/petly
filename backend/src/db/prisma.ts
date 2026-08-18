@@ -26,5 +26,6 @@ export function deployMigrations() {
   execFileSync(npx, ['prisma', 'migrate', 'deploy'], {
     cwd: backendRoot,
     stdio: 'inherit',
+    shell: process.platform === 'win32',
   });
 }
