@@ -93,3 +93,67 @@ test('listStores returns image_url when set', async () => {
 
   await prisma.store.delete({ where: { id: created.id } });
 });
+
+test('listStoreItems is public only for approved stores', async () => {
+  const pending = await prisma.store.create({
+    data: {
+      name: `Pending Items Store ${Date.now()}`,
+      type: 'Pet Store',
+      location: 'Hamra, Beirut',
+      status: 'pending',
+    },
+  });
+  await prisma.storeItem.create({
+    data: { storeId: pending.id, name: 'Hidden kibble' },
+  });
+
+  await assert.rejects(
+    () => storesService.listStoreItems(pending.id),
+    (err: unknown) => err instanceof AppError && err.statusCode === 404,
+  );
+
+  await prisma.store.delete({ where: { id: pending.id } });
+});
+
+test('getNearestStoreItems returns in-stock items from the closest store', async () => {
+  const suffix = Date.now();
+  const near = await prisma.store.create({
+    data: {
+      name: `Near Items ${suffix}`,
+      type: 'Pet Store',
+      location: 'Hamra, Beirut',
+      latitude: 33.894,
+      longitude: 35.502,
+      status: 'approved',
+    },
+  });
+  const far = await prisma.store.create({
+    data: {
+      name: `Far Items ${suffix}`,
+      type: 'Pet Store',
+      location: 'Saida',
+      latitude: 33.5571,
+      longitude: 35.3729,
+      status: 'approved',
+    },
+  });
+  await prisma.storeItem.createMany({
+    data: [
+      { storeId: near.id, name: 'Near chew toy', price: 6.5, inStock: true },
+      { storeId: near.id, name: 'Out of stock near', inStock: false },
+      { storeId: far.id, name: 'Far fish flakes', price: 4, inStock: true },
+    ],
+  });
+
+  const result = await storesService.getNearestStoreItems(33.8938, 35.5018, 6);
+  assert.equal(result.store?.id, near.id);
+  assert.equal(result.items.length, 1);
+  assert.equal(result.items[0].name, 'Near chew toy');
+  assert.equal(result.items[0].price, 6.5);
+
+  const listed = await storesService.listStoreItems(near.id);
+  assert.equal(listed.length, 2);
+
+  await prisma.store.delete({ where: { id: near.id } });
+  await prisma.store.delete({ where: { id: far.id } });
+});

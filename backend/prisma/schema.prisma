@@ -117,14 +117,34 @@ model Store {
   createdAt        DateTime      @default(now()) @map("created_at") @db.Timestamptz
   updatedAt        DateTime      @updatedAt @map("updated_at") @db.Timestamptz
 
-  owner    User? @relation("StoreOwner", fields: [ownerUserId], references: [id], onDelete: SetNull)
-  reviewer User? @relation("StoreReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
+  owner    User?      @relation("StoreOwner", fields: [ownerUserId], references: [id], onDelete: SetNull)
+  reviewer User?      @relation("StoreReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
+  items    StoreItem[]
 
   @@index([featured])
   @@index([type])
   @@index([status])
   @@index([ownerUserId])
   @@map("stores")
+}
+
+model StoreItem {
+  id          String   @id @default(uuid()) @db.Uuid
+  storeId     String   @map("store_id") @db.Uuid
+  name        String   @db.VarChar(160)
+  description String?  @db.VarChar(500)
+  price       Decimal? @db.Decimal(10, 2)
+  currency    String   @default("USD") @db.VarChar(3)
+  imageUrl    String?  @map("image_url") @db.VarChar(500)
+  inStock     Boolean  @default(true) @map("in_stock")
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@index([storeId])
+  @@map("store_items")
 }
 
 model WhatsAppClick {

@@ -1,5 +1,6 @@
 import '../api/api_client.dart';
 import '../models/store.dart';
+import '../models/store_item.dart';
 import '../../core/constants/app_constants.dart';
 
 class StoresRepository {
@@ -44,5 +45,35 @@ class StoresRepository {
       queryParameters: {'lat': lat, 'lng': lng},
     );
     return Store.fromJson(response.data!);
+  }
+
+  Future<List<StoreItem>> listItems(
+    String storeId, {
+    bool inStockOnly = false,
+    int? limit,
+  }) async {
+    final response = await _api.get<List<dynamic>>(
+      '/stores/$storeId/items',
+      queryParameters: {
+        if (inStockOnly) 'in_stock': true,
+        'limit': ?limit,
+      },
+    );
+    return (response.data ?? [])
+        .whereType<Map<String, dynamic>>()
+        .map(StoreItem.fromJson)
+        .toList();
+  }
+
+  Future<NearestStoreItems> nearestItems({
+    double lat = AppConstants.defaultLat,
+    double lng = AppConstants.defaultLng,
+    int limit = 6,
+  }) async {
+    final response = await _api.get<Map<String, dynamic>>(
+      '/stores/nearest/items',
+      queryParameters: {'lat': lat, 'lng': lng, 'limit': limit},
+    );
+    return NearestStoreItems.fromJson(response.data ?? {});
   }
 }

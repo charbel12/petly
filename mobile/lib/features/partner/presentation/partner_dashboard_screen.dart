@@ -107,6 +107,8 @@ class PartnerDashboardScreen extends ConsumerWidget {
                           store: store,
                           onTap: () =>
                               context.push('/partner/stores/${store.id}/edit'),
+                          onItems: () =>
+                              context.push('/partner/stores/${store.id}/items'),
                         ),
                         const SizedBox(height: 10),
                       ],
@@ -162,10 +164,15 @@ class _VetListingTile extends StatelessWidget {
 }
 
 class _StoreListingTile extends StatelessWidget {
-  const _StoreListingTile({required this.store, required this.onTap});
+  const _StoreListingTile({
+    required this.store,
+    required this.onTap,
+    required this.onItems,
+  });
 
   final Store store;
   final VoidCallback onTap;
+  final VoidCallback onItems;
 
   @override
   Widget build(BuildContext context) {
@@ -194,6 +201,11 @@ class _StoreListingTile extends StatelessWidget {
             ),
           ),
           StatusChip(status: store.status ?? 'pending'),
+          IconButton(
+            tooltip: 'Manage items',
+            onPressed: onItems,
+            icon: const Icon(Icons.inventory_2_outlined),
+          ),
         ],
       ),
     );

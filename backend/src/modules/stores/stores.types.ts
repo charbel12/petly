@@ -37,3 +37,22 @@ export interface StoreFilters {
   lng?: number;
   max_distance_km?: number;
 }
+
+export interface StoreItem {
+  id: string;
+  store_id: string;
+  name: string;
+  description: string | null;
+  price: number | null;
+  currency: string;
+  image_url: string | null;
+  in_stock: boolean;
+  sort_order: number;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface NearestStoreItems {
+  store: Store | null;
+  items: StoreItem[];
+}

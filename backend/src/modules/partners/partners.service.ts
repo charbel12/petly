@@ -1,12 +1,14 @@
 import { prisma } from '../../db/prisma';
 import { AppError } from '../../middleware/errorHandler';
 import { hoursToJson } from '../listings/hours.schema';
-import { mapOwnedStore, mapOwnedVet } from '../../db/mappers';
-import { OwnedStore } from '../stores/stores.types';
+import { mapOwnedStore, mapOwnedVet, mapStoreItem } from '../../db/mappers';
+import { OwnedStore, StoreItem } from '../stores/stores.types';
 import { OwnedVet } from '../vets/vets.types';
 import {
+  CreateStoreItemDto,
   CreateStoreListingDto,
   CreateVetListingDto,
+  PatchStoreItemDto,
   PatchStoreListingDto,
   PatchVetListingDto,
 } from './partners.types';
@@ -166,4 +168,85 @@ export async function updateStore(
     },
   });
   return mapOwnedStore(row);
+}
+
+export async function listStoreItems(
+  ownerUserId: string,
+  storeId: string,
+): Promise<StoreItem[]> {
+  await requireOwnedStore(storeId, ownerUserId);
+  const rows = await prisma.storeItem.findMany({
+    where: { storeId },
+    orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
+  });
+  return rows.map(mapStoreItem);
+}
+
+export async function createStoreItem(
+  ownerUserId: string,
+  storeId: string,
+  dto: CreateStoreItemDto,
+): Promise<StoreItem> {
+  await requireOwnedStore(storeId, ownerUserId);
+  const row = await prisma.storeItem.create({
+    data: {
+      storeId,
+      name: dto.name,
+      description: dto.description ?? null,
+      price: dto.price ?? null,
+      currency: dto.currency ?? 'USD',
+      imageUrl: dto.image_url ?? null,
+      inStock: dto.in_stock ?? true,
+      sortOrder: dto.sort_order ?? 0,
+    },
+  });
+  return mapStoreItem(row);
+}
+
+async function requireOwnedStoreItem(itemId: string, ownerUserId: string) {
+  const row = await prisma.storeItem.findUnique({
+    where: { id: itemId },
+    include: { store: true },
+  });
+  if (!row || row.store.ownerUserId !== ownerUserId) {
+    throw new AppError(404, 'Item not found');
+  }
+  return row;
+}
+
+export async function updateStoreItem(
+  ownerUserId: string,
+  storeId: string,
+  itemId: string,
+  dto: PatchStoreItemDto,
+): Promise<StoreItem> {
+  const existing = await requireOwnedStoreItem(itemId, ownerUserId);
+  if (existing.storeId !== storeId) {
+    throw new AppError(404, 'Item not found');
+  }
+  const row = await prisma.storeItem.update({
+    where: { id: itemId },
+    data: {
+      ...(dto.name !== undefined ? { name: dto.name } : {}),
+      ...(dto.description !== undefined ? { description: dto.description } : {}),
+      ...(dto.price !== undefined ? { price: dto.price } : {}),
+      ...(dto.currency !== undefined ? { currency: dto.currency } : {}),
+      ...(dto.image_url !== undefined ? { imageUrl: dto.image_url } : {}),
+      ...(dto.in_stock !== undefined ? { inStock: dto.in_stock } : {}),
+      ...(dto.sort_order !== undefined ? { sortOrder: dto.sort_order } : {}),
+    },
+  });
+  return mapStoreItem(row);
+}
+
+export async function deleteStoreItem(
+  ownerUserId: string,
+  storeId: string,
+  itemId: string,
+): Promise<void> {
+  const existing = await requireOwnedStoreItem(itemId, ownerUserId);
+  if (existing.storeId !== storeId) {
+    throw new AppError(404, 'Item not found');
+  }
+  await prisma.storeItem.delete({ where: { id: itemId } });
 }

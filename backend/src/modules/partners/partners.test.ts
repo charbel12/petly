@@ -213,3 +213,69 @@ test('public store list never returns pending or rejected listings', async () =>
   assert.equal(rejectedList.length, 0);
   await request(app).get(`/stores/${created.body.id}`).expect(404);
 });
+
+test('partner can manage store items without changing listing status', async () => {
+  const partner = await registerPartner();
+  const other = await registerPartner('Other');
+  const adminToken = await loginAdmin();
+  const created = await request(app)
+    .post('/partners/stores')
+    .set('Authorization', `Bearer ${partner.token}`)
+    .send({
+      name: `Catalog Store ${Date.now()}`,
+      location: 'Hamra, Beirut',
+      type: 'Pet Store',
+    })
+    .expect(201);
+
+  const pendingItems = await request(app)
+    .post(`/partners/stores/${created.body.id}/items`)
+    .set('Authorization', `Bearer ${partner.token}`)
+    .send({ name: 'Puppy kibble', price: 18.5, currency: 'USD' })
+    .expect(201);
+  assert.equal(pendingItems.body.name, 'Puppy kibble');
+  assert.equal(pendingItems.body.price, 18.5);
+
+  await request(app).get(`/stores/${created.body.id}/items`).expect(404);
+
+  await request(app)
+    .patch(`/admin/stores/${created.body.id}/review`)
+    .set('Authorization', `Bearer ${adminToken}`)
+    .send({ status: 'approved' })
+    .expect(200);
+
+  const publicItems = await request(app)
+    .get(`/stores/${created.body.id}/items`)
+    .expect(200);
+  assert.equal(publicItems.body.length, 1);
+
+  const patched = await request(app)
+    .patch(`/partners/stores/${created.body.id}/items/${pendingItems.body.id}`)
+    .set('Authorization', `Bearer ${partner.token}`)
+    .send({ in_stock: false })
+    .expect(200);
+  assert.equal(patched.body.in_stock, false);
+
+  const storeAfter = await request(app)
+    .get(`/partners/stores/${created.body.id}`)
+    .set('Authorization', `Bearer ${partner.token}`)
+    .expect(200);
+  assert.equal(storeAfter.body.status, 'approved');
+
+  await request(app)
+    .patch(`/partners/stores/${created.body.id}/items/${pendingItems.body.id}`)
+    .set('Authorization', `Bearer ${other.token}`)
+    .send({ name: 'Hijack' })
+    .expect(404);
+
+  await request(app)
+    .delete(`/partners/stores/${created.body.id}/items/${pendingItems.body.id}`)
+    .set('Authorization', `Bearer ${partner.token}`)
+    .expect(204);
+
+  const empty = await request(app)
+    .get(`/partners/stores/${created.body.id}/items`)
+    .set('Authorization', `Bearer ${partner.token}`)
+    .expect(200);
+  assert.equal(empty.body.length, 0);
+});

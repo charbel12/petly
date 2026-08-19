@@ -12,6 +12,8 @@ import '../../../core/widgets/section_header.dart';
 import '../../../core/widgets/skeleton.dart';
 import '../../stores/providers/stores_providers.dart';
 import '../../stores/widgets/store_card.dart';
+import '../../stores/widgets/store_item_card.dart';
+import '../../stores/widgets/store_item_sheet.dart';
 import '../../vets/providers/vets_providers.dart';
 import '../../vets/widgets/vet_card.dart';
 
@@ -46,6 +48,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final locationLabel = ref.watch(locationLabelProvider);
     final vetsAsync = ref.watch(nearbyVetsProvider);
     final storesAsync = ref.watch(featuredStoresProvider);
+    final nearestItemsAsync = ref.watch(nearestStoreItemsProvider);
     final firstName =
         userAsync.asData?.value.name.split(' ').first ?? 'there';
     final locationHint = locationAsync.asData?.value.errorMessage;
@@ -60,9 +63,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               await ref.read(locationProvider.notifier).refresh();
               ref.invalidate(nearbyVetsProvider);
               ref.invalidate(featuredStoresProvider);
+              ref.invalidate(nearestStoreItemsProvider);
               await Future.wait([
                 ref.read(nearbyVetsProvider.future),
                 ref.read(featuredStoresProvider.future),
+                ref.read(nearestStoreItemsProvider.future),
               ]);
             },
             child: ListView(
@@ -94,6 +99,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                         .refresh();
                                     ref.invalidate(nearbyVetsProvider);
                                     ref.invalidate(featuredStoresProvider);
+                                    ref.invalidate(nearestStoreItemsProvider);
                                   },
                                   borderRadius: BorderRadius.circular(8),
                                   child: Row(
@@ -219,6 +225,63 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   .push('/vets/${nearby[i].id}?src=home'),
                             ),
                           ),
+                      ],
+                    );
+                  },
+                ),
+                const SizedBox(height: 16),
+                nearestItemsAsync.when(
+                  loading: () => const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SectionHeader(title: 'From a nearby store'),
+                      SizedBox(height: 12),
+                      HorizontalCardSkeleton(),
+                    ],
+                  ),
+                  error: (e, _) => AsyncErrorView(
+                    error: e,
+                    onRetry: () => ref.invalidate(nearestStoreItemsProvider),
+                    compact: true,
+                  ),
+                  data: (payload) {
+                    if (payload.isEmpty) return const SizedBox.shrink();
+                    final store = payload.store!;
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SectionHeader(
+                          title: 'From ${store.name}',
+                          actionLabel: 'See store',
+                          onAction: () =>
+                              context.push('/stores/${store.id}?src=home'),
+                        ),
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          height: 228,
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: payload.items.length,
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(width: 12),
+                            itemBuilder: (context, index) {
+                              final item = payload.items[index];
+                              return StaggeredListItem(
+                                index: index,
+                                child: StoreItemCard(
+                                  item: item,
+                                  onTap: () => showStoreItemSheet(
+                                    context: context,
+                                    ref: ref,
+                                    item: item,
+                                    store: store,
+                                    source: 'home-item',
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
                       ],
                     );
                   },

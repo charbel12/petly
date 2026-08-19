@@ -74,6 +74,30 @@ const patchStoreSchema = z
     message: 'at least one field is required',
   });
 
+const createStoreItemSchema = z.object({
+  name: z.string().trim().min(1, 'name is required').max(160),
+  description: z.string().trim().max(500).optional().nullable(),
+  price: z.number().finite().nonnegative().optional().nullable(),
+  currency: z.enum(['USD', 'LBP']).optional(),
+  image_url: imageUrlSchema.optional(),
+  in_stock: z.boolean().optional(),
+  sort_order: z.number().int().min(0).max(9999).optional(),
+});
+
+const patchStoreItemSchema = z
+  .object({
+    name: z.string().trim().min(1).max(160).optional(),
+    description: z.string().trim().max(500).optional().nullable(),
+    price: z.number().finite().nonnegative().optional().nullable(),
+    currency: z.enum(['USD', 'LBP']).optional(),
+    image_url: imageUrlSchema.nullable().optional(),
+    in_stock: z.boolean().optional(),
+    sort_order: z.number().int().min(0).max(9999).optional(),
+  })
+  .refine((value) => Object.keys(value).length > 0, {
+    message: 'at least one field is required',
+  });
+
 router.get('/me/listings', async (req, res, next) => {
   try {
     const listings = await partnersService.listMyListings(req.auth!.userId);
@@ -148,5 +172,65 @@ router.patch(
     }
   },
 );
+
+router.get('/stores/:id/items', async (req, res, next) => {
+  try {
+    const items = await partnersService.listStoreItems(
+      req.auth!.userId,
+      String(req.params.id),
+    );
+    res.json(items);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post(
+  '/stores/:id/items',
+  validateBody(createStoreItemSchema),
+  async (req, res, next) => {
+    try {
+      const item = await partnersService.createStoreItem(
+        req.auth!.userId,
+        String(req.params.id),
+        req.body,
+      );
+      res.status(201).json(item);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+router.patch(
+  '/stores/:id/items/:itemId',
+  validateBody(patchStoreItemSchema),
+  async (req, res, next) => {
+    try {
+      const item = await partnersService.updateStoreItem(
+        req.auth!.userId,
+        String(req.params.id),
+        String(req.params.itemId),
+        req.body,
+      );
+      res.json(item);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+router.delete('/stores/:id/items/:itemId', async (req, res, next) => {
+  try {
+    await partnersService.deleteStoreItem(
+      req.auth!.userId,
+      String(req.params.id),
+      String(req.params.itemId),
+    );
+    res.status(204).send();
+  } catch (err) {
+    next(err);
+  }
+});
 
 export default router;
