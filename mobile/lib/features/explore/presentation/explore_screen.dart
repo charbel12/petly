@@ -10,6 +10,7 @@ import '../../../core/widgets/skeleton.dart';
 import '../../../data/models/store.dart';
 import '../../../data/models/vet.dart';
 import '../../stores/providers/stores_providers.dart';
+import '../../stores/widgets/nearby_store_items_section.dart';
 import '../../stores/widgets/store_card.dart';
 import '../../vets/providers/vets_providers.dart';
 import '../../vets/widgets/vet_card.dart';
@@ -129,6 +130,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                         .read(exploreStoresFiltersProvider.notifier)
                         .setMaxDistance(km),
                     onRetry: () => ref.invalidate(exploreStoresProvider),
+                    showNearbyItems: storeFilters.search.trim().isEmpty &&
+                        storeFilters.type == null,
                   ),
                 ],
               ),
@@ -215,6 +218,8 @@ class _VetsTab extends StatelessWidget {
         ),
         Expanded(
           child: asyncList.when(
+            skipLoadingOnReload: true,
+            skipLoadingOnRefresh: true,
             loading: () => const Padding(
               padding: EdgeInsets.fromLTRB(20, 8, 20, 24),
               child: ListingCardSkeleton(count: 4),
@@ -268,6 +273,7 @@ class _StoresTab extends StatelessWidget {
     required this.onType,
     required this.onDistance,
     required this.onRetry,
+    required this.showNearbyItems,
   });
 
   final ExploreStoresFilters filters;
@@ -276,6 +282,7 @@ class _StoresTab extends StatelessWidget {
   final ValueChanged<String?> onType;
   final ValueChanged<double?> onDistance;
   final VoidCallback onRetry;
+  final bool showNearbyItems;
 
   @override
   Widget build(BuildContext context) {
@@ -315,9 +322,18 @@ class _StoresTab extends StatelessWidget {
         ),
         Expanded(
           child: asyncList.when(
-            loading: () => const Padding(
-              padding: EdgeInsets.fromLTRB(20, 8, 20, 24),
-              child: ListingCardSkeleton(count: 4),
+            skipLoadingOnReload: true,
+            skipLoadingOnRefresh: true,
+            loading: () => ListView(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+              children: [
+                if (showNearbyItems)
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: 16),
+                    child: NearbyStoreItemsSection(source: 'explore'),
+                  ),
+                const ListingCardSkeleton(count: 4),
+              ],
             ),
             error: (error, stackTrace) => AsyncErrorView(
               error: error,
@@ -326,24 +342,37 @@ class _StoresTab extends StatelessWidget {
             data: (items) {
               if (items.isEmpty) {
                 final q = filters.search.trim();
-                if (q.isNotEmpty) {
-                  return EmptyState(
-                    title: 'No stores match “$q”',
-                    message: 'Try another area or clear filters.',
-                    icon: Icons.storefront_outlined,
-                  );
-                }
-                return const EmptyState(
-                  title: 'No stores match your filters',
-                  message: 'Adjust filters or search a different neighborhood.',
-                  icon: Icons.storefront_outlined,
+                return ListView(
+                  padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+                  children: [
+                    if (showNearbyItems)
+                      const Padding(
+                        padding: EdgeInsets.only(bottom: 16),
+                        child: NearbyStoreItemsSection(source: 'explore'),
+                      ),
+                    EmptyState(
+                      title: q.isNotEmpty
+                          ? 'No stores match “$q”'
+                          : 'No stores match your filters',
+                      message: q.isNotEmpty
+                          ? 'Try another area or clear filters.'
+                          : 'Adjust filters or search a different neighborhood.',
+                      icon: Icons.storefront_outlined,
+                    ),
+                  ],
                 );
               }
               return ListView.builder(
                 padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
-                itemCount: items.length,
+                itemCount: items.length + (showNearbyItems ? 1 : 0),
                 itemBuilder: (context, index) {
-                  final store = items[index];
+                  if (showNearbyItems && index == 0) {
+                    return const Padding(
+                      padding: EdgeInsets.only(bottom: 16),
+                      child: NearbyStoreItemsSection(source: 'explore'),
+                    );
+                  }
+                  final store = items[showNearbyItems ? index - 1 : index];
                   return StaggeredListItem(
                     index: index,
                     child: StoreCard(

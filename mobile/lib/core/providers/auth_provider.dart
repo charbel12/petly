@@ -62,6 +62,25 @@ class AuthNotifier extends AsyncNotifier<User?> {
     }
   }
 
+  Future<void> loginWithGoogle({
+    required String idToken,
+    String? role,
+  }) async {
+    state = const AsyncLoading();
+    try {
+      final deviceId = await _deviceId();
+      final user = await ref.read(authRepositoryProvider).loginWithGoogle(
+            idToken: idToken,
+            deviceId: deviceId,
+            role: role,
+          );
+      state = AsyncData(user);
+    } catch (error, stack) {
+      state = AsyncError(error, stack);
+      rethrow;
+    }
+  }
+
   Future<void> becomePartner() async {
     state = const AsyncLoading();
     try {

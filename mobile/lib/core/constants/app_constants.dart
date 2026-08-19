@@ -66,4 +66,13 @@ class AppConstants {
 
   /// WhatsApp brand green — kept as the vendor color, not part of the app palette.
   static const whatsappGreen = 0xFF25D366;
+
+  /// Google OAuth web client ID (ID-token audience). Set via
+  /// `--dart-define=GOOGLE_WEB_CLIENT_ID=...`.
+  static const googleWebClientId = String.fromEnvironment('GOOGLE_WEB_CLIENT_ID');
+
+  /// iOS OAuth client ID. Set via `--dart-define=GOOGLE_IOS_CLIENT_ID=...`.
+  static const googleIosClientId = String.fromEnvironment('GOOGLE_IOS_CLIENT_ID');
+
+  static bool get googleSignInConfigured => googleWebClientId.isNotEmpty;
 }

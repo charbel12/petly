@@ -4,8 +4,7 @@ import '../../../core/providers/location_provider.dart';
 import '../../../data/models/store.dart';
 import '../../../data/models/store_item.dart';
 
-final featuredStoresProvider =
-    FutureProvider.autoDispose<List<Store>>((ref) async {
+final featuredStoresProvider = FutureProvider<List<Store>>((ref) async {
   final repo = ref.watch(storesRepositoryProvider);
   return repo.list(
     featured: true,
@@ -65,8 +64,7 @@ final exploreStoresFiltersProvider =
   ExploreStoresFiltersNotifier.new,
 );
 
-final exploreStoresProvider =
-    FutureProvider.autoDispose<List<Store>>((ref) async {
+final exploreStoresProvider = FutureProvider<List<Store>>((ref) async {
   final filters = ref.watch(exploreStoresFiltersProvider);
   final repo = ref.watch(storesRepositoryProvider);
   return repo.list(
@@ -90,7 +88,7 @@ final storeDetailProvider =
 });
 
 final nearestStoreItemsProvider =
-    FutureProvider.autoDispose<NearestStoreItems>((ref) async {
+    FutureProvider<NearestStoreItems>((ref) async {
   final repo = ref.watch(storesRepositoryProvider);
   return repo.nearestItems(
     lat: ref.watch(userLatProvider),

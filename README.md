@@ -57,6 +57,8 @@ flutter run
 
 The first request after the Render service has been idle can take up to a minute (cold start).
 
+On boot the API applies pending Prisma migrations and ensures demo store items exist for the seeded catalog stores. Production enables Express `trust proxy` (one hop) so rate limiting can use Render’s `X-Forwarded-For` header.
+
 **Local API** (Android emulator → host machine):
 
 ```bash
@@ -69,6 +71,17 @@ flutter run --dart-define=API_BASE_URL=http://10.0.2.2:3000
 flutter run --dart-define=API_BASE_URL=http://127.0.0.1:3000
 ```
 
+### Google Sign-In
+
+Keep email/password. Google only proves identity; the API still issues Petly JWTs.
+
+1. In Google Cloud Console, create OAuth client IDs for **Web**, **Android** (`com.petly.petly` + your SHA-1), and **iOS** (`com.petly.petly`).
+2. Backend `.env`: `GOOGLE_CLIENT_IDS=<web-id>,<android-id>,<ios-id>` (used as ID-token `aud`).
+3. Flutter: `--dart-define=GOOGLE_WEB_CLIENT_ID=<web-id>` and, on iOS, `--dart-define=GOOGLE_IOS_CLIENT_ID=<ios-id>`. iOS also needs the reversed iOS client ID as a URL scheme in Xcode.
+4. Android debug SHA-1: `cd mobile/android && ./gradlew signingReport`
+
+Same Google email as an existing password account links them. Partners can still use Profile → become partner; listing contact stays phone/WhatsApp.
+
 ## API endpoints
 
 | Method | Path | Description |
@@ -76,6 +89,7 @@ flutter run --dart-define=API_BASE_URL=http://127.0.0.1:3000
 | `GET` | `/health` | Health check |
 | `POST` | `/auth/register` | Create account (`name`, `email`, `password`, optional `phone`, `device_id`, `role`: `client` or `partner`) |
 | `POST` | `/auth/login` | Email + password (optional `device_id` to link a guest) |
+| `POST` | `/auth/oauth` | Google Sign-In (`provider: google`, `id_token`, optional `device_id`, `role`) |
 | `POST` | `/auth/refresh` | Rotate tokens (`refresh_token`) |
 | `POST` | `/auth/logout` | Revoke a refresh token |
 | `GET` | `/auth/me` | Current user (Bearer access token) |
@@ -138,6 +152,7 @@ backend/prisma/     # schema, migrations, seed
 - **Auth (Phase 1)** — JWT access + refresh tokens, roles `client | partner | admin`. Default admin: `admin@petly.local` / `changeme-admin` (override with `ADMIN_EMAIL` / `ADMIN_PASSWORD`).
 - **Partner onboarding (Phase 2)** — register as partner or upgrade from Profile; submit clinics/stores for review; public Explore only shows `approved` listings. Demo partner: `partner@petly.local` / `changeme-partner`. Admin review is API-only (`/admin/...`).
 - **Store items** — partners can catalog products on a store; Home shows a few in-stock items from the nearest store, and the store page lists the full catalog. No cart or checkout yet.
+- **Google Sign-In** — `POST /auth/oauth` verifies a Google ID token, links or creates a Petly user (same JWT session as email/password), and can upgrade a guest via `device_id`. Requires `GOOGLE_CLIENT_IDS` on the API and `--dart-define=GOOGLE_WEB_CLIENT_ID=...` in the app.
 - **Offline / error UX** — top offline banner, shared `AsyncErrorView`, clearer Dio error messages.
 
 ### New API endpoints

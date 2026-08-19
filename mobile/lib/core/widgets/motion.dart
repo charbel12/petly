@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class StaggeredListItem extends StatelessWidget {
+class StaggeredListItem extends StatefulWidget {
   const StaggeredListItem({
     super.key,
     required this.index,
@@ -13,22 +13,51 @@ class StaggeredListItem extends StatelessWidget {
   final Duration delayStep;
 
   @override
-  Widget build(BuildContext context) {
-    final delayMs = (index * delayStep.inMilliseconds).clamp(0, 280);
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0, end: 1),
+  State<StaggeredListItem> createState() => _StaggeredListItemState();
+}
+
+class _StaggeredListItemState extends State<StaggeredListItem>
+    with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _animation;
+
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  void initState() {
+    super.initState();
+    final delayMs =
+        (widget.index * widget.delayStep.inMilliseconds).clamp(0, 280);
+    _controller = AnimationController(
+      vsync: this,
       duration: Duration(milliseconds: 380 + delayMs),
+    );
+    _animation = CurvedAnimation(
+      parent: _controller,
       curve: Curves.easeOutCubic,
-      builder: (context, value, child) {
-        return Opacity(
-          opacity: value,
-          child: Transform.translate(
-            offset: Offset(0, 12 * (1 - value)),
-            child: child,
-          ),
-        );
-      },
-      child: child,
+    );
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    return FadeTransition(
+      opacity: _animation,
+      child: SlideTransition(
+        position: Tween<Offset>(
+          begin: const Offset(0, 0.04),
+          end: Offset.zero,
+        ).animate(_animation),
+        child: widget.child,
+      ),
     );
   }
 }

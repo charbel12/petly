@@ -11,8 +11,8 @@ import '../../../core/widgets/listing_image.dart';
 import '../../../core/widgets/skeleton.dart';
 import '../../../core/widgets/soft_card.dart';
 import '../providers/stores_providers.dart';
-import '../widgets/store_item_card.dart';
 import '../widgets/store_item_sheet.dart';
+import '../widgets/store_items_grid.dart';
 
 class StoreDetailScreen extends ConsumerWidget {
   const StoreDetailScreen({
@@ -157,7 +157,9 @@ class StoreDetailScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 10),
                     itemsAsync.when(
-                      loading: () => const ListingCardSkeleton(count: 2),
+                      skipLoadingOnReload: true,
+                      skipLoadingOnRefresh: true,
+                      loading: () => const StoreItemsGridSkeleton(count: 4),
                       error: (error, _) => AsyncErrorView(
                         error: error,
                         onRetry: () =>
@@ -173,21 +175,15 @@ class StoreDetailScreen extends ConsumerWidget {
                                 ),
                           );
                         }
-                        return Column(
-                          children: [
-                            for (final item in items)
-                              StoreItemCard(
-                                item: item,
-                                compact: false,
-                                onTap: () => showStoreItemSheet(
-                                  context: context,
-                                  ref: ref,
-                                  item: item,
-                                  store: store,
-                                  source: 'store-item',
-                                ),
-                              ),
-                          ],
+                        return StoreItemsGrid(
+                          items: items,
+                          onItemTap: (item) => showStoreItemSheet(
+                            context: context,
+                            ref: ref,
+                            item: item,
+                            store: store,
+                            source: 'store-item',
+                          ),
                         );
                       },
                     ),

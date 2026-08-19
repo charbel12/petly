@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import '../api/api_client.dart';
 import '../models/store.dart';
 import '../models/store_item.dart';
@@ -52,17 +53,22 @@ class StoresRepository {
     bool inStockOnly = false,
     int? limit,
   }) async {
-    final response = await _api.get<List<dynamic>>(
-      '/stores/$storeId/items',
-      queryParameters: {
-        if (inStockOnly) 'in_stock': true,
-        'limit': ?limit,
-      },
-    );
-    return (response.data ?? [])
-        .whereType<Map<String, dynamic>>()
-        .map(StoreItem.fromJson)
-        .toList();
+    try {
+      final response = await _api.get<List<dynamic>>(
+        '/stores/$storeId/items',
+        queryParameters: {
+          if (inStockOnly) 'in_stock': true,
+          'limit': ?limit,
+        },
+      );
+      return (response.data ?? [])
+          .whereType<Map<String, dynamic>>()
+          .map(StoreItem.fromJson)
+          .toList();
+    } on DioException catch (error) {
+      if (error.response?.statusCode == 404) return [];
+      rethrow;
+    }
   }
 
   Future<NearestStoreItems> nearestItems({
@@ -70,10 +76,17 @@ class StoresRepository {
     double lng = AppConstants.defaultLng,
     int limit = 6,
   }) async {
-    final response = await _api.get<Map<String, dynamic>>(
-      '/stores/nearest/items',
-      queryParameters: {'lat': lat, 'lng': lng, 'limit': limit},
-    );
-    return NearestStoreItems.fromJson(response.data ?? {});
+    final stores = await list(lat: lat, lng: lng);
+    for (final store in stores.take(8)) {
+      final items = await listItems(
+        store.id,
+        inStockOnly: true,
+        limit: limit,
+      );
+      if (items.isNotEmpty) {
+        return NearestStoreItems(store: store, items: items);
+      }
+    }
+    return const NearestStoreItems();
   }
 }

@@ -12,8 +12,7 @@ import '../../../core/widgets/section_header.dart';
 import '../../../core/widgets/skeleton.dart';
 import '../../stores/providers/stores_providers.dart';
 import '../../stores/widgets/store_card.dart';
-import '../../stores/widgets/store_item_card.dart';
-import '../../stores/widgets/store_item_sheet.dart';
+import '../../stores/widgets/nearby_store_items_section.dart';
 import '../../vets/providers/vets_providers.dart';
 import '../../vets/widgets/vet_card.dart';
 
@@ -48,7 +47,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final locationLabel = ref.watch(locationLabelProvider);
     final vetsAsync = ref.watch(nearbyVetsProvider);
     final storesAsync = ref.watch(featuredStoresProvider);
-    final nearestItemsAsync = ref.watch(nearestStoreItemsProvider);
     final firstName =
         userAsync.asData?.value.name.split(' ').first ?? 'there';
     final locationHint = locationAsync.asData?.value.errorMessage;
@@ -71,6 +69,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ]);
             },
             child: ListView(
+              cacheExtent: 2500,
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
               children: [
                 HeroPanel(
@@ -202,6 +201,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
                 const SizedBox(height: 12),
                 vetsAsync.when(
+                  skipLoadingOnReload: true,
+                  skipLoadingOnRefresh: true,
                   loading: () => const ListingCardSkeleton(count: 3),
                   error: (e, _) => AsyncErrorView(
                     error: e,
@@ -230,62 +231,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   },
                 ),
                 const SizedBox(height: 16),
-                nearestItemsAsync.when(
-                  loading: () => const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SectionHeader(title: 'From a nearby store'),
-                      SizedBox(height: 12),
-                      HorizontalCardSkeleton(),
-                    ],
-                  ),
-                  error: (e, _) => AsyncErrorView(
-                    error: e,
-                    onRetry: () => ref.invalidate(nearestStoreItemsProvider),
-                    compact: true,
-                  ),
-                  data: (payload) {
-                    if (payload.isEmpty) return const SizedBox.shrink();
-                    final store = payload.store!;
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SectionHeader(
-                          title: 'From ${store.name}',
-                          actionLabel: 'See store',
-                          onAction: () =>
-                              context.push('/stores/${store.id}?src=home'),
-                        ),
-                        const SizedBox(height: 12),
-                        SizedBox(
-                          height: 228,
-                          child: ListView.separated(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: payload.items.length,
-                            separatorBuilder: (context, index) =>
-                                const SizedBox(width: 12),
-                            itemBuilder: (context, index) {
-                              final item = payload.items[index];
-                              return StaggeredListItem(
-                                index: index,
-                                child: StoreItemCard(
-                                  item: item,
-                                  onTap: () => showStoreItemSheet(
-                                    context: context,
-                                    ref: ref,
-                                    item: item,
-                                    store: store,
-                                    source: 'home-item',
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
+                const NearbyStoreItemsSection(source: 'home'),
                 const SizedBox(height: 16),
                 SectionHeader(
                   title: 'Featured stores',
@@ -294,6 +240,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
                 const SizedBox(height: 12),
                 storesAsync.when(
+                  skipLoadingOnReload: true,
+                  skipLoadingOnRefresh: true,
                   loading: () => const HorizontalCardSkeleton(),
                   error: (e, _) => AsyncErrorView(
                     error: e,

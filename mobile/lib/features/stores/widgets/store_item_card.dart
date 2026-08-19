@@ -62,30 +62,23 @@ class StoreItemCard extends StatelessWidget {
       return SoftCard(
         onTap: onTap,
         padding: EdgeInsets.zero,
-        child: SizedBox(
-          width: 148,
-          height: 228,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                height: 120,
-                width: 148,
-                child: ListingImage(
-                  imageUrl: item.imageUrl,
-                  height: 120,
-                  width: 148,
-                  placeholderIcon: Icons.inventory_2_outlined,
-                ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AspectRatio(
+              aspectRatio: 1,
+              child: ListingImage(
+                imageUrl: item.imageUrl,
+                placeholderIcon: Icons.inventory_2_outlined,
               ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
-                  child: details,
-                ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+                child: details,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       );
     }

@@ -4,7 +4,8 @@ import { env } from '../../config/env';
 import { AppError } from '../../middleware/errorHandler';
 import { isUniqueViolation, mapUser } from '../../db/mappers';
 import { toPublicUser, User, UserRecord, UserRole } from '../users/users.types';
-import { AuthResponse, LoginDto, RegisterDto } from './auth.types';
+import { AuthResponse, LoginDto, OAuthDto, RegisterDto } from './auth.types';
+import { verifyGoogleIdToken } from './auth.google';
 import {
   generateRefreshToken,
   hashRefreshToken,
@@ -176,6 +177,115 @@ export async function login(dto: LoginDto): Promise<AuthResponse> {
 
   const linked = await linkDevice(user, dto.device_id);
   return issueSession(linked);
+}
+
+function displayNameFromGoogle(name: string | undefined, email: string | undefined): string {
+  const trimmed = name?.trim();
+  if (trimmed) return trimmed.slice(0, 120);
+  const local = email?.split('@')[0]?.trim();
+  if (local) return local.slice(0, 120);
+  return 'Google user';
+}
+
+async function attachGoogleIdentity(
+  userId: string,
+  providerSub: string,
+  email: string | null,
+): Promise<void> {
+  const existing = await prisma.authIdentity.findUnique({
+    where: { provider_providerSub: { provider: 'google', providerSub } },
+  });
+  if (existing) {
+    if (existing.userId !== userId) {
+      throw new AppError(409, 'This Google account is already linked to another user');
+    }
+    if (existing.email !== email) {
+      await prisma.authIdentity.update({
+        where: { id: existing.id },
+        data: { email },
+      });
+    }
+    return;
+  }
+  await prisma.authIdentity.create({
+    data: {
+      userId,
+      provider: 'google',
+      providerSub,
+      email,
+    },
+  });
+}
+
+export async function oauth(dto: OAuthDto): Promise<AuthResponse> {
+  if (dto.provider !== 'google') {
+    throw new AppError(400, 'Unsupported provider');
+  }
+
+  const claims = await verifyGoogleIdToken(dto.id_token);
+  const email = claims.email?.trim().toLowerCase() || null;
+  const verifiedEmail = claims.email_verified === true ? email : null;
+  const deviceId = dto.device_id?.trim() || undefined;
+  const role = dto.role === 'partner' ? 'partner' : 'client';
+
+  const identity = await prisma.authIdentity.findUnique({
+    where: { provider_providerSub: { provider: 'google', providerSub: claims.sub } },
+  });
+
+  let user: UserRecord | null = identity
+    ? await findRecordById(identity.userId)
+    : null;
+
+  if (!user && verifiedEmail) {
+    user = await findRecordByEmail(verifiedEmail);
+  }
+
+  if (user) {
+    if (user.status === 'suspended') {
+      throw new AppError(403, 'Account is suspended');
+    }
+    await attachGoogleIdentity(user.id, claims.sub, email);
+    const linked = await linkDevice(user, deviceId);
+    return issueSession(linked);
+  }
+
+  const guest = deviceId ? await findGuestByDeviceId(deviceId) : null;
+  const name = displayNameFromGoogle(claims.name, email ?? undefined);
+
+  try {
+    if (guest) {
+      const row = await prisma.user.update({
+        where: { id: guest.id },
+        data: {
+          name,
+          email,
+          role,
+          status: 'active',
+        },
+      });
+      user = mapUser(row);
+    } else {
+      const row = await prisma.user.create({
+        data: {
+          name,
+          email,
+          passwordHash: null,
+          role,
+          status: 'active',
+          deviceId: deviceId ?? null,
+        },
+      });
+      user = mapUser(row);
+    }
+    await attachGoogleIdentity(user.id, claims.sub, email);
+  } catch (err) {
+    if (isUniqueViolation(err)) {
+      throw new AppError(409, 'An account with this email already exists');
+    }
+    throw err;
+  }
+
+  return issueSession(user);
 }
 
 export async function refresh(rawToken: string): Promise<AuthResponse> {

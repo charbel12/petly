@@ -3,7 +3,9 @@ import assert from 'node:assert/strict';
 import request from 'supertest';
 import { prisma, deployMigrations, disconnectPrisma } from '../../db/prisma';
 import { createApp } from '../../app';
+import { AppError } from '../../middleware/errorHandler';
 import { ensureAdmin } from './auth.service';
+import { setGoogleTokenVerifierForTests } from './auth.google';
 import * as usersService from '../users/users.service';
 import * as petsService from '../pets/pets.service';
 
@@ -22,6 +24,7 @@ before(async () => {
 });
 
 after(async () => {
+  setGoogleTokenVerifierForTests(null);
   await disconnectPrisma();
 });
 
@@ -280,4 +283,107 @@ test('become-partner upgrades a client and rotates tokens', async () => {
     .post('/auth/become-partner')
     .set('Authorization', `Bearer ${admin.body.access_token}`)
     .expect(403);
+});
+
+test('oauth google creates an account and reuses the same Google sub', async () => {
+  const email = uniqueEmail();
+  setGoogleTokenVerifierForTests(async () => ({
+    sub: `google-sub-${email}`,
+    email,
+    email_verified: true,
+    name: 'Google Ada',
+  }));
+
+  const first = await request(app)
+    .post('/auth/oauth')
+    .send({ provider: 'google', id_token: 'good-token' })
+    .expect(200);
+  assert.equal(first.body.user.email, email);
+  assert.equal(first.body.user.name, 'Google Ada');
+  assert.equal(first.body.user.role, 'client');
+  assert.equal(typeof first.body.access_token, 'string');
+
+  const second = await request(app)
+    .post('/auth/oauth')
+    .send({ provider: 'google', id_token: 'good-token' })
+    .expect(200);
+  assert.equal(second.body.user.id, first.body.user.id);
+
+  setGoogleTokenVerifierForTests(null);
+});
+
+test('oauth google with device_id upgrades a guest and keeps pets', async () => {
+  const deviceId = `oauth-device-${Date.now()}`;
+  const email = uniqueEmail();
+  const guest = await usersService.createUser({
+    name: 'Guest',
+    phone: `device:${deviceId}`,
+    device_id: deviceId,
+  });
+  await petsService.createPet({
+    user_id: guest.id,
+    name: 'Nala',
+    type: 'Cat',
+    age: 1,
+  });
+
+  setGoogleTokenVerifierForTests(async () => ({
+    sub: `google-guest-${email}`,
+    email,
+    email_verified: true,
+    name: 'Nala Owner',
+  }));
+
+  const res = await request(app)
+    .post('/auth/oauth')
+    .send({ provider: 'google', id_token: 'guest-token', device_id: deviceId })
+    .expect(200);
+  assert.equal(res.body.user.id, guest.id);
+  assert.equal(res.body.user.email, email);
+
+  const pets = await petsService.listPetsByUser(guest.id);
+  assert.equal(pets.length, 1);
+  assert.equal(pets[0].name, 'Nala');
+  setGoogleTokenVerifierForTests(null);
+});
+
+test('oauth google links to an existing password account by verified email', async () => {
+  const email = uniqueEmail();
+  const registered = await request(app)
+    .post('/auth/register')
+    .send({ name: 'Password Ada', email, password: 'password1' })
+    .expect(201);
+
+  setGoogleTokenVerifierForTests(async () => ({
+    sub: `google-link-${email}`,
+    email,
+    email_verified: true,
+    name: 'Google Ada',
+  }));
+
+  const oauth = await request(app)
+    .post('/auth/oauth')
+    .send({ provider: 'google', id_token: 'link-token' })
+    .expect(200);
+  assert.equal(oauth.body.user.id, registered.body.user.id);
+  assert.equal(oauth.body.user.name, 'Password Ada');
+
+  setGoogleTokenVerifierForTests(null);
+});
+
+test('oauth google rejects invalid tokens and unknown providers', async () => {
+  setGoogleTokenVerifierForTests(async () => {
+    throw new AppError(401, 'Invalid Google token');
+  });
+  await request(app)
+    .post('/auth/oauth')
+    .send({ provider: 'google', id_token: 'nope' })
+    .expect(401);
+
+  await request(app)
+    .post('/auth/oauth')
+    .send({ provider: 'apple', id_token: 'x' })
+    .expect(400);
+
+  setGoogleTokenVerifierForTests(null);
 });

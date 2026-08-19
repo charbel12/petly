@@ -56,7 +56,8 @@ Per-phase Definition of Done (testing gate):
   and store items).
   JWT access + refresh, bcrypt, `requireAuth` / `requireRole`, roles
   `client | partner | admin`. Public `GET /vets` and `GET /stores` return
-  `status = approved` only.
+  `status = approved` only. Google Sign-In is `POST /auth/oauth` (ID token → same
+  JWTs); identities live in `auth_identities`.
 - Mobile/Web: Flutter (Riverpod + GoRouter + Dio), login/register/forgot-password,
   partner dashboard + listing forms, secure token storage, bearer + refresh interceptor,
   route guards. Guest browsing remains via device-bound users (`user_provider.dart`);

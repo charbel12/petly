@@ -3,7 +3,7 @@ import '../../../core/providers/app_providers.dart';
 import '../../../core/providers/location_provider.dart';
 import '../../../data/models/vet.dart';
 
-final nearbyVetsProvider = FutureProvider.autoDispose<List<Vet>>((ref) async {
+final nearbyVetsProvider = FutureProvider<List<Vet>>((ref) async {
   final repo = ref.watch(vetsRepositoryProvider);
   return repo.list(
     lat: ref.watch(userLatProvider),
@@ -11,7 +11,7 @@ final nearbyVetsProvider = FutureProvider.autoDispose<List<Vet>>((ref) async {
   );
 });
 
-final emergencyVetsProvider = FutureProvider.autoDispose<List<Vet>>((ref) async {
+final emergencyVetsProvider = FutureProvider<List<Vet>>((ref) async {
   final repo = ref.watch(vetsRepositoryProvider);
   return repo.emergency(
     lat: ref.watch(userLatProvider),
@@ -81,7 +81,7 @@ final exploreVetsFiltersProvider =
   ExploreVetsFiltersNotifier.new,
 );
 
-final exploreVetsProvider = FutureProvider.autoDispose<List<Vet>>((ref) async {
+final exploreVetsProvider = FutureProvider<List<Vet>>((ref) async {
   final filters = ref.watch(exploreVetsFiltersProvider);
   final repo = ref.watch(vetsRepositoryProvider);
   return repo.list(

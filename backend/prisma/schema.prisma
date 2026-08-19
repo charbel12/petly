@@ -24,6 +24,10 @@ enum ListingStatus {
   rejected
 }
 
+enum AuthProvider {
+  google
+}
+
 model User {
   id           String     @id @default(uuid()) @db.Uuid
   name         String     @db.VarChar(120)
@@ -38,6 +42,7 @@ model User {
 
   pets           Pet[]
   refreshTokens  RefreshToken[]
+  identities     AuthIdentity[]
   ownedVets      Vet[]          @relation("VetOwner")
   ownedStores    Store[]        @relation("StoreOwner")
   reviewedVets   Vet[]          @relation("VetReviewer")
@@ -174,4 +179,20 @@ model RefreshToken {
   @@index([userId])
   @@index([expiresAt])
   @@map("refresh_tokens")
+}
+
+model AuthIdentity {
+  id          String       @id @default(uuid()) @db.Uuid
+  userId      String       @map("user_id") @db.Uuid
+  provider    AuthProvider
+  providerSub String       @map("provider_sub") @db.VarChar(255)
+  email       String?      @db.VarChar(255)
+  createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime     @updatedAt @map("updated_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerSub])
+  @@index([userId])
+  @@map("auth_identities")
 }

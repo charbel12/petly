@@ -1,6 +1,7 @@
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { prisma, deployMigrations, disconnectPrisma } from '../../db/prisma';
+import { ensureStoreItems } from '../../db/ensureStoreItems';
 import * as vetsService from './vets.service';
 import * as storesService from '../stores/stores.service';
 import { AppError } from '../../middleware/errorHandler';
@@ -156,4 +157,34 @@ test('getNearestStoreItems returns in-stock items from the closest store', async
 
   await prisma.store.delete({ where: { id: near.id } });
   await prisma.store.delete({ where: { id: far.id } });
+});
+
+test('ensureStoreItems is idempotent for catalog stores', async () => {
+  let store = await prisma.store.findFirst({
+    where: { name: 'Pet World Lebanon' },
+    select: { id: true },
+  });
+  const created = !store;
+  if (!store) {
+    store = await prisma.store.create({
+      data: {
+        name: 'Pet World Lebanon',
+        type: 'Pet Store',
+        location: 'Hamra, Beirut',
+        status: 'approved',
+      },
+      select: { id: true },
+    });
+  }
+
+  await ensureStoreItems();
+  await ensureStoreItems();
+  const count = await prisma.storeItem.count({
+    where: { storeId: store.id, name: 'Premium dog food 12kg' },
+  });
+  assert.equal(count, 1);
+
+  if (created) {
+    await prisma.store.delete({ where: { id: store.id } });
+  }
 });
