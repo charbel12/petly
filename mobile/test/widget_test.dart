@@ -36,6 +36,7 @@ void main() {
     await tester.pump();
     expect(find.text('Enter your email'), findsOneWidget);
     expect(find.text('Enter your password'), findsOneWidget);
+    expect(find.text('Continue with Google'), findsOneWidget);
   });
 
   testWidgets('register screen validates name and short password', (tester) async {

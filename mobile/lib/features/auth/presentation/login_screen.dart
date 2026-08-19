@@ -5,6 +5,7 @@ import '../../../core/providers/auth_provider.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/api_error.dart';
 import '../widgets/auth_scaffold.dart';
+import '../widgets/google_sign_in_button.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -110,6 +111,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                     )
                   : const Text('Sign in'),
+            ),
+            const AuthOrDivider(),
+            ContinueWithGoogleButton(
+              enabled: !_submitting,
+              onIdToken: (idToken) async {
+                await ref.read(authProvider.notifier).loginWithGoogle(
+                      idToken: idToken,
+                    );
+                if (!context.mounted) return;
+                context.go('/home');
+              },
             ),
             const SizedBox(height: 16),
             TextButton(

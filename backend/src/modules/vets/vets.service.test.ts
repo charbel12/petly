@@ -1,6 +1,7 @@
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { prisma, deployMigrations, disconnectPrisma } from '../../db/prisma';
+import { ensureStoreItems } from '../../db/ensureStoreItems';
 import * as vetsService from './vets.service';
 import * as storesService from '../stores/stores.service';
 import { AppError } from '../../middleware/errorHandler';
@@ -92,4 +93,98 @@ test('listStores returns image_url when set', async () => {
   assert.equal(listed[0].image_url, 'asset:listings/store_pet_world.jpg');
 
   await prisma.store.delete({ where: { id: created.id } });
+});
+
+test('listStoreItems is public only for approved stores', async () => {
+  const pending = await prisma.store.create({
+    data: {
+      name: `Pending Items Store ${Date.now()}`,
+      type: 'Pet Store',
+      location: 'Hamra, Beirut',
+      status: 'pending',
+    },
+  });
+  await prisma.storeItem.create({
+    data: { storeId: pending.id, name: 'Hidden kibble' },
+  });
+
+  await assert.rejects(
+    () => storesService.listStoreItems(pending.id),
+    (err: unknown) => err instanceof AppError && err.statusCode === 404,
+  );
+
+  await prisma.store.delete({ where: { id: pending.id } });
+});
+
+test('getNearestStoreItems returns in-stock items from the closest store', async () => {
+  const suffix = Date.now();
+  const near = await prisma.store.create({
+    data: {
+      name: `Near Items ${suffix}`,
+      type: 'Pet Store',
+      location: 'Hamra, Beirut',
+      latitude: 33.894,
+      longitude: 35.502,
+      status: 'approved',
+    },
+  });
+  const far = await prisma.store.create({
+    data: {
+      name: `Far Items ${suffix}`,
+      type: 'Pet Store',
+      location: 'Saida',
+      latitude: 33.5571,
+      longitude: 35.3729,
+      status: 'approved',
+    },
+  });
+  await prisma.storeItem.createMany({
+    data: [
+      { storeId: near.id, name: 'Near chew toy', price: 6.5, inStock: true },
+      { storeId: near.id, name: 'Out of stock near', inStock: false },
+      { storeId: far.id, name: 'Far fish flakes', price: 4, inStock: true },
+    ],
+  });
+
+  const result = await storesService.getNearestStoreItems(33.8938, 35.5018, 6);
+  assert.equal(result.store?.id, near.id);
+  assert.equal(result.items.length, 1);
+  assert.equal(result.items[0].name, 'Near chew toy');
+  assert.equal(result.items[0].price, 6.5);
+
+  const listed = await storesService.listStoreItems(near.id);
+  assert.equal(listed.length, 2);
+
+  await prisma.store.delete({ where: { id: near.id } });
+  await prisma.store.delete({ where: { id: far.id } });
+});
+
+test('ensureStoreItems is idempotent for catalog stores', async () => {
+  let store = await prisma.store.findFirst({
+    where: { name: 'Pet World Lebanon' },
+    select: { id: true },
+  });
+  const created = !store;
+  if (!store) {
+    store = await prisma.store.create({
+      data: {
+        name: 'Pet World Lebanon',
+        type: 'Pet Store',
+        location: 'Hamra, Beirut',
+        status: 'approved',
+      },
+      select: { id: true },
+    });
+  }
+
+  await ensureStoreItems();
+  await ensureStoreItems();
+  const count = await prisma.storeItem.count({
+    where: { storeId: store.id, name: 'Premium dog food 12kg' },
+  });
+  assert.equal(count, 1);
+
+  if (created) {
+    await prisma.store.delete({ where: { id: store.id } });
+  }
 });

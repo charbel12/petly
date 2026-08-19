@@ -16,6 +16,12 @@ import { env } from './config/env';
 export function createApp() {
   const app = express();
 
+  // Render (and other reverse proxies) set X-Forwarded-For. Rate limiting needs
+  // this so it keys on the client IP instead of throwing ERR_ERL_UNEXPECTED_X_FORWARDED_FOR.
+  if (env.trustProxy) {
+    app.set('trust proxy', 1);
+  }
+
   // Security headers. crossOriginResourcePolicy is relaxed because the web client is
   // served from a different origin/port and talks to this API cross-origin.
   app.use(

@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import '../auth/google_sign_in_errors.dart';
 
 /// Typed API failure for UI messaging.
 class ApiException implements Exception {
@@ -40,5 +41,6 @@ class ApiException implements Exception {
 String friendlyErrorMessage(Object error) {
   if (error is ApiException) return error.message;
   if (error is DioException) return ApiException.fromDio(error).message;
+  if (error is GoogleSignInUnavailable) return error.message;
   return 'Something went wrong. Please try again.';
 }

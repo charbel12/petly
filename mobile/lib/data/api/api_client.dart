@@ -93,8 +93,9 @@ class ApiClient {
   Dio get dio => _dio;
 
   static bool _isAnonymousAuthPath(String path) {
-    return path.contains('/auth/login') ||
+    return         path.contains('/auth/login') ||
         path.contains('/auth/register') ||
+        path.contains('/auth/oauth') ||
         path.contains('/auth/refresh') ||
         path.contains('/auth/forgot-password');
   }

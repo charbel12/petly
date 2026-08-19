@@ -5,6 +5,7 @@ import '../../../core/providers/auth_provider.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/api_error.dart';
 import '../widgets/auth_scaffold.dart';
+import '../widgets/google_sign_in_button.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -175,6 +176,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       ),
                     )
                   : const Text('Create account'),
+            ),
+            const AuthOrDivider(),
+            ContinueWithGoogleButton(
+              enabled: !_submitting,
+              onIdToken: (idToken) async {
+                await ref.read(authProvider.notifier).loginWithGoogle(
+                      idToken: idToken,
+                      role: _asPartner ? 'partner' : null,
+                    );
+                if (!context.mounted) return;
+                context.go(_asPartner ? '/partner' : '/home');
+              },
             ),
             const SizedBox(height: 16),
             TextButton(

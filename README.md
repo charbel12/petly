@@ -57,6 +57,8 @@ flutter run
 
 The first request after the Render service has been idle can take up to a minute (cold start).
 
+On boot the API applies pending Prisma migrations and ensures demo store items exist for the seeded catalog stores. Production enables Express `trust proxy` (one hop) so rate limiting can use Render’s `X-Forwarded-For` header.
+
 **Local API** (Android emulator → host machine):
 
 ```bash
@@ -69,6 +71,17 @@ flutter run --dart-define=API_BASE_URL=http://10.0.2.2:3000
 flutter run --dart-define=API_BASE_URL=http://127.0.0.1:3000
 ```
 
+### Google Sign-In
+
+Keep email/password. Google only proves identity; the API still issues Petly JWTs.
+
+1. In Google Cloud Console, create OAuth client IDs for **Web**, **Android** (`com.petly.petly` + your SHA-1), and **iOS** (`com.petly.petly`).
+2. Backend `.env`: `GOOGLE_CLIENT_IDS=<web-id>,<android-id>,<ios-id>` (used as ID-token `aud`).
+3. Flutter: `--dart-define=GOOGLE_WEB_CLIENT_ID=<web-id>` and, on iOS, `--dart-define=GOOGLE_IOS_CLIENT_ID=<ios-id>`. iOS also needs the reversed iOS client ID as a URL scheme in Xcode.
+4. Android debug SHA-1: `cd mobile/android && ./gradlew signingReport`
+
+Same Google email as an existing password account links them. Partners can still use Profile → become partner; listing contact stays phone/WhatsApp.
+
 ## API endpoints
 
 | Method | Path | Description |
@@ -76,6 +89,7 @@ flutter run --dart-define=API_BASE_URL=http://127.0.0.1:3000
 | `GET` | `/health` | Health check |
 | `POST` | `/auth/register` | Create account (`name`, `email`, `password`, optional `phone`, `device_id`, `role`: `client` or `partner`) |
 | `POST` | `/auth/login` | Email + password (optional `device_id` to link a guest) |
+| `POST` | `/auth/oauth` | Google Sign-In (`provider: google`, `id_token`, optional `device_id`, `role`) |
 | `POST` | `/auth/refresh` | Rotate tokens (`refresh_token`) |
 | `POST` | `/auth/logout` | Revoke a refresh token |
 | `GET` | `/auth/me` | Current user (Bearer access token) |
@@ -85,7 +99,9 @@ flutter run --dart-define=API_BASE_URL=http://127.0.0.1:3000
 | `GET` | `/vets/emergency` | Open emergency clinics (approved only) |
 | `GET` | `/vets/:id` | Vet details (404 if missing or not approved) |
 | `GET` | `/stores` | List **approved** stores |
+| `GET` | `/stores/nearest/items` | In-stock items from the nearest approved store (`lat`, `lng`, `limit`) |
 | `GET` | `/stores/:id` | Store details (404 if missing or not approved) |
+| `GET` | `/stores/:id/items` | Items listed by an approved store |
 | `GET` | `/partners/me/listings` | Partner: own vets + stores (all statuses) |
 | `POST` | `/partners/vets` | Partner: create clinic (`pending`) |
 | `GET` | `/partners/vets/:id` | Partner: own clinic |
@@ -93,6 +109,10 @@ flutter run --dart-define=API_BASE_URL=http://127.0.0.1:3000
 | `POST` | `/partners/stores` | Partner: create store (`pending`) |
 | `GET` | `/partners/stores/:id` | Partner: own store |
 | `PATCH` | `/partners/stores/:id` | Partner: edit store (resubmits as `pending`) |
+| `GET` | `/partners/stores/:id/items` | Partner: items for own store |
+| `POST` | `/partners/stores/:id/items` | Partner: add an item (does not change listing status) |
+| `PATCH` | `/partners/stores/:id/items/:itemId` | Partner: edit an item |
+| `DELETE` | `/partners/stores/:id/items/:itemId` | Partner: delete an item |
 | `GET` | `/admin/listings` | Admin: listings by `status` (default `pending`) |
 | `PATCH` | `/admin/vets/:id/review` | Admin: approve or reject a clinic |
 | `PATCH` | `/admin/stores/:id/review` | Admin: approve or reject a store |
@@ -131,6 +151,8 @@ backend/prisma/     # schema, migrations, seed
 - **Device-bound user** — UUID stored in `shared_preferences`, upserted via `POST /users` with `device_id`. Pets stay tied to that user across launches. Registering/logging in with the same `device_id` upgrades or links the guest account.
 - **Auth (Phase 1)** — JWT access + refresh tokens, roles `client | partner | admin`. Default admin: `admin@petly.local` / `changeme-admin` (override with `ADMIN_EMAIL` / `ADMIN_PASSWORD`).
 - **Partner onboarding (Phase 2)** — register as partner or upgrade from Profile; submit clinics/stores for review; public Explore only shows `approved` listings. Demo partner: `partner@petly.local` / `changeme-partner`. Admin review is API-only (`/admin/...`).
+- **Store items** — partners can catalog products on a store; Home shows a few in-stock items from the nearest store, and the store page lists the full catalog. No cart or checkout yet.
+- **Google Sign-In** — `POST /auth/oauth` verifies a Google ID token, links or creates a Petly user (same JWT session as email/password), and can upgrade a guest via `device_id`. Requires `GOOGLE_CLIENT_IDS` on the API and `--dart-define=GOOGLE_WEB_CLIENT_ID=...` in the app.
 - **Offline / error UX** — top offline banner, shared `AsyncErrorView`, clearer Dio error messages.
 
 ### New API endpoints

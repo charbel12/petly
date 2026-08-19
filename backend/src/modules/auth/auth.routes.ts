@@ -32,6 +32,13 @@ const loginSchema = z.object({
   device_id: z.string().trim().min(1).optional(),
 });
 
+const oauthSchema = z.object({
+  provider: z.literal('google'),
+  id_token: z.string().trim().min(1, 'id_token is required'),
+  device_id: z.string().trim().min(1).optional(),
+  role: z.enum(['client', 'partner']).optional(),
+});
+
 const refreshSchema = z.object({
   refresh_token: z.string().min(1, 'refresh_token is required'),
 });
@@ -65,6 +72,20 @@ router.post(
   async (req, res, next) => {
     try {
       const result = await authService.login(req.body);
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+router.post(
+  '/oauth',
+  authLimiter,
+  validateBody(oauthSchema),
+  async (req, res, next) => {
+    try {
+      const result = await authService.oauth(req.body);
       res.json(result);
     } catch (err) {
       next(err);

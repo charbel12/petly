@@ -12,6 +12,14 @@ function parseOrigins(value: string | undefined): string[] | undefined {
     .filter(Boolean);
 }
 
+function parseBoolEnv(value: string | undefined): boolean | undefined {
+  if (!value?.trim()) return undefined;
+  const normalized = value.trim().toLowerCase();
+  if (normalized === '1' || normalized === 'true') return true;
+  if (normalized === '0' || normalized === 'false') return false;
+  return undefined;
+}
+
 function buildDatabaseUrl(): string {
   if (process.env.DATABASE_URL) return process.env.DATABASE_URL;
   const user = process.env.DB_USER || 'petly';
@@ -49,9 +57,20 @@ export const env = {
     email: process.env.ADMIN_EMAIL || 'admin@petly.local',
     password: process.env.ADMIN_PASSWORD || 'changeme-admin',
   },
+  /**
+   * Trust the first reverse-proxy hop (Render, nginx). Required so
+   * express-rate-limit can use X-Forwarded-For. Override with TRUST_PROXY=0/1.
+   */
+  trustProxy:
+    parseBoolEnv(process.env.TRUST_PROXY) ??
+    (process.env.NODE_ENV === 'production' || Boolean(process.env.RENDER)),
   /** Global rate limiter — generous by default so it never blocks normal dev use. */
   rateLimit: {
     windowMs: Number(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000,
     max: Number(process.env.RATE_LIMIT_MAX) || 1000,
+  },
+  /** Google Sign-In audience (OAuth client IDs). Empty = Google login disabled. */
+  google: {
+    clientIds: parseOrigins(process.env.GOOGLE_CLIENT_IDS) ?? [],
   },
 };

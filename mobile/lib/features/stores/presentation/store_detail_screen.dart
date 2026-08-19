@@ -11,6 +11,8 @@ import '../../../core/widgets/listing_image.dart';
 import '../../../core/widgets/skeleton.dart';
 import '../../../core/widgets/soft_card.dart';
 import '../providers/stores_providers.dart';
+import '../widgets/store_item_sheet.dart';
+import '../widgets/store_items_grid.dart';
 
 class StoreDetailScreen extends ConsumerWidget {
   const StoreDetailScreen({
@@ -32,6 +34,7 @@ class StoreDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final storeAsync = ref.watch(storeDetailProvider(storeId));
+    final itemsAsync = ref.watch(storeItemsProvider(storeId));
     final tokens = AppTokens.of(context);
 
     return Scaffold(
@@ -144,6 +147,46 @@ class StoreDetailScreen extends ConsumerWidget {
                         ),
                       ),
                     ],
+                    const SizedBox(height: 20),
+                    Text(
+                      'In this store',
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleMedium
+                          ?.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 10),
+                    itemsAsync.when(
+                      skipLoadingOnReload: true,
+                      skipLoadingOnRefresh: true,
+                      loading: () => const StoreItemsGridSkeleton(count: 4),
+                      error: (error, _) => AsyncErrorView(
+                        error: error,
+                        onRetry: () =>
+                            ref.invalidate(storeItemsProvider(storeId)),
+                        compact: true,
+                      ),
+                      data: (items) {
+                        if (items.isEmpty) {
+                          return Text(
+                            'This store has not listed items yet.',
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  color: tokens.onCardMuted,
+                                ),
+                          );
+                        }
+                        return StoreItemsGrid(
+                          items: items,
+                          onItemTap: (item) => showStoreItemSheet(
+                            context: context,
+                            ref: ref,
+                            item: item,
+                            store: store,
+                            source: 'store-item',
+                          ),
+                        );
+                      },
+                    ),
                   ],
                 ),
               ),

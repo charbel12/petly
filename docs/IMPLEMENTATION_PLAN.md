@@ -52,10 +52,12 @@ Per-phase Definition of Done (testing gate):
 
 - Backend: Express + TS, modules `auth, users, pets, vets, stores, analytics,
   partners, admin`; Prisma 6 schema + migrations under `backend/prisma` (users, pets,
-  vets, stores, whatsapp clicks, refresh tokens, listing ownership/status/hours).
+  vets, stores, whatsapp clicks, refresh tokens, listing ownership/status/hours,
+  and store items).
   JWT access + refresh, bcrypt, `requireAuth` / `requireRole`, roles
   `client | partner | admin`. Public `GET /vets` and `GET /stores` return
-  `status = approved` only.
+  `status = approved` only. Google Sign-In is `POST /auth/oauth` (ID token → same
+  JWTs); identities live in `auth_identities`.
 - Mobile/Web: Flutter (Riverpod + GoRouter + Dio), login/register/forgot-password,
   partner dashboard + listing forms, secure token storage, bearer + refresh interceptor,
   route guards. Guest browsing remains via device-bound users (`user_provider.dart`);
@@ -72,6 +74,7 @@ erDiagram
   users ||--o{ pets : owns
   users ||--o{ vets : "owns (partner)"
   users ||--o{ stores : "owns (partner)"
+  stores ||--o{ store_items : lists
   users ||--o{ conversations : participates
   conversations ||--o{ messages : contains
   users ||--o{ bookings : requests

@@ -6,7 +6,7 @@ import {
   UserRecord,
 } from '../modules/users/users.types';
 import { OwnedVet, Vet } from '../modules/vets/vets.types';
-import { OwnedStore, Store } from '../modules/stores/stores.types';
+import { OwnedStore, Store, StoreItem } from '../modules/stores/stores.types';
 import { EntityType, WhatsAppClick } from '../modules/analytics/analytics.types';
 import { RefreshTokenRecord } from '../modules/auth/auth.types';
 import { parseHours } from '../modules/listings/hours.schema';
@@ -15,6 +15,7 @@ import type {
   Pet as PrismaPet,
   Vet as PrismaVet,
   Store as PrismaStore,
+  StoreItem as PrismaStoreItem,
   WhatsAppClick as PrismaClick,
   RefreshToken as PrismaRefreshToken,
 } from '@prisma/client';
@@ -134,6 +135,22 @@ export function mapOwnedStore(s: PrismaStore, distanceKm: number | null = null):
     submitted_at: s.submittedAt,
     reviewed_at: s.reviewedAt,
     reviewer_id: s.reviewerId,
+  };
+}
+
+export function mapStoreItem(item: PrismaStoreItem): StoreItem {
+  return {
+    id: item.id,
+    store_id: item.storeId,
+    name: item.name,
+    description: item.description,
+    price: item.price == null ? null : Number(item.price),
+    currency: item.currency,
+    image_url: item.imageUrl,
+    in_stock: item.inStock,
+    sort_order: item.sortOrder,
+    created_at: item.createdAt,
+    updated_at: item.updatedAt,
   };
 }
 

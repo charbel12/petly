@@ -1,4 +1,5 @@
 import { prisma, deployMigrations, disconnectPrisma } from '../src/db/prisma';
+import { ensureStoreItems } from '../src/db/ensureStoreItems';
 import { ensureAdmin, ensurePartner } from '../src/modules/auth/auth.service';
 
 const DEMO_USER_ID = '11111111-1111-1111-1111-111111111111';
@@ -84,6 +85,7 @@ async function seed() {
   });
   if (catalogExists) {
     await backfillListingImages();
+    await ensureStoreItems();
     await ensurePendingDemoListing(partner.id);
     console.log('✓ Seed skipped — data already present');
     return;
@@ -251,6 +253,7 @@ async function seed() {
   });
 
   await backfillListingImages();
+  await ensureStoreItems();
   await ensurePendingDemoListing(partner.id);
   console.log('✓ Seed data inserted');
 }

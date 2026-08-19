@@ -34,7 +34,6 @@ class LocationNotifier extends AsyncNotifier<AppLocation> {
   Future<AppLocation> build() => _resolve(requestPermission: true);
 
   Future<void> refresh({bool requestPermission = true}) async {
-    state = const AsyncLoading();
     state = AsyncData(await _resolve(requestPermission: requestPermission));
   }
 

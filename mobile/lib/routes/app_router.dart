@@ -9,6 +9,8 @@ import '../features/explore/presentation/explore_screen.dart';
 import '../features/home/presentation/home_screen.dart';
 import '../features/partner/presentation/listing_form_screen.dart';
 import '../features/partner/presentation/partner_dashboard_screen.dart';
+import '../features/partner/presentation/store_item_form_screen.dart';
+import '../features/partner/presentation/store_items_screen.dart';
 import '../features/pets/presentation/add_pet_screen.dart';
 import '../features/pets/presentation/pets_screen.dart';
 import '../features/profile/presentation/profile_screen.dart';
@@ -220,6 +222,38 @@ final routerProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) => _fadeSlidePage(
           key: state.pageKey,
           child: const ListingFormScreen(kind: PartnerListingKind.store),
+        ),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootKey,
+        path: '/partner/stores/:id/items/new',
+        name: 'partner-store-item-new',
+        pageBuilder: (context, state) => _fadeSlidePage(
+          key: state.pageKey,
+          child: StoreItemFormScreen(
+            storeId: state.pathParameters['id']!,
+          ),
+        ),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootKey,
+        path: '/partner/stores/:id/items/:itemId/edit',
+        name: 'partner-store-item-edit',
+        pageBuilder: (context, state) => _fadeSlidePage(
+          key: state.pageKey,
+          child: StoreItemFormScreen(
+            storeId: state.pathParameters['id']!,
+            itemId: state.pathParameters['itemId'],
+          ),
+        ),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootKey,
+        path: '/partner/stores/:id/items',
+        name: 'partner-store-items',
+        pageBuilder: (context, state) => _fadeSlidePage(
+          key: state.pageKey,
+          child: StoreItemsScreen(storeId: state.pathParameters['id']!),
         ),
       ),
       GoRoute(

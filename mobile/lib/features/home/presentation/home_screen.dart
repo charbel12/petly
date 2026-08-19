@@ -12,6 +12,7 @@ import '../../../core/widgets/section_header.dart';
 import '../../../core/widgets/skeleton.dart';
 import '../../stores/providers/stores_providers.dart';
 import '../../stores/widgets/store_card.dart';
+import '../../stores/widgets/nearby_store_items_section.dart';
 import '../../vets/providers/vets_providers.dart';
 import '../../vets/widgets/vet_card.dart';
 
@@ -60,12 +61,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               await ref.read(locationProvider.notifier).refresh();
               ref.invalidate(nearbyVetsProvider);
               ref.invalidate(featuredStoresProvider);
+              ref.invalidate(nearestStoreItemsProvider);
               await Future.wait([
                 ref.read(nearbyVetsProvider.future),
                 ref.read(featuredStoresProvider.future),
+                ref.read(nearestStoreItemsProvider.future),
               ]);
             },
             child: ListView(
+              cacheExtent: 2500,
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
               children: [
                 HeroPanel(
@@ -94,6 +98,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                         .refresh();
                                     ref.invalidate(nearbyVetsProvider);
                                     ref.invalidate(featuredStoresProvider);
+                                    ref.invalidate(nearestStoreItemsProvider);
                                   },
                                   borderRadius: BorderRadius.circular(8),
                                   child: Row(
@@ -196,6 +201,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
                 const SizedBox(height: 12),
                 vetsAsync.when(
+                  skipLoadingOnReload: true,
+                  skipLoadingOnRefresh: true,
                   loading: () => const ListingCardSkeleton(count: 3),
                   error: (e, _) => AsyncErrorView(
                     error: e,
@@ -224,6 +231,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   },
                 ),
                 const SizedBox(height: 16),
+                const NearbyStoreItemsSection(source: 'home'),
+                const SizedBox(height: 16),
                 SectionHeader(
                   title: 'Featured stores',
                   actionLabel: 'Explore',
@@ -231,6 +240,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
                 const SizedBox(height: 12),
                 storesAsync.when(
+                  skipLoadingOnReload: true,
+                  skipLoadingOnRefresh: true,
                   loading: () => const HorizontalCardSkeleton(),
                   error: (e, _) => AsyncErrorView(
                     error: e,

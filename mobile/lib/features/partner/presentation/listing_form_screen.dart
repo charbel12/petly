@@ -391,6 +391,16 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
                           value: _hours,
                           onChanged: (value) => _hours = value,
                         ),
+                        if (_isEdit && !_isVet) ...[
+                          const SizedBox(height: 16),
+                          OutlinedButton.icon(
+                            onPressed: () => context.push(
+                              '/partner/stores/${widget.listingId}/items',
+                            ),
+                            icon: const Icon(Icons.inventory_2_outlined),
+                            label: const Text('Manage store items'),
+                          ),
+                        ],
                         const SizedBox(height: 24),
                         ElevatedButton(
                           onPressed: _saving ? null : _save,

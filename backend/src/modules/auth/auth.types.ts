@@ -15,6 +15,13 @@ export interface LoginDto {
   device_id?: string;
 }
 
+export interface OAuthDto {
+  provider: 'google';
+  id_token: string;
+  device_id?: string;
+  role?: 'client' | 'partner';
+}
+
 export interface AuthTokens {
   access_token: string;
   refresh_token: string;

@@ -46,6 +46,22 @@ class AuthRepository {
     );
   }
 
+  Future<User> loginWithGoogle({
+    required String idToken,
+    String? deviceId,
+    String? role,
+  }) {
+    return _authenticate(
+      '/auth/oauth',
+      {
+        'provider': 'google',
+        'id_token': idToken,
+        'device_id': ?deviceId,
+        'role': ?role,
+      },
+    );
+  }
+
   Future<void> logout() async {
     final refresh = await _api.tokens.readRefresh();
     try {

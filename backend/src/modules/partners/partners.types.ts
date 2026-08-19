@@ -51,3 +51,23 @@ export interface PatchStoreListingDto {
   image_url?: string | null;
   hours?: ListingHours;
 }
+
+export interface CreateStoreItemDto {
+  name: string;
+  description?: string | null;
+  price?: number | null;
+  currency?: string;
+  image_url?: string;
+  in_stock?: boolean;
+  sort_order?: number;
+}
+
+export interface PatchStoreItemDto {
+  name?: string;
+  description?: string | null;
+  price?: number | null;
+  currency?: string;
+  image_url?: string | null;
+  in_stock?: boolean;
+  sort_order?: number;
+}
