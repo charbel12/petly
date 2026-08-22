@@ -19,19 +19,20 @@ class SoftCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = AppTokens.of(context);
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     return Container(
       margin: margin,
       decoration: BoxDecoration(
         color: tokens.card,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: tokens.border),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(
-              alpha: theme.brightness == Brightness.dark ? 0.28 : 0.08,
+          if (!isDark)
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
             ),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
         ],
       ),
       clipBehavior: Clip.antiAlias,

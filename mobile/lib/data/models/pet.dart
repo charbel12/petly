@@ -1,3 +1,5 @@
+import '../../core/constants/pet_taxonomy.dart';
+
 class Pet {
   const Pet({
     required this.id,
@@ -10,7 +12,7 @@ class Pet {
   final String id;
   final String userId;
   final String name;
-  final String type;
+  final PetType type;
   final double age;
 
   factory Pet.fromJson(Map<String, dynamic> json) {
@@ -18,7 +20,7 @@ class Pet {
       id: json['id'] as String,
       userId: json['user_id'] as String,
       name: json['name'] as String,
-      type: json['type'] as String,
+      type: PetTypeX.fromApi(json['type'] as String?),
       age: (json['age'] as num).toDouble(),
     );
   }
@@ -26,7 +28,7 @@ class Pet {
   Map<String, dynamic> toCreateJson() => {
         'user_id': userId,
         'name': name,
-        'type': type,
+        'type': type.apiValue,
         'age': age,
       };
 

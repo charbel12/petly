@@ -5,7 +5,7 @@ import { mapPet } from '../../db/mappers';
 import { CreatePetDto, Pet, UpdatePetDto } from './pets.types';
 
 export async function createPet(dto: CreatePetDto): Promise<Pet> {
-  if (!dto.user_id || !dto.name?.trim() || !dto.type?.trim()) {
+  if (!dto.user_id || !dto.name?.trim() || !dto.type) {
     throw new AppError(400, 'user_id, name, and type are required');
   }
 
@@ -18,7 +18,7 @@ export async function createPet(dto: CreatePetDto): Promise<Pet> {
     data: {
       userId: dto.user_id,
       name: dto.name.trim(),
-      type: dto.type.trim(),
+      type: dto.type,
       age,
     },
   });
@@ -43,7 +43,7 @@ export async function getPetById(id: string): Promise<Pet> {
 export async function updatePet(id: string, dto: UpdatePetDto): Promise<Pet> {
   const existing = await getPetById(id);
   const name = dto.name?.trim() ?? existing.name;
-  const type = dto.type?.trim() ?? existing.type;
+  const type = dto.type ?? existing.type;
   const age = dto.age !== undefined ? Number(dto.age) : Number(existing.age);
 
   if (Number.isNaN(age) || age < 0) {

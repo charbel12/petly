@@ -1,3 +1,4 @@
+import '../../core/constants/pet_taxonomy.dart';
 import 'listing_hours.dart';
 
 class Store {
@@ -14,10 +15,13 @@ class Store {
     this.longitude,
     this.distanceKm,
     this.services = const [],
+    this.petTypes = const [],
     this.status,
     this.hours,
     this.rejectionReason,
     this.submittedAt,
+    this.avgRating = 0,
+    this.ratingCount = 0,
   });
 
   final String id;
@@ -32,10 +36,13 @@ class Store {
   final double? longitude;
   final double? distanceKm;
   final List<String> services;
+  final List<PetType> petTypes;
   final String? status;
   final ListingHours? hours;
   final String? rejectionReason;
   final DateTime? submittedAt;
+  final double avgRating;
+  final int ratingCount;
 
   factory Store.fromJson(Map<String, dynamic> json) {
     return Store(
@@ -53,12 +60,15 @@ class Store {
       services: (json['services'] as List<dynamic>? ?? [])
           .map((e) => e.toString())
           .toList(),
+      petTypes: petTypesFromJson(json['pet_types']),
       status: json['status'] as String?,
       hours: ListingHours.tryParse(json['hours']),
       rejectionReason: json['rejection_reason'] as String?,
       submittedAt: json['submitted_at'] != null
           ? DateTime.tryParse(json['submitted_at'].toString())
           : null,
+      avgRating: (json['avg_rating'] as num?)?.toDouble() ?? 0,
+      ratingCount: (json['rating_count'] as num?)?.toInt() ?? 0,
     );
   }
 

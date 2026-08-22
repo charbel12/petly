@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/constants/pet_taxonomy.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/providers/location_provider.dart';
 import '../../../data/models/store.dart';
@@ -19,20 +20,29 @@ class ExploreStoresFilters {
     this.type,
     this.openNow = false,
     this.maxDistanceKm,
+    this.petType,
+    this.sort = 'distance',
   });
 
   final String search;
   final String? type;
   final bool openNow;
   final double? maxDistanceKm;
+  final PetType? petType;
+
+  /// 'distance' (default) | 'rating' | 'name'.
+  final String sort;
 
   ExploreStoresFilters copyWith({
     String? search,
     String? type,
     bool? openNow,
     double? maxDistanceKm,
+    PetType? petType,
+    String? sort,
     bool clearType = false,
     bool clearDistance = false,
+    bool clearPetType = false,
   }) {
     return ExploreStoresFilters(
       search: search ?? this.search,
@@ -40,6 +50,8 @@ class ExploreStoresFilters {
       openNow: openNow ?? this.openNow,
       maxDistanceKm:
           clearDistance ? null : (maxDistanceKm ?? this.maxDistanceKm),
+      petType: clearPetType ? null : (petType ?? this.petType),
+      sort: sort ?? this.sort,
     );
   }
 }
@@ -57,6 +69,9 @@ class ExploreStoresFiltersNotifier extends Notifier<ExploreStoresFilters> {
       state = state.copyWith(type: type, clearType: type == null);
   void setMaxDistance(double? km) =>
       state = state.copyWith(maxDistanceKm: km, clearDistance: km == null);
+  void setPetType(PetType? petType) => state =
+      state.copyWith(petType: petType, clearPetType: petType == null);
+  void setSort(String sort) => state = state.copyWith(sort: sort);
 }
 
 final exploreStoresFiltersProvider =
@@ -72,6 +87,8 @@ final exploreStoresProvider = FutureProvider<List<Store>>((ref) async {
     type: filters.type,
     openNow: filters.openNow ? true : null,
     maxDistanceKm: filters.maxDistanceKm,
+    petType: filters.petType?.apiValue,
+    sort: filters.sort,
     lat: ref.watch(userLatProvider),
     lng: ref.watch(userLngProvider),
   );
@@ -96,8 +113,22 @@ final nearestStoreItemsProvider =
   );
 });
 
-final storeItemsProvider =
-    FutureProvider.autoDispose.family<List<StoreItem>, String>((ref, id) async {
+/// Filter key for [storeItemsProvider] — a record so screens can vary the
+/// category/pet-type chips without introducing a separate Notifier per screen.
+typedef StoreItemsFilter = ({
+  String storeId,
+  ItemCategory? category,
+  PetType? petType,
+  String sort,
+});
+
+final storeItemsProvider = FutureProvider.autoDispose
+    .family<List<StoreItem>, StoreItemsFilter>((ref, filter) async {
   final repo = ref.watch(storesRepositoryProvider);
-  return repo.listItems(id);
+  return repo.listItems(
+    filter.storeId,
+    category: filter.category?.apiValue,
+    petType: filter.petType?.apiValue,
+    sort: filter.sort,
+  );
 });

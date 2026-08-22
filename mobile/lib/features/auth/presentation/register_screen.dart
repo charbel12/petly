@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/providers/auth_provider.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/api_error.dart';
+import '../../../l10n/app_localizations.dart';
 import '../widgets/auth_scaffold.dart';
 import '../widgets/google_sign_in_button.dart';
 
@@ -51,7 +52,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(friendlyErrorMessage(error))),
+        SnackBar(content: Text(friendlyErrorMessage(context, error))),
       );
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -60,9 +61,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AuthScaffold(
-      title: 'Create your account',
-      subtitle: 'Save your pets and pick up where you left off on any device.',
+      title: l10n.registerTitle,
+      subtitle: l10n.registerSubtitle,
       child: Form(
         key: _formKey,
         child: Column(
@@ -71,10 +73,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             TextFormField(
               controller: _name,
               textCapitalization: TextCapitalization.words,
-              decoration: const InputDecoration(labelText: 'Name'),
+              decoration: InputDecoration(labelText: l10n.registerNameLabel),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return 'Enter your name';
+                  return l10n.registerEnterName;
                 }
                 return null;
               },
@@ -84,11 +86,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               controller: _email,
               keyboardType: TextInputType.emailAddress,
               autocorrect: false,
-              decoration: const InputDecoration(labelText: 'Email'),
+              decoration: InputDecoration(labelText: l10n.authEmailLabel),
               validator: (value) {
                 final email = value?.trim() ?? '';
-                if (email.isEmpty) return 'Enter your email';
-                if (!email.contains('@')) return 'Enter a valid email';
+                if (email.isEmpty) return l10n.authEnterEmail;
+                if (!email.contains('@')) return l10n.authEnterValidEmail;
                 return null;
               },
             ),
@@ -96,8 +98,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             TextFormField(
               controller: _phone,
               keyboardType: TextInputType.phone,
-              decoration: const InputDecoration(
-                labelText: 'Phone (optional)',
+              decoration: InputDecoration(
+                labelText: l10n.registerPhoneLabel,
                 hintText: '+9617...',
               ),
             ),
@@ -106,9 +108,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               controller: _password,
               obscureText: _obscure,
               decoration: InputDecoration(
-                labelText: 'Password',
+                labelText: l10n.authPasswordLabel,
                 suffixIcon: IconButton(
-                  tooltip: _obscure ? 'Show password' : 'Hide password',
+                  tooltip: _obscure ? l10n.authShowPassword : l10n.authHidePassword,
                   onPressed: () => setState(() => _obscure = !_obscure),
                   icon: Icon(
                     _obscure
@@ -119,7 +121,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               ),
               validator: (value) {
                 if (value == null || value.length < 8) {
-                  return 'Use at least 8 characters';
+                  return l10n.registerPasswordMinLength;
                 }
                 return null;
               },
@@ -128,9 +130,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             TextFormField(
               controller: _confirm,
               obscureText: _obscure,
-              decoration: const InputDecoration(labelText: 'Confirm password'),
+              decoration: InputDecoration(
+                labelText: l10n.registerConfirmPasswordLabel,
+              ),
               validator: (value) {
-                if (value != _password.text) return 'Passwords do not match';
+                if (value != _password.text) {
+                  return l10n.registerPasswordsDoNotMatch;
+                }
                 return null;
               },
             ),
@@ -175,7 +181,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         color: Theme.of(context).colorScheme.onPrimary,
                       ),
                     )
-                  : const Text('Create account'),
+                  : Text(l10n.registerCreateAccountButton),
             ),
             const AuthOrDivider(),
             ContinueWithGoogleButton(
@@ -192,7 +198,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             const SizedBox(height: 16),
             TextButton(
               onPressed: () => context.go('/login'),
-              child: const Text('Already have an account? Sign in'),
+              child: Text(l10n.registerAlreadyHaveAccount),
             ),
           ],
         ),

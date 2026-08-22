@@ -4,8 +4,10 @@ import '../../../core/providers/app_providers.dart';
 import '../../../core/providers/user_provider.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/whatsapp.dart';
+import '../../../core/widgets/favorite_button.dart';
 import '../../../core/widgets/listing_image.dart';
 import '../../../core/widgets/soft_card.dart';
+import '../../../core/widgets/star_rating.dart';
 import '../../../data/models/store.dart';
 
 class StoreCard extends ConsumerWidget {
@@ -107,6 +109,14 @@ class StoreCard extends ConsumerWidget {
                             fontSize: 11,
                           ),
                     ),
+                    if (store.ratingCount > 0) ...[
+                      const SizedBox(height: 2),
+                      StarRatingDisplay(
+                        rating: store.avgRating,
+                        count: store.ratingCount,
+                        size: 12,
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -154,6 +164,22 @@ class StoreCard extends ConsumerWidget {
                     ),
                   ),
                 ),
+              Positioned(
+                top: 4,
+                right: 4,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: tokens.surface.withValues(alpha: 0.92),
+                    shape: BoxShape.circle,
+                  ),
+                  child: FavoriteButton(
+                    entityType: 'store',
+                    entityId: store.id,
+                    color: tokens.onCardMuted,
+                    compact: true,
+                  ),
+                ),
+              ),
             ],
           ),
           Padding(
@@ -174,6 +200,12 @@ class StoreCard extends ConsumerWidget {
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: tokens.onCardMuted,
                       ),
+                ),
+                const SizedBox(height: 4),
+                StarRatingDisplay(
+                  rating: store.avgRating,
+                  count: store.ratingCount,
+                  size: 14,
                 ),
                 if (store.phone != null)
                   Align(

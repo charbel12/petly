@@ -1,42 +1,46 @@
 /// Petly design tokens & app constants
 class AppColors {
-  // Cozy pet-friendly palette — cream / terracotta / sage / honey / cocoa
-  static const cream = 0xFFFBF1DF;
-  static const terracotta = 0xFFC1592E;
-  static const sage = 0xFF7E9473;
-  static const honey = 0xFFECA83D;
-  static const cocoa = 0xFF4A3324;
+  // Light — teal / amber / slate
+  static const teal600 = 0xFF0D8275;
+  static const amber500 = 0xFFF59E0B;
+  static const slate50 = 0xFFF8FAFC;
+  static const white = 0xFFFFFFFF;
+  static const slate200 = 0xFFE2E8F0;
+  static const slate900 = 0xFF0F172A;
+  static const slate500 = 0xFF64748B;
+  static const emerald500 = 0xFF10B981;
+  static const rose500 = 0xFFF43F5E;
 
-  /// Tints and shades mixed only from the five palette colors.
-  static const creamSurface = 0xFFFFF8EC;
-  static const sandMist = 0xFFEEDFC0;
-  static const cocoaDeep = 0xFF2B1D12;
-  static const cocoaSurface = 0xFF3C2A1B;
-  static const terracottaDeep = 0xFF8E3E22;
-  static const terracottaBright = 0xFFD9663F;
-  static const sageDeep = 0xFF5C7052;
-  static const sageLight = 0xFF9AB58C;
+  // Dark — brighter teal/amber on deep slate
+  static const teal400 = 0xFF2DD4BF;
+  static const amber400 = 0xFFFBBF24;
+  static const slate950 = 0xFF0B0F19;
+  static const slate800 = 0xFF1E293B;
+  static const slate700 = 0xFF334155;
+  static const slate400 = 0xFF94A3B8;
+  static const emerald400 = 0xFF34D399;
+  static const rose400 = 0xFFFB7185;
 
   // Semantic — light
-  static const primary = terracotta;
-  static const accent = honey;
-  static const secondary = cocoa;
-  static const secondarySoft = honey;
-  static const background = cream;
-  static const text = cocoa;
-  static const surface = creamSurface;
-  static const muted = terracotta;
-  static const border = sandMist;
-  static const danger = terracottaDeep;
-  static const success = sage;
+  static const primary = teal600;
+  static const accent = amber500;
+  static const secondary = slate900;
+  static const secondarySoft = amber500;
+  static const background = slate50;
+  static const text = slate900;
+  static const surface = white;
+  static const muted = slate500;
+  static const border = slate200;
+  static const danger = rose500;
+  static const success = emerald500;
 
   // Semantic — dark
-  static const darkBackground = cocoaDeep;
-  static const darkSurface = cocoaSurface;
-  static const darkText = cream;
-  static const darkMuted = honey;
-  static const darkBorder = terracotta;
-  static const darkPrimary = honey;
+  static const darkBackground = slate950;
+  static const darkSurface = slate800;
+  static const darkText = slate50;
+  static const darkMuted = slate400;
+  static const darkBorder = slate700;
+  static const darkPrimary = teal400;
 }
 
 class AppConstants {

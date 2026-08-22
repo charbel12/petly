@@ -10,6 +10,7 @@ import '../../../core/widgets/motion.dart';
 import '../../../core/widgets/petly_background.dart';
 import '../../../core/widgets/section_header.dart';
 import '../../../core/widgets/skeleton.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../stores/providers/stores_providers.dart';
 import '../../stores/widgets/store_card.dart';
 import '../../stores/widgets/nearby_store_items_section.dart';
@@ -42,6 +43,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final tokens = AppTokens.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final userAsync = ref.watch(currentUserProvider);
     final locationAsync = ref.watch(locationProvider);
     final locationLabel = ref.watch(locationLabelProvider);
@@ -84,7 +86,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Hi, $firstName 👋',
+                                  firstName == 'there'
+                                      ? l10n.homeGreetingGuest
+                                      : l10n.homeGreeting(firstName),
                                   style: Theme.of(context)
                                       .textTheme
                                       .headlineSmall
@@ -115,7 +119,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                       Flexible(
                                         child: Text(
                                           locationAsync.isLoading
-                                              ? 'Finding your location...'
+                                              ? l10n.homeFindingLocation
                                               : locationLabel,
                                           style: Theme.of(context)
                                               .textTheme
@@ -172,7 +176,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         textInputAction: TextInputAction.search,
                         onSubmitted: _onSearch,
                         decoration: InputDecoration(
-                          hintText: 'Search vets or clinics...',
+                          hintText: l10n.homeSearchHint,
                           prefixIcon: const Icon(Icons.search_rounded),
                           suffixIcon: IconButton(
                             icon: const Icon(Icons.arrow_forward_rounded),
@@ -183,6 +187,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                       const SizedBox(height: 16),
                       _EmergencyButton(
+                        title: l10n.homeEmergencyTitle,
+                        subtitle: l10n.homeEmergencySubtitle,
                         onPressed: () {
                           ref
                               .read(exploreVetsFiltersProvider.notifier)
@@ -195,8 +201,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
                 const SizedBox(height: 24),
                 SectionHeader(
-                  title: 'Nearby vets',
-                  actionLabel: 'See all',
+                  title: l10n.homeNearbyVetsTitle,
+                  actionLabel: l10n.homeSeeAll,
                   onAction: () => context.go('/explore'),
                 ),
                 const SizedBox(height: 12),
@@ -211,7 +217,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                   data: (vets) {
                     if (vets.isEmpty) {
-                      return const Text('No vets found nearby.');
+                      return Text(l10n.homeNoVetsNearby);
                     }
                     final nearby = vets.take(4).toList();
                     return Column(
@@ -234,8 +240,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 const NearbyStoreItemsSection(source: 'home'),
                 const SizedBox(height: 16),
                 SectionHeader(
-                  title: 'Featured stores',
-                  actionLabel: 'Explore',
+                  title: l10n.homeFeaturedStoresTitle,
+                  actionLabel: l10n.homeExploreAction,
                   onAction: () => context.go('/explore?tab=stores'),
                 ),
                 const SizedBox(height: 12),
@@ -250,7 +256,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                   data: (stores) {
                     if (stores.isEmpty) {
-                      return const Text('No featured stores yet.');
+                      return Text(l10n.homeNoFeaturedStores);
                     }
                     return SizedBox(
                       height: 228,
@@ -286,21 +292,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 }
 
 class _EmergencyButton extends StatelessWidget {
-  const _EmergencyButton({required this.onPressed});
+  const _EmergencyButton({
+    required this.title,
+    required this.subtitle,
+    required this.onPressed,
+  });
 
+  final String title;
+  final String subtitle;
   final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
     final tokens = AppTokens.of(context);
+    final isRtl = Directionality.of(context) == TextDirection.rtl;
     return ScaleOnTap(
       onTap: onPressed,
       child: Ink(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [tokens.emergencyStart, tokens.emergencyEnd],
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
+            begin: AlignmentDirectional.centerStart.resolve(
+              isRtl ? TextDirection.rtl : TextDirection.ltr,
+            ),
+            end: AlignmentDirectional.centerEnd.resolve(
+              isRtl ? TextDirection.rtl : TextDirection.ltr,
+            ),
           ),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
@@ -317,22 +334,22 @@ class _EmergencyButton extends StatelessWidget {
             children: [
               const Icon(Icons.emergency_rounded, color: Colors.white, size: 28),
               const SizedBox(width: 12),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Emergency Vet',
-                      style: TextStyle(
+                      title,
+                      style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w700,
                         fontSize: 16,
                       ),
                     ),
-                    SizedBox(height: 2),
+                    const SizedBox(height: 2),
                     Text(
-                      'Find open emergency clinics nearby',
-                      style: TextStyle(
+                      subtitle,
+                      style: const TextStyle(
                         color: Color(0xE6FFFFFF),
                         fontSize: 12,
                       ),
@@ -340,7 +357,12 @@ class _EmergencyButton extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right_rounded, color: Colors.white),
+              Icon(
+                isRtl
+                    ? Icons.chevron_left_rounded
+                    : Icons.chevron_right_rounded,
+                color: Colors.white,
+              ),
             ],
           ),
         ),

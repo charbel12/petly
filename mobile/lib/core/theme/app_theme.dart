@@ -11,16 +11,18 @@ class AppTheme {
     final colorScheme = ColorScheme.fromSeed(
       seedColor: tokens.brandPrimary,
       primary: tokens.brandPrimary,
-      secondary: tokens.brandSecondary,
+      secondary: tokens.brandAccent,
       surface: tokens.surface,
       brightness: brightness,
     ).copyWith(
       onPrimary: tokens.onBrand,
+      onSecondary: tokens.textPrimary,
       error: tokens.danger,
       onSurface: tokens.textPrimary,
       onSurfaceVariant: tokens.textMuted,
       outline: tokens.border,
       outlineVariant: tokens.border,
+      surfaceTint: Colors.transparent,
     );
 
     final base = ThemeData(
@@ -95,7 +97,7 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: tokens.surface,
+        fillColor: tokens.card,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppTokens.radiusMd),
@@ -115,7 +117,7 @@ class AppTheme {
         ),
       ),
       chipTheme: ChipThemeData(
-        backgroundColor: tokens.surface,
+        backgroundColor: tokens.card,
         selectedColor: tokens.brandPrimary.withValues(alpha: 0.18),
         labelStyle: GoogleFonts.poppins(fontSize: 13, color: tokens.textPrimary),
         secondaryLabelStyle:

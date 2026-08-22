@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/providers/auth_provider.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/api_error.dart';
+import '../../../l10n/app_localizations.dart';
 import '../widgets/auth_scaffold.dart';
 
 class ForgotPasswordScreen extends ConsumerStatefulWidget {
@@ -41,7 +42,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(friendlyErrorMessage(error))),
+        SnackBar(content: Text(friendlyErrorMessage(context, error))),
       );
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -50,10 +51,10 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AuthScaffold(
-      title: 'Forgot password',
-      subtitle:
-          'Enter your email and we’ll send reset instructions if an account exists. Email delivery isn’t enabled yet — contact support if you need a reset now.',
+      title: l10n.forgotTitle,
+      subtitle: l10n.forgotSubtitle,
       child: Form(
         key: _formKey,
         child: Column(
@@ -63,11 +64,11 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
               controller: _email,
               keyboardType: TextInputType.emailAddress,
               autocorrect: false,
-              decoration: const InputDecoration(labelText: 'Email'),
+              decoration: InputDecoration(labelText: l10n.authEmailLabel),
               validator: (value) {
                 final email = value?.trim() ?? '';
-                if (email.isEmpty) return 'Enter your email';
-                if (!email.contains('@')) return 'Enter a valid email';
+                if (email.isEmpty) return l10n.authEnterEmail;
+                if (!email.contains('@')) return l10n.authEnterValidEmail;
                 return null;
               },
             ),
@@ -83,7 +84,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                         color: Theme.of(context).colorScheme.onPrimary,
                       ),
                     )
-                  : const Text('Send reset link'),
+                  : Text(l10n.forgotSendResetButton),
             ),
             if (_message != null) ...[
               const SizedBox(height: 16),
@@ -95,7 +96,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             const SizedBox(height: 16),
             TextButton(
               onPressed: () => context.go('/login'),
-              child: const Text('Back to sign in'),
+              child: Text(l10n.forgotBackToSignIn),
             ),
           ],
         ),

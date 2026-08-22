@@ -7,22 +7,40 @@ import { Vet, VetFilters } from './vets.types';
 
 export async function listVets(filters: VetFilters = {}): Promise<Vet[]> {
   const where: Prisma.VetWhereInput = { status: 'approved' };
+  const and: Prisma.VetWhereInput[] = [];
 
   if (filters.search?.trim()) {
     const q = filters.search.trim();
-    where.OR = [
-      { name: { contains: q, mode: 'insensitive' } },
-      { location: { contains: q, mode: 'insensitive' } },
-    ];
+    and.push({
+      OR: [
+        { name: { contains: q, mode: 'insensitive' } },
+        { location: { contains: q, mode: 'insensitive' } },
+      ],
+    });
   }
   if (filters.open_now === true) where.isOpenNow = true;
   if (filters.emergency === true) where.isEmergency = true;
   if (filters.verified === true) where.verified = true;
   if (filters.featured === true) where.featured = true;
+  if (filters.pet_type) {
+    and.push({
+      OR: [
+        { petTypes: { isEmpty: true } },
+        { petTypes: { has: filters.pet_type } },
+      ],
+    });
+  }
+  if (and.length) where.AND = and;
 
   const rows = await prisma.vet.findMany({ where });
   const mapped = rows.map((row) => mapVet(row));
-  return withDistance(mapped, filters.lat, filters.lng, filters.max_distance_km);
+  return withDistance(
+    mapped,
+    filters.lat,
+    filters.lng,
+    filters.max_distance_km,
+    filters.sort,
+  );
 }
 
 export async function getVetById(

@@ -21,6 +21,10 @@ plugins {
     id("dev.flutter.flutter-plugin-loader") version "1.0.0"
     id("com.android.application") version "8.11.1" apply false
     id("org.jetbrains.kotlin.android") version "2.2.20" apply false
+    // Only actually applied by app/build.gradle.kts when google-services.json
+    // exists — see docs/PUSH_NOTIFICATIONS_SETUP.md. Declaring it here with
+    // apply false is safe even without a Firebase project configured.
+    id("com.google.gms.google-services") version "4.4.2" apply false
 }
 
 include(":app")

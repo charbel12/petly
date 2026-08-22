@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/constants/pet_taxonomy.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/utils/api_error.dart';
 import '../../../core/widgets/async_error_view.dart';
@@ -41,6 +42,7 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
   final _serviceInput = TextEditingController();
 
   List<String> _services = [];
+  List<PetType> _petTypes = [];
   bool _isOpenNow = true;
   bool _isEmergency = false;
   ListingHours _hours = ListingHours.template();
@@ -103,6 +105,7 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
     _lat.text = vet.latitude?.toString() ?? '';
     _lng.text = vet.longitude?.toString() ?? '';
     _services = List.of(vet.services);
+    _petTypes = List.of(vet.petTypes);
     _isOpenNow = vet.isOpenNow;
     _isEmergency = vet.isEmergency;
     _hours = vet.hours ?? ListingHours.template();
@@ -119,6 +122,7 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
     _lat.text = store.latitude?.toString() ?? '';
     _lng.text = store.longitude?.toString() ?? '';
     _services = List.of(store.services);
+    _petTypes = List.of(store.petTypes);
     _isOpenNow = store.isOpenNow;
     _hours = store.hours ?? ListingHours.template();
     _status = store.status;
@@ -155,6 +159,7 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
           longitude: lng,
           imageUrl: _imageUrl.text.trim(),
           hours: _hours,
+          petTypes: _petTypes,
         );
         if (_isEdit) {
           await repo.updateVet(widget.listingId!, body);
@@ -173,6 +178,7 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
           longitude: lng,
           imageUrl: _imageUrl.text.trim(),
           hours: _hours,
+          petTypes: _petTypes,
         );
         if (_isEdit) {
           await repo.updateStore(widget.listingId!, body);
@@ -193,7 +199,7 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(friendlyErrorMessage(error))),
+        SnackBar(content: Text(friendlyErrorMessage(context, error))),
       );
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -385,6 +391,41 @@ class _ListingFormScreenState extends ConsumerState<ListingFormScreen> {
                               icon: const Icon(Icons.add_circle_outline),
                             ),
                           ],
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Which pets does this serve?',
+                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Leave empty for all pets.',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: PetType.values
+                              .map(
+                                (type) => FilterChip(
+                                  avatar: Icon(type.icon, size: 16),
+                                  label: Text(type.label),
+                                  selected: _petTypes.contains(type),
+                                  onSelected: (selected) {
+                                    setState(() {
+                                      _petTypes = selected
+                                          ? [..._petTypes, type]
+                                          : _petTypes
+                                              .where((t) => t != type)
+                                              .toList();
+                                    });
+                                  },
+                                ),
+                              )
+                              .toList(),
                         ),
                         const SizedBox(height: 16),
                         HoursEditor(

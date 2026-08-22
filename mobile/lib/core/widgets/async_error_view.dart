@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 import '../constants/app_constants.dart';
 import '../theme/app_tokens.dart';
 import '../utils/api_error.dart';
@@ -18,7 +19,8 @@ class AsyncErrorView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = AppTokens.of(context);
-    final message = friendlyErrorMessage(error);
+    final l10n = AppLocalizations.of(context)!;
+    final message = friendlyErrorMessage(context, error);
     final isOffline = error is ApiException && (error as ApiException).isOffline;
 
     if (compact) {
@@ -32,7 +34,7 @@ class AsyncErrorView extends StatelessWidget {
           children: [
             Text(message, textAlign: TextAlign.center),
             const SizedBox(height: 8),
-            TextButton(onPressed: onRetry, child: const Text('Retry')),
+            TextButton(onPressed: onRetry, child: Text(l10n.commonRetry)),
           ],
         ),
       );
@@ -51,7 +53,7 @@ class AsyncErrorView extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              isOffline ? 'You\'re offline' : 'Something went wrong',
+              isOffline ? l10n.errorYoureOffline : l10n.errorSomethingWentWrongTitle,
               style: Theme.of(context)
                   .textTheme
                   .titleMedium
@@ -68,7 +70,7 @@ class AsyncErrorView extends StatelessWidget {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: onRetry,
-              child: const Text('Try again'),
+              child: Text(l10n.commonTryAgain),
             ),
           ],
         ),
@@ -82,10 +84,9 @@ class OfflineBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Always a dark cocoa strip with light text, regardless of theme —
-    // a status banner, not a themed surface.
+    final l10n = AppLocalizations.of(context)!;
     return Material(
-      color: const Color(AppColors.cocoa),
+      color: const Color(AppColors.slate900),
       child: SafeArea(
         bottom: false,
         child: Padding(
@@ -94,15 +95,15 @@ class OfflineBanner extends StatelessWidget {
             children: [
               const Icon(
                 Icons.wifi_off_rounded,
-                color: Color(AppColors.cream),
+                color: Color(AppColors.slate50),
                 size: 18,
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  'No internet connection',
+                  l10n.offlineBannerText,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: const Color(AppColors.cream),
+                        color: const Color(AppColors.slate50),
                         fontWeight: FontWeight.w600,
                       ),
                 ),

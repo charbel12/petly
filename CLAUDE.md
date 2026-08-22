@@ -59,7 +59,7 @@ flutter test                                                     # or: flutter t
 
 - `data/api/api_client.dart` is the single Dio wrapper: it attaches the bearer access token to every request except anonymous auth paths, and on a 401 it acquires a `_refreshLock` (so concurrent 401s only trigger one refresh), retries the original request once, and calls `onSessionExpired` if refresh fails. Prefer extending this client over creating new Dio instances.
 - `routes/app_router.dart` defines a single `GoRouter` (via `routerProvider`) with auth-aware `redirect` logic driven by `authProvider`; `routes/shell_screen.dart` hosts the bottom-nav shell.
-- `core/constants/app_constants.dart` holds the `AppColors` palette (currently the olive/forest/cornsilk/copper set — this supersedes the older teal/orange palette described in older docs) and `apiBaseUrl`, overridable via `--dart-define=API_BASE_URL=...` at build/run time — there is no `.env` for mobile.
+- `core/constants/app_constants.dart` holds the `AppColors` palette (teal/amber/slate for light and dark) and `apiBaseUrl`, overridable via `--dart-define=API_BASE_URL=...` at build/run time — there is no `.env` for mobile.
 - Location: GPS is requested when-in-use and falls back to a hardcoded Beirut coordinate (`AppConstants.defaultLat/Lng`) if denied/unavailable.
 - WhatsApp deep links (`core/utils/whatsapp.dart`) are the Phase 1 substitute for in-app chat/booking; taps are fire-and-forget POSTed to `/analytics/whatsapp-clicks`.
 

@@ -279,3 +279,184 @@ test('partner can manage store items without changing listing status', async () 
     .expect(200);
   assert.equal(empty.body.length, 0);
 });
+
+test('partner can set pet_types on vet/store listings and category/pet_types on store items', async () => {
+  const partner = await registerPartner();
+  const adminToken = await loginAdmin();
+
+  const vet = await request(app)
+    .post('/partners/vets')
+    .set('Authorization', `Bearer ${partner.token}`)
+    .send({
+      name: `Pet Types Clinic ${Date.now()}`,
+      phone: '96171107777',
+      location: 'Hamra, Beirut',
+      pet_types: ['dog', 'cat'],
+    })
+    .expect(201);
+  assert.deepEqual(vet.body.pet_types, ['dog', 'cat']);
+
+  const vetPatched = await request(app)
+    .patch(`/partners/vets/${vet.body.id}`)
+    .set('Authorization', `Bearer ${partner.token}`)
+    .send({ pet_types: [] })
+    .expect(200);
+  assert.deepEqual(vetPatched.body.pet_types, []);
+
+  const store = await request(app)
+    .post('/partners/stores')
+    .set('Authorization', `Bearer ${partner.token}`)
+    .send({
+      name: `Pet Types Store ${Date.now()}`,
+      location: 'Hamra, Beirut',
+      type: 'Pet Store',
+      pet_types: ['rabbit'],
+    })
+    .expect(201);
+  assert.deepEqual(store.body.pet_types, ['rabbit']);
+
+  await request(app)
+    .patch(`/admin/stores/${store.body.id}/review`)
+    .set('Authorization', `Bearer ${adminToken}`)
+    .send({ status: 'approved' })
+    .expect(200);
+
+  const item = await request(app)
+    .post(`/partners/stores/${store.body.id}/items`)
+    .set('Authorization', `Bearer ${partner.token}`)
+    .send({
+      name: 'Rabbit pellets',
+      price: 9,
+      currency: 'USD',
+      category: 'food',
+      pet_types: ['rabbit'],
+    })
+    .expect(201);
+  assert.equal(item.body.category, 'food');
+  assert.deepEqual(item.body.pet_types, ['rabbit']);
+
+  const patchedItem = await request(app)
+    .patch(`/partners/stores/${store.body.id}/items/${item.body.id}`)
+    .set('Authorization', `Bearer ${partner.token}`)
+    .send({ category: 'health', pet_types: ['rabbit', 'other'] })
+    .expect(200);
+  assert.equal(patchedItem.body.category, 'health');
+  assert.deepEqual(patchedItem.body.pet_types, ['rabbit', 'other']);
+
+  const publicItems = await request(app)
+    .get(`/stores/${store.body.id}/items`)
+    .expect(200);
+  assert.equal(publicItems.body[0].category, 'health');
+
+  const filtered = await request(app)
+    .get(`/stores/${store.body.id}/items`)
+    .query({ pet_type: 'rabbit' })
+    .expect(200);
+  assert.equal(filtered.body.length, 1);
+
+  const filteredOut = await request(app)
+    .get(`/stores/${store.body.id}/items`)
+    .query({ pet_type: 'dog' })
+    .expect(200);
+  assert.equal(filteredOut.body.length, 0);
+
+  await request(app)
+    .post(`/partners/stores/${store.body.id}/items`)
+    .set('Authorization', `Bearer ${partner.token}`)
+    .send({ name: 'Bad category', category: 'not-a-category' })
+    .expect(400);
+});
+
+test('POST /partners/stores/:id/notify 202s and never throws without real FCM configured', async () => {
+  const partner = await registerPartner();
+  const client = await registerClient();
+  const adminToken = await loginAdmin();
+
+  const store = await request(app)
+    .post('/partners/stores')
+    .set('Authorization', `Bearer ${partner.token}`)
+    .send({
+      name: `Notify Store ${Date.now()}`,
+      location: 'Hamra, Beirut',
+      type: 'Pet Store',
+    })
+    .expect(201);
+
+  await request(app)
+    .patch(`/admin/stores/${store.body.id}/review`)
+    .set('Authorization', `Bearer ${adminToken}`)
+    .send({ status: 'approved' })
+    .expect(200);
+
+  // A favoriter so the notify path has at least one recipient to look up.
+  await request(app)
+    .post('/favorites')
+    .set('Authorization', `Bearer ${client.token}`)
+    .send({ entity_type: 'store', entity_id: store.body.id })
+    .expect(201);
+
+  await request(app)
+    .post(`/partners/stores/${store.body.id}/notify`)
+    .set('Authorization', `Bearer ${partner.token}`)
+    .send({ title: 'Sale today', body: '20% off all cat food' })
+    .expect(202);
+
+  // Ownership is enforced the same way as the other /partners/stores/:id/... routes.
+  const other = await registerPartner('Notify Other');
+  await request(app)
+    .post(`/partners/stores/${store.body.id}/notify`)
+    .set('Authorization', `Bearer ${other.token}`)
+    .send({ title: 'Hijack', body: 'Should not work' })
+    .expect(404);
+
+  await request(app)
+    .post(`/partners/stores/${store.body.id}/notify`)
+    .set('Authorization', `Bearer ${partner.token}`)
+    .send({ title: '' })
+    .expect(400);
+});
+
+test('flipping a store item from out-of-stock to in-stock does not throw (restock notification path)', async () => {
+  const partner = await registerPartner();
+  const client = await registerClient();
+  const adminToken = await loginAdmin();
+
+  const store = await request(app)
+    .post('/partners/stores')
+    .set('Authorization', `Bearer ${partner.token}`)
+    .send({
+      name: `Restock Store ${Date.now()}`,
+      location: 'Hamra, Beirut',
+      type: 'Pet Store',
+    })
+    .expect(201);
+
+  await request(app)
+    .patch(`/admin/stores/${store.body.id}/review`)
+    .set('Authorization', `Bearer ${adminToken}`)
+    .send({ status: 'approved' })
+    .expect(200);
+
+  await request(app)
+    .post('/favorites')
+    .set('Authorization', `Bearer ${client.token}`)
+    .send({ entity_type: 'store', entity_id: store.body.id })
+    .expect(201);
+
+  const item = await request(app)
+    .post(`/partners/stores/${store.body.id}/items`)
+    .set('Authorization', `Bearer ${partner.token}`)
+    .send({ name: 'Restockable toy', in_stock: false })
+    .expect(201);
+  assert.equal(item.body.in_stock, false);
+
+  const restocked = await request(app)
+    .patch(`/partners/stores/${store.body.id}/items/${item.body.id}`)
+    .set('Authorization', `Bearer ${partner.token}`)
+    .send({ in_stock: true })
+    .expect(200);
+  assert.equal(restocked.body.in_stock, true);
+
+  // Give the fire-and-forget notification path a tick to run without throwing.
+  await new Promise((resolve) => setTimeout(resolve, 50));
+});

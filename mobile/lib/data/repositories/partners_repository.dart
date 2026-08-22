@@ -1,3 +1,4 @@
+import '../../core/constants/pet_taxonomy.dart';
 import '../api/api_client.dart';
 import '../models/listing_hours.dart';
 import '../models/store.dart';
@@ -119,6 +120,8 @@ class PartnersRepository {
     String currency = 'USD',
     String? imageUrl,
     bool inStock = true,
+    ItemCategory category = ItemCategory.other,
+    List<PetType> petTypes = const [],
   }) {
     return {
       'name': name,
@@ -127,6 +130,8 @@ class PartnersRepository {
       'currency': currency,
       if (imageUrl != null && imageUrl.isNotEmpty) 'image_url': imageUrl,
       'in_stock': inStock,
+      'category': category.apiValue,
+      'pet_types': petTypesToJson(petTypes),
     };
   }
 
@@ -141,6 +146,7 @@ class PartnersRepository {
     double? longitude,
     String? imageUrl,
     ListingHours? hours,
+    List<PetType> petTypes = const [],
   }) {
     return {
       'name': name,
@@ -153,6 +159,7 @@ class PartnersRepository {
       'longitude': ?longitude,
       if (imageUrl != null && imageUrl.isNotEmpty) 'image_url': imageUrl,
       if (hours != null) 'hours': hours.toJson(),
+      'pet_types': petTypesToJson(petTypes),
     };
   }
 
@@ -167,6 +174,7 @@ class PartnersRepository {
     double? longitude,
     String? imageUrl,
     ListingHours? hours,
+    List<PetType> petTypes = const [],
   }) {
     return {
       'name': name,
@@ -179,6 +187,7 @@ class PartnersRepository {
       'longitude': ?longitude,
       if (imageUrl != null && imageUrl.isNotEmpty) 'image_url': imageUrl,
       if (hours != null) 'hours': hours.toJson(),
+      'pet_types': petTypesToJson(petTypes),
     };
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../data/models/user.dart';
+import '../services/push_notification_service.dart';
 import 'app_providers.dart';
 
 class AuthNotifier extends AsyncNotifier<User?> {
@@ -97,6 +98,12 @@ class AuthNotifier extends AsyncNotifier<User?> {
   }
 
   Future<void> logout() async {
+    // Best-effort — unregistering the push token must never block logout.
+    try {
+      await ref.read(pushNotificationServiceProvider).unregisterCurrentToken();
+    } catch (_) {
+      // Ignore; already handled/logged inside the service.
+    }
     await ref.read(authRepositoryProvider).logout();
     state = const AsyncData(null);
   }

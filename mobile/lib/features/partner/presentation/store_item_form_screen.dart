@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/constants/pet_taxonomy.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/utils/api_error.dart';
 import '../../../core/widgets/async_error_view.dart';
@@ -31,6 +32,8 @@ class _StoreItemFormScreenState extends ConsumerState<StoreItemFormScreen> {
   final _imageUrl = TextEditingController();
   String _currency = 'USD';
   bool _inStock = true;
+  ItemCategory _category = ItemCategory.other;
+  List<PetType> _petTypes = [];
   bool _loading = false;
   bool _saving = false;
   Object? _loadError;
@@ -77,6 +80,8 @@ class _StoreItemFormScreenState extends ConsumerState<StoreItemFormScreen> {
       _imageUrl.text = item.imageUrl ?? '';
       _currency = item.currency == 'LBP' ? 'LBP' : 'USD';
       _inStock = item.inStock;
+      _category = item.category;
+      _petTypes = List.of(item.petTypes);
     } catch (error) {
       _loadError = error;
     } finally {
@@ -96,6 +101,8 @@ class _StoreItemFormScreenState extends ConsumerState<StoreItemFormScreen> {
         currency: _currency,
         imageUrl: _imageUrl.text.trim(),
         inStock: _inStock,
+        category: _category,
+        petTypes: _petTypes,
       );
       final repo = ref.read(partnersRepositoryProvider);
       if (_isEdit) {
@@ -109,7 +116,7 @@ class _StoreItemFormScreenState extends ConsumerState<StoreItemFormScreen> {
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(friendlyErrorMessage(error))),
+        SnackBar(content: Text(friendlyErrorMessage(context, error))),
       );
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -207,6 +214,30 @@ class _StoreItemFormScreenState extends ConsumerState<StoreItemFormScreen> {
                           ],
                         ),
                         const SizedBox(height: 14),
+                        InputDecorator(
+                          decoration: const InputDecoration(
+                            labelText: 'Category',
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<ItemCategory>(
+                              value: _category,
+                              isExpanded: true,
+                              items: ItemCategory.values
+                                  .map(
+                                    (category) => DropdownMenuItem(
+                                      value: category,
+                                      child: Text(category.label),
+                                    ),
+                                  )
+                                  .toList(),
+                              onChanged: (value) {
+                                if (value == null) return;
+                                setState(() => _category = value);
+                              },
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 14),
                         TextFormField(
                           controller: _imageUrl,
                           decoration: const InputDecoration(
@@ -223,6 +254,41 @@ class _StoreItemFormScreenState extends ConsumerState<StoreItemFormScreen> {
                                   setState(() => _inStock = value),
                             ),
                           ],
+                        ),
+                        const SizedBox(height: 14),
+                        Text(
+                          'Which pets is this for?',
+                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Leave empty to show for all pets.',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: PetType.values
+                              .map(
+                                (type) => FilterChip(
+                                  avatar: Icon(type.icon, size: 16),
+                                  label: Text(type.label),
+                                  selected: _petTypes.contains(type),
+                                  onSelected: (selected) {
+                                    setState(() {
+                                      _petTypes = selected
+                                          ? [..._petTypes, type]
+                                          : _petTypes
+                                              .where((t) => t != type)
+                                              .toList();
+                                    });
+                                  },
+                                ),
+                              )
+                              .toList(),
                         ),
                         const SizedBox(height: 24),
                         ElevatedButton(

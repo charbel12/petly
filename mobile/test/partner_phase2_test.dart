@@ -7,6 +7,7 @@ import 'package:petly/data/repositories/partners_repository.dart';
 import 'package:petly/features/auth/presentation/register_screen.dart';
 import 'package:petly/features/partner/presentation/partner_dashboard_screen.dart';
 import 'package:petly/features/partner/providers/partner_providers.dart';
+import 'support/localized_app.dart';
 
 void main() {
   testWidgets('StatusChip labels pending, approved, and rejected', (tester) async {
@@ -77,8 +78,8 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
 
     await tester.pumpWidget(
-      const ProviderScope(
-        child: MaterialApp(home: RegisterScreen()),
+      ProviderScope(
+        child: localizedApp(home: const RegisterScreen()),
       ),
     );
     await tester.pump();

@@ -1,4 +1,6 @@
 import { ListingHours } from '../listings/hours.schema';
+import { PetType } from '../vets/vets.types';
+import { ItemCategory } from '../stores/stores.types';
 
 export interface CreateVetListingDto {
   name: string;
@@ -7,6 +9,7 @@ export interface CreateVetListingDto {
   latitude?: number | null;
   longitude?: number | null;
   services?: string[];
+  pet_types?: PetType[];
   is_emergency?: boolean;
   is_open_now?: boolean;
   image_url?: string;
@@ -20,6 +23,7 @@ export interface PatchVetListingDto {
   latitude?: number | null;
   longitude?: number | null;
   services?: string[];
+  pet_types?: PetType[];
   is_emergency?: boolean;
   is_open_now?: boolean;
   image_url?: string | null;
@@ -34,6 +38,7 @@ export interface CreateStoreListingDto {
   latitude?: number | null;
   longitude?: number | null;
   services?: string[];
+  pet_types?: PetType[];
   is_open_now?: boolean;
   image_url?: string;
   hours?: ListingHours;
@@ -47,6 +52,7 @@ export interface PatchStoreListingDto {
   latitude?: number | null;
   longitude?: number | null;
   services?: string[];
+  pet_types?: PetType[];
   is_open_now?: boolean;
   image_url?: string | null;
   hours?: ListingHours;
@@ -60,6 +66,8 @@ export interface CreateStoreItemDto {
   image_url?: string;
   in_stock?: boolean;
   sort_order?: number;
+  category?: ItemCategory;
+  pet_types?: PetType[];
 }
 
 export interface PatchStoreItemDto {
@@ -70,4 +78,6 @@ export interface PatchStoreItemDto {
   image_url?: string | null;
   in_stock?: boolean;
   sort_order?: number;
+  category?: ItemCategory;
+  pet_types?: PetType[];
 }

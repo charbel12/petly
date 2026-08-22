@@ -140,7 +140,7 @@ test('register with device_id upgrades a guest and keeps their pets', async () =
   await petsService.createPet({
     user_id: guest.id,
     name: 'Nala',
-    type: 'Cat',
+    type: 'cat',
     age: 1,
   });
 
@@ -323,7 +323,7 @@ test('oauth google with device_id upgrades a guest and keeps pets', async () => 
   await petsService.createPet({
     user_id: guest.id,
     name: 'Nala',
-    type: 'Cat',
+    type: 'cat',
     age: 1,
   });
 

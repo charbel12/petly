@@ -6,6 +6,7 @@ import '../features/auth/presentation/forgot_password_screen.dart';
 import '../features/auth/presentation/login_screen.dart';
 import '../features/auth/presentation/register_screen.dart';
 import '../features/explore/presentation/explore_screen.dart';
+import '../features/favorites/presentation/favorites_screen.dart';
 import '../features/home/presentation/home_screen.dart';
 import '../features/partner/presentation/listing_form_screen.dart';
 import '../features/partner/presentation/partner_dashboard_screen.dart';
@@ -136,6 +137,15 @@ final routerProvider = Provider<GoRouter>((ref) {
                 path: '/pets',
                 name: 'pets',
                 builder: (context, state) => const PetsScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/favorites',
+                name: 'favorites',
+                builder: (context, state) => const FavoritesScreen(),
               ),
             ],
           ),

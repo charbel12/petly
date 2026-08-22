@@ -1,6 +1,48 @@
 import { Router } from 'express';
 import * as storesService from './stores.service';
-import { StoreFilters } from './stores.types';
+import { ItemCategory, StoreFilters } from './stores.types';
+import { PetType } from '../vets/vets.types';
+
+const PET_TYPES: PetType[] = ['dog', 'cat', 'bird', 'fish', 'rabbit', 'other'];
+const ITEM_CATEGORIES: ItemCategory[] = [
+  'food',
+  'toys',
+  'cleaning',
+  'health',
+  'accessories',
+  'other',
+];
+
+function parsePetType(value: unknown): PetType | undefined {
+  return typeof value === 'string' && (PET_TYPES as string[]).includes(value)
+    ? (value as PetType)
+    : undefined;
+}
+
+function parseCategory(value: unknown): ItemCategory | undefined {
+  return typeof value === 'string' && (ITEM_CATEGORIES as string[]).includes(value)
+    ? (value as ItemCategory)
+    : undefined;
+}
+
+const SORT_VALUES = ['distance', 'rating', 'name'] as const;
+type SortValue = (typeof SORT_VALUES)[number];
+
+function parseSort(value: unknown): SortValue | undefined {
+  return typeof value === 'string' && (SORT_VALUES as readonly string[]).includes(value)
+    ? (value as SortValue)
+    : undefined;
+}
+
+const ITEM_SORT_VALUES = ['default', 'price_asc', 'price_desc'] as const;
+type ItemSortValue = (typeof ITEM_SORT_VALUES)[number];
+
+function parseItemSort(value: unknown): ItemSortValue | undefined {
+  return typeof value === 'string' &&
+    (ITEM_SORT_VALUES as readonly string[]).includes(value)
+    ? (value as ItemSortValue)
+    : undefined;
+}
 
 const router = Router();
 
@@ -37,9 +79,11 @@ router.get('/', async (req, res, next) => {
       type: req.query.type as string | undefined,
       open_now: parseBool(req.query.open_now),
       featured: parseBool(req.query.featured),
+      pet_type: parsePetType(req.query.pet_type),
       lat: parseNum(req.query.lat),
       lng: parseNum(req.query.lng),
       max_distance_km: parseNum(req.query.max_distance_km),
+      sort: parseSort(req.query.sort),
     };
     const stores = await storesService.listStores(filters);
     res.json(stores);
@@ -53,6 +97,9 @@ router.get('/:id/items', async (req, res, next) => {
     const items = await storesService.listStoreItems(req.params.id, {
       inStockOnly: parseBool(req.query.in_stock) === true,
       limit: parseNum(req.query.limit),
+      category: parseCategory(req.query.category),
+      petType: parsePetType(req.query.pet_type),
+      sort: parseItemSort(req.query.sort),
     });
     res.json(items);
   } catch (err) {

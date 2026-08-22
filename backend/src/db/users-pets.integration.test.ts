@@ -1,9 +1,13 @@
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
+import request from 'supertest';
 import { prisma, deployMigrations, disconnectPrisma } from './prisma';
 import * as usersService from '../modules/users/users.service';
 import * as petsService from '../modules/pets/pets.service';
 import { AppError } from '../middleware/errorHandler';
+import { createApp } from '../app';
+
+const app = createApp();
 
 before(async () => {
   deployMigrations();
@@ -46,7 +50,7 @@ test('createPet stores a numeric age and lists pets by user', async () => {
   const pet = await petsService.createPet({
     user_id: owner.id,
     name: 'Rex',
-    type: 'Dog',
+    type: 'dog',
     age: 3,
   });
   assert.equal(typeof pet.age, 'number');
@@ -68,9 +72,39 @@ test('createPet requires name and type', async () => {
       petsService.createPet({
         user_id: owner.id,
         name: '',
-        type: '',
+        type: '' as never,
         age: 1,
       }),
     (err: unknown) => err instanceof AppError && err.statusCode === 400,
   );
+});
+
+test('POST /pets accepts only known pet type enum values', async () => {
+  const owner = await usersService.createUser({
+    name: 'Owner3',
+    phone: `+9613${Date.now()}`.slice(0, 15),
+    device_id: `owner3-${Date.now()}`,
+  });
+
+  await request(app)
+    .post('/pets')
+    .send({ user_id: owner.id, name: 'Milo', type: 'Dog', age: 1 })
+    .expect(400);
+
+  const created = await request(app)
+    .post('/pets')
+    .send({ user_id: owner.id, name: 'Milo', type: 'rabbit', age: 1 })
+    .expect(201);
+  assert.equal(created.body.type, 'rabbit');
+
+  const patched = await request(app)
+    .patch(`/pets/${created.body.id}`)
+    .send({ type: 'bird' })
+    .expect(200);
+  assert.equal(patched.body.type, 'bird');
+
+  await request(app)
+    .patch(`/pets/${created.body.id}`)
+    .send({ type: 'Bird' })
+    .expect(400);
 });

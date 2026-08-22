@@ -2,6 +2,8 @@ import { ListingHours } from '../listings/hours.schema';
 
 export type ListingStatus = 'pending' | 'approved' | 'rejected';
 
+export type PetType = 'dog' | 'cat' | 'bird' | 'fish' | 'rabbit' | 'other';
+
 export interface Vet {
   id: string;
   name: string;
@@ -10,6 +12,7 @@ export interface Vet {
   latitude: number | null;
   longitude: number | null;
   services: string[];
+  pet_types: PetType[];
   verified: boolean;
   is_emergency: boolean;
   is_open_now: boolean;
@@ -17,6 +20,8 @@ export interface Vet {
   image_url: string | null;
   status: ListingStatus;
   hours: ListingHours | null;
+  avg_rating: number;
+  rating_count: number;
   created_at: Date;
   updated_at: Date;
   distance_km?: number | null;
@@ -36,7 +41,9 @@ export interface VetFilters {
   emergency?: boolean;
   verified?: boolean;
   featured?: boolean;
+  pet_type?: PetType;
   lat?: number;
   lng?: number;
   max_distance_km?: number;
+  sort?: 'distance' | 'rating' | 'name';
 }

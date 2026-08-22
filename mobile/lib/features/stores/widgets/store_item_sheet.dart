@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/constants/pet_taxonomy.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/providers/user_provider.dart';
 import '../../../core/theme/app_tokens.dart';
@@ -31,6 +32,17 @@ Future<void> showStoreItemSheet({
               style: Theme.of(sheetContext).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
+            ),
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                Icon(item.category.icon, size: 16, color: tokens.onCardMuted),
+                const SizedBox(width: 6),
+                Text(
+                  item.category.label,
+                  style: TextStyle(color: tokens.onCardMuted),
+                ),
+              ],
             ),
             const SizedBox(height: 6),
             Text(

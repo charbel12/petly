@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/constants/pet_taxonomy.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/providers/location_provider.dart';
 import '../../../data/models/vet.dart';
@@ -35,19 +36,28 @@ class ExploreVetsFilters {
     this.openNow = false,
     this.emergency = false,
     this.maxDistanceKm,
+    this.petType,
+    this.sort = 'distance',
   });
 
   final String search;
   final bool openNow;
   final bool emergency;
   final double? maxDistanceKm;
+  final PetType? petType;
+
+  /// 'distance' (default) | 'rating' | 'name'.
+  final String sort;
 
   ExploreVetsFilters copyWith({
     String? search,
     bool? openNow,
     bool? emergency,
     double? maxDistanceKm,
+    PetType? petType,
+    String? sort,
     bool clearDistance = false,
+    bool clearPetType = false,
   }) {
     return ExploreVetsFilters(
       search: search ?? this.search,
@@ -55,6 +65,8 @@ class ExploreVetsFilters {
       emergency: emergency ?? this.emergency,
       maxDistanceKm:
           clearDistance ? null : (maxDistanceKm ?? this.maxDistanceKm),
+      petType: clearPetType ? null : (petType ?? this.petType),
+      sort: sort ?? this.sort,
     );
   }
 }
@@ -74,6 +86,9 @@ class ExploreVetsFiltersNotifier extends Notifier<ExploreVetsFilters> {
       state = state.copyWith(emergency: value);
   void setMaxDistance(double? km) =>
       state = state.copyWith(maxDistanceKm: km, clearDistance: km == null);
+  void setPetType(PetType? petType) => state =
+      state.copyWith(petType: petType, clearPetType: petType == null);
+  void setSort(String sort) => state = state.copyWith(sort: sort);
 }
 
 final exploreVetsFiltersProvider =
@@ -89,6 +104,8 @@ final exploreVetsProvider = FutureProvider<List<Vet>>((ref) async {
     openNow: filters.openNow ? true : null,
     emergency: filters.emergency ? true : null,
     maxDistanceKm: filters.maxDistanceKm,
+    petType: filters.petType?.apiValue,
+    sort: filters.sort,
     lat: ref.watch(userLatProvider),
     lng: ref.watch(userLngProvider),
   );

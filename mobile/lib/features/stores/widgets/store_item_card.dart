@@ -1,8 +1,42 @@
 import 'package:flutter/material.dart';
+import '../../../core/constants/pet_taxonomy.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/listing_image.dart';
 import '../../../core/widgets/soft_card.dart';
 import '../../../data/models/store_item.dart';
+
+class _CategoryChip extends StatelessWidget {
+  const _CategoryChip({required this.item});
+
+  final StoreItem item;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppTokens.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: tokens.brandPrimary.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(item.category.icon, size: 12, color: tokens.brandPrimary),
+          const SizedBox(width: 4),
+          Text(
+            item.category.label,
+            style: TextStyle(
+              color: tokens.brandPrimary,
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class StoreItemCard extends StatelessWidget {
   const StoreItemCard({
@@ -38,6 +72,8 @@ class StoreItemCard extends StatelessWidget {
                 fontWeight: FontWeight.w700,
               ),
         ),
+        const SizedBox(height: 4),
+        _CategoryChip(item: item),
         const SizedBox(height: 4),
         Text(
           item.priceLabel,

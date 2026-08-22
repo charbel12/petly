@@ -1,3 +1,4 @@
+import '../../core/constants/pet_taxonomy.dart';
 import '../api/api_client.dart';
 import '../models/pet.dart';
 
@@ -19,7 +20,7 @@ class PetsRepository {
   Future<Pet> create({
     required String userId,
     required String name,
-    required String type,
+    required PetType type,
     required double age,
   }) async {
     final response = await _api.post<Map<String, dynamic>>(
@@ -27,7 +28,7 @@ class PetsRepository {
       data: {
         'user_id': userId,
         'name': name,
-        'type': type,
+        'type': type.apiValue,
         'age': age,
       },
     );

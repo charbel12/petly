@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/constants/pet_taxonomy.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/providers/user_provider.dart';
 import '../../../core/theme/app_tokens.dart';
@@ -18,10 +19,8 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _ageController = TextEditingController();
-  String _type = 'Dog';
+  PetType _type = PetType.dog;
   bool _saving = false;
-
-  static const _types = ['Dog', 'Cat', 'Bird', 'Rabbit', 'Other'];
 
   @override
   void dispose() {
@@ -47,7 +46,9 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to add pet: ${friendlyErrorMessage(e)}')),
+        SnackBar(
+          content: Text('Failed to add pet: ${friendlyErrorMessage(context, e)}'),
+        ),
       );
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -75,12 +76,24 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
                   (v == null || v.trim().isEmpty) ? 'Name is required' : null,
             ),
             const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
+            DropdownButtonFormField<PetType>(
               // ignore: deprecated_member_use
               value: _type,
               decoration: const InputDecoration(labelText: 'Type'),
-              items: _types
-                  .map((t) => DropdownMenuItem(value: t, child: Text(t)))
+              items: PetType.values
+                  .map(
+                    (t) => DropdownMenuItem(
+                      value: t,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(t.icon, size: 18),
+                          const SizedBox(width: 8),
+                          Text(t.label),
+                        ],
+                      ),
+                    ),
+                  )
                   .toList(),
               onChanged: (v) {
                 if (v != null) setState(() => _type = v);
