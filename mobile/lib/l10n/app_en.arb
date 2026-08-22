@@ -1,0 +1,188 @@
+{
+  "@@locale": "en",
+
+  "commonSave": "Save",
+  "commonCancel": "Cancel",
+  "commonRetry": "Retry",
+  "commonTryAgain": "Try again",
+  "commonSubmit": "Submit",
+  "commonOr": "or",
+
+  "navHome": "Home",
+  "navExplore": "Explore",
+  "navPets": "Pets",
+  "navFavorites": "Favorites",
+  "navProfile": "Profile",
+
+  "authEmailLabel": "Email",
+  "authEnterEmail": "Enter your email",
+  "authEnterValidEmail": "Enter a valid email",
+  "authPasswordLabel": "Password",
+  "authEnterPassword": "Enter your password",
+  "authShowPassword": "Show password",
+  "authHidePassword": "Hide password",
+  "authContinueWithGoogle": "Continue with Google",
+  "authGoogleNotConfigured": "Google sign-in is not configured. Add GOOGLE_WEB_CLIENT_ID.",
+
+  "loginTitle": "Welcome back",
+  "loginSubtitle": "Sign in to sync your pets across devices and manage your account.",
+  "loginForgotPassword": "Forgot password?",
+  "loginSignInButton": "Sign in",
+  "loginCreateAccount": "Create an account",
+  "loginContinueAsGuest": "Continue as guest",
+
+  "registerTitle": "Create your account",
+  "registerSubtitle": "Save your pets and pick up where you left off on any device.",
+  "registerNameLabel": "Name",
+  "registerEnterName": "Enter your name",
+  "registerPhoneLabel": "Phone (optional)",
+  "registerPasswordMinLength": "Use at least 8 characters",
+  "registerConfirmPasswordLabel": "Confirm password",
+  "registerPasswordsDoNotMatch": "Passwords do not match",
+  "registerCreateAccountButton": "Create account",
+  "registerAlreadyHaveAccount": "Already have an account? Sign in",
+
+  "forgotTitle": "Forgot password",
+  "forgotSubtitle": "Enter your email and we’ll send reset instructions if an account exists. Email delivery isn’t enabled yet — contact support if you need a reset now.",
+  "forgotSendResetButton": "Send reset link",
+  "forgotBackToSignIn": "Back to sign in",
+
+  "homeGreeting": "Hi, {name} 👋",
+  "@homeGreeting": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "homeGreetingGuest": "Hi there 👋",
+  "homeFindingLocation": "Finding your location...",
+  "homeSearchHint": "Search vets or clinics...",
+  "homeEmergencyTitle": "Emergency Vet",
+  "homeEmergencySubtitle": "Find open emergency clinics nearby",
+  "homeNearbyVetsTitle": "Nearby vets",
+  "homeSeeAll": "See all",
+  "homeNoVetsNearby": "No vets found nearby.",
+  "homeFeaturedStoresTitle": "Featured stores",
+  "homeExploreAction": "Explore",
+  "homeNoFeaturedStores": "No featured stores yet.",
+
+  "exploreTitle": "Explore",
+  "exploreSearchHint": "Search by name or area...",
+  "exploreTabVets": "Vets",
+  "exploreTabStores": "Stores",
+  "exploreAllPets": "All pets",
+  "exploreSortTooltip": "Sort by",
+  "exploreSortNearest": "Nearest",
+  "exploreSortTopRated": "Top rated",
+  "exploreSortByName": "Name",
+  "exploreSortFallback": "Sort",
+  "exploreFilterEmergency": "Emergency",
+  "exploreFilterOpenNow": "Open now",
+  "exploreFilterUnder5km": "< 5 km",
+  "exploreFilterUnder15km": "< 15 km",
+  "exploreFilterUnder10km": "< 10 km",
+  "exploreFilterPetStore": "Pet Store",
+  "exploreFilterGrooming": "Grooming",
+  "exploreNoClinicsMatchQuery": "No clinics match “{query}”",
+  "@exploreNoClinicsMatchQuery": {
+    "placeholders": {
+      "query": { "type": "String" }
+    }
+  },
+  "exploreTryAnotherArea": "Try another area or clear filters.",
+  "exploreNoVetsMatchFilters": "No vets match your filters",
+  "exploreAdjustFilters": "Adjust filters or search a different neighborhood.",
+  "exploreNoStoresMatchQuery": "No stores match “{query}”",
+  "@exploreNoStoresMatchQuery": {
+    "placeholders": {
+      "query": { "type": "String" }
+    }
+  },
+  "exploreNoStoresMatchFilters": "No stores match your filters",
+
+  "favoritesTitle": "Favorites",
+  "favoritesTabStores": "Stores",
+  "favoritesTabVets": "Vets",
+  "favoritesNoStoresTitle": "No favorite stores yet",
+  "favoritesNoStoresMessage": "Tap the heart on a store to save it here for quick access.",
+  "favoritesNoVetsTitle": "No favorite vets yet",
+  "favoritesNoVetsMessage": "Tap the heart on a clinic to save it here for quick access.",
+
+  "profileTitle": "Profile",
+  "profileEditTooltip": "Edit profile",
+  "profileSignOut": "Sign out",
+  "profileSignIn": "Sign in",
+  "profileCreateAccount": "Create an account",
+  "profileSettingsHeader": "Settings",
+  "profileNotificationsTitle": "Notifications",
+  "profileNotificationsSubtitle": "Coming in a later phase",
+  "profileNotificationsSnack": "Push notifications planned for Phase 3",
+  "profileAppearanceTitle": "Appearance",
+  "profileLocationTitle": "Location",
+  "profileLocationGps": "Using GPS · {label}",
+  "@profileLocationGps": {
+    "placeholders": {
+      "label": { "type": "String" }
+    }
+  },
+  "profileLocationFallback": "Fallback · {label}",
+  "@profileLocationFallback": {
+    "placeholders": {
+      "label": { "type": "String" }
+    }
+  },
+  "profileLocationDetecting": "Detecting...",
+  "profileLocationRefreshedSnack": "Location refreshed",
+  "profilePartnerDashboardTitle": "Partner dashboard",
+  "profilePartnerDashboardSubtitle": "Manage your clinics and stores",
+  "profileBecomePartnerTitle": "List your clinic or store",
+  "profileBecomePartnerSubtitle": "Become a partner to submit listings for review",
+  "profileSignInPartnerPrompt": "Sign in or register as a partner to list your clinic or store.",
+  "profileHelpContact": "Help & contact",
+  "profileTagline": "{appName} · Phase 2\n{status}",
+  "@profileTagline": {
+    "placeholders": {
+      "appName": { "type": "String" },
+      "status": { "type": "String" }
+    }
+  },
+  "profileSignedInStatus": "Signed in",
+  "profileGuestStatus": "Guest browsing",
+  "profileBecomePartnerDialogTitle": "List your clinic or store",
+  "profileBecomePartnerDialogContent": "This upgrades your account to a partner so you can submit listings for review. Clients will only see them after approval.",
+  "profileBecomePartnerConfirm": "Become a partner",
+  "profileSignOutDialogTitle": "Sign out",
+  "profileSignOutDialogContent": "You can still browse as a guest on this device.",
+  "profileSignOutSnack": "Signed out",
+  "profileEditDialogTitle": "Edit profile",
+  "profileEditNameLabel": "Name",
+  "profileEditPhoneLabel": "Phone (optional)",
+  "profileUpdatedSnack": "Profile updated",
+  "profileUpdateFailedSnack": "Could not update profile: {error}",
+  "@profileUpdateFailedSnack": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "profileLanguageTitle": "Language",
+  "profileLanguageSystem": "System default",
+  "profileLanguageEnglish": "English",
+  "profileLanguageArabic": "العربية",
+
+  "settingsThemeLight": "Light",
+  "settingsThemeDark": "Dark",
+  "settingsThemeSystem": "System",
+
+  "errorConnectionTimeout": "Connection timed out. Check your network and try again.",
+  "errorCannotReachServer": "Cannot reach Petly servers. Is the API running?",
+  "errorGenericWithCode": "Something went wrong ({code})",
+  "@errorGenericWithCode": {
+    "placeholders": {
+      "code": { "type": "int" }
+    }
+  },
+  "errorUnexpectedNetwork": "Unexpected network error",
+  "errorGeneric": "Something went wrong. Please try again.",
+  "errorYoureOffline": "You’re offline",
+  "errorSomethingWentWrongTitle": "Something went wrong",
+  "offlineBannerText": "No internet connection"
+}

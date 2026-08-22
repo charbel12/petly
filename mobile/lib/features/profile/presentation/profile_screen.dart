@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/providers/auth_provider.dart';
+import '../../../core/providers/locale_provider.dart';
 import '../../../core/providers/location_provider.dart';
 import '../../../core/providers/theme_provider.dart';
 import '../../../core/providers/user_provider.dart';
@@ -12,6 +13,7 @@ import '../../../core/utils/api_error.dart';
 import '../../../core/utils/whatsapp.dart';
 import '../../../core/widgets/async_error_view.dart';
 import '../../../core/widgets/soft_card.dart';
+import '../../../l10n/app_localizations.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -38,12 +40,13 @@ class ProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final userAsync = ref.watch(currentUserProvider);
     final location = ref.watch(locationProvider);
     final signedIn = ref.watch(isAuthenticatedProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Profile')),
+      appBar: AppBar(title: Text(l10n.profileTitle)),
       body: userAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => AsyncErrorView(
@@ -53,6 +56,7 @@ class ProfileScreen extends ConsumerWidget {
         data: (user) {
           final tokens = AppTokens.of(context);
           final themeMode = ref.watch(themeModeProvider);
+          final locale = ref.watch(localeProvider);
           return ListView(
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
             children: [
@@ -110,7 +114,7 @@ class ProfileScreen extends ConsumerWidget {
                       ),
                     ),
                     IconButton(
-                      tooltip: 'Edit profile',
+                      tooltip: l10n.profileEditTooltip,
                       onPressed: () => _editProfile(
                         context,
                         ref,
@@ -126,7 +130,7 @@ class ProfileScreen extends ConsumerWidget {
               if (signedIn)
                 OutlinedButton(
                   onPressed: () => _signOut(context, ref),
-                  child: const Text('Sign out'),
+                  child: Text(l10n.profileSignOut),
                 )
               else
                 Column(
@@ -134,18 +138,18 @@ class ProfileScreen extends ConsumerWidget {
                   children: [
                     ElevatedButton(
                       onPressed: () => context.push('/login'),
-                      child: const Text('Sign in'),
+                      child: Text(l10n.profileSignIn),
                     ),
                     const SizedBox(height: 8),
                     OutlinedButton(
                       onPressed: () => context.push('/register'),
-                      child: const Text('Create an account'),
+                      child: Text(l10n.profileCreateAccount),
                     ),
                   ],
                 ),
               const SizedBox(height: 20),
               Text(
-                'Settings',
+                l10n.profileSettingsHeader,
                 style: Theme.of(context)
                     .textTheme
                     .titleMedium
@@ -158,40 +162,46 @@ class ProfileScreen extends ConsumerWidget {
                   children: [
                     _SettingsTile(
                       icon: Icons.notifications_outlined,
-                      title: 'Notifications',
-                      subtitle: 'Coming in a later phase',
+                      title: l10n.profileNotificationsTitle,
+                      subtitle: l10n.profileNotificationsSubtitle,
                       onTap: () {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content:
-                                Text('Push notifications planned for Phase 3'),
-                          ),
+                          SnackBar(content: Text(l10n.profileNotificationsSnack)),
                         );
                       },
                     ),
                     const Divider(height: 1),
                     _SettingsTile(
                       icon: Icons.palette_outlined,
-                      title: 'Appearance',
-                      subtitle: themeModeLabel(themeMode),
+                      title: l10n.profileAppearanceTitle,
+                      subtitle: _themeModeLabel(l10n, themeMode),
                       onTap: () => _pickThemeMode(context, ref, themeMode),
                     ),
                     const Divider(height: 1),
                     _SettingsTile(
+                      icon: Icons.language_rounded,
+                      title: l10n.profileLanguageTitle,
+                      subtitle: _localeLabel(l10n, locale),
+                      onTap: () => _pickLocale(context, ref, locale),
+                    ),
+                    const Divider(height: 1),
+                    _SettingsTile(
                       icon: Icons.my_location_rounded,
-                      title: 'Location',
+                      title: l10n.profileLocationTitle,
                       subtitle: location.when(
                         data: (loc) => loc.isGps
-                            ? 'Using GPS · ${loc.label}'
-                            : 'Fallback · ${loc.label}',
-                        loading: () => 'Detecting...',
+                            ? l10n.profileLocationGps(loc.label)
+                            : l10n.profileLocationFallback(loc.label),
+                        loading: () => l10n.profileLocationDetecting,
                         error: (e, st) => AppConstants.defaultLocationLabel,
                       ),
                       onTap: () async {
                         await ref.read(locationProvider.notifier).refresh();
                         if (!context.mounted) return;
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Location refreshed')),
+                          SnackBar(
+                            content: Text(l10n.profileLocationRefreshedSnack),
+                          ),
                         );
                       },
                     ),
@@ -222,7 +232,7 @@ class ProfileScreen extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Partner dashboard',
+                              l10n.profilePartnerDashboardTitle,
                               style: Theme.of(context)
                                   .textTheme
                                   .titleSmall
@@ -230,7 +240,7 @@ class ProfileScreen extends ConsumerWidget {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              'Manage your clinics and stores',
+                              l10n.profilePartnerDashboardSubtitle,
                               style: Theme.of(context)
                                   .textTheme
                                   .bodySmall
@@ -266,7 +276,7 @@ class ProfileScreen extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'List your clinic or store',
+                              l10n.profileBecomePartnerTitle,
                               style: Theme.of(context)
                                   .textTheme
                                   .titleSmall
@@ -274,7 +284,7 @@ class ProfileScreen extends ConsumerWidget {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              'Become a partner to submit listings for review',
+                              l10n.profileBecomePartnerSubtitle,
                               style: Theme.of(context)
                                   .textTheme
                                   .bodySmall
@@ -295,7 +305,7 @@ class ProfileScreen extends ConsumerWidget {
                       const SizedBox(width: 14),
                       Expanded(
                         child: Text(
-                          'Sign in or register as a partner to list your clinic or store.',
+                          l10n.profileSignInPartnerPrompt,
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
                       ),
@@ -314,21 +324,24 @@ class ProfileScreen extends ConsumerWidget {
                 child: Row(
                   children: [
                     Icon(Icons.help_outline_rounded, color: tokens.onCard),
-                    SizedBox(width: 14),
+                    const SizedBox(width: 14),
                     Expanded(
                       child: Text(
-                        'Help & contact',
-                        style: TextStyle(fontWeight: FontWeight.w600),
+                        l10n.profileHelpContact,
+                        style: const TextStyle(fontWeight: FontWeight.w600),
                       ),
                     ),
-                    Icon(Icons.chevron_right_rounded),
+                    const Icon(Icons.chevron_right_rounded),
                   ],
                 ),
               ),
               const SizedBox(height: 24),
               Center(
                 child: Text(
-                  '${AppConstants.appName} · Phase 2\n${signedIn ? 'Signed in' : 'Guest browsing'}',
+                  l10n.profileTagline(
+                    AppConstants.appName,
+                    signedIn ? l10n.profileSignedInStatus : l10n.profileGuestStatus,
+                  ),
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: tokens.textMuted,
@@ -342,23 +355,43 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
+  String _themeModeLabel(AppLocalizations l10n, ThemeMode mode) {
+    switch (mode) {
+      case ThemeMode.light:
+        return l10n.settingsThemeLight;
+      case ThemeMode.dark:
+        return l10n.settingsThemeDark;
+      case ThemeMode.system:
+        return l10n.settingsThemeSystem;
+    }
+  }
+
+  String _localeLabel(AppLocalizations l10n, Locale? locale) {
+    switch (locale?.languageCode) {
+      case 'en':
+        return l10n.profileLanguageEnglish;
+      case 'ar':
+        return l10n.profileLanguageArabic;
+      default:
+        return l10n.profileLanguageSystem;
+    }
+  }
+
   Future<void> _becomePartner(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('List your clinic or store'),
-        content: const Text(
-          'This upgrades your account to a partner so you can submit listings '
-          'for review. Clients will only see them after approval.',
-        ),
+        title: Text(l10n.profileBecomePartnerDialogTitle),
+        content: Text(l10n.profileBecomePartnerDialogContent),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
+            child: Text(l10n.commonCancel),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Become a partner'),
+            child: Text(l10n.profileBecomePartnerConfirm),
           ),
         ],
       ),
@@ -371,7 +404,7 @@ class ProfileScreen extends ConsumerWidget {
     } catch (error) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(friendlyErrorMessage(error))),
+        SnackBar(content: Text(friendlyErrorMessage(context, error))),
       );
     }
   }
@@ -381,10 +414,11 @@ class ProfileScreen extends ConsumerWidget {
     WidgetRef ref,
     ThemeMode current,
   ) async {
+    final l10n = AppLocalizations.of(context)!;
     final selected = await showDialog<ThemeMode>(
       context: context,
       builder: (ctx) => SimpleDialog(
-        title: const Text('Appearance'),
+        title: Text(l10n.profileAppearanceTitle),
         children: [
           RadioGroup<ThemeMode>(
             groupValue: current,
@@ -396,7 +430,7 @@ class ProfileScreen extends ConsumerWidget {
                 for (final mode in ThemeMode.values)
                   RadioListTile<ThemeMode>(
                     value: mode,
-                    title: Text(themeModeLabel(mode)),
+                    title: Text(_themeModeLabel(l10n, mode)),
                   ),
               ],
             ),
@@ -408,20 +442,56 @@ class ProfileScreen extends ConsumerWidget {
     await ref.read(themeModeProvider.notifier).setMode(selected);
   }
 
+  /// `null` entry represents "follow system".
+  Future<void> _pickLocale(
+    BuildContext context,
+    WidgetRef ref,
+    Locale? current,
+  ) async {
+    final l10n = AppLocalizations.of(context)!;
+    const choices = <Locale?>[null, Locale('en'), Locale('ar')];
+    final selected = await showDialog<_LocaleChoice>(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        title: Text(l10n.profileLanguageTitle),
+        children: [
+          RadioGroup<Locale?>(
+            groupValue: current,
+            onChanged: (value) {
+              Navigator.pop(ctx, _LocaleChoice(value));
+            },
+            child: Column(
+              children: [
+                for (final locale in choices)
+                  RadioListTile<Locale?>(
+                    value: locale,
+                    title: Text(_localeLabel(l10n, locale)),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+    if (selected == null) return;
+    await ref.read(localeProvider.notifier).setLocale(selected.locale);
+  }
+
   Future<void> _signOut(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Sign out'),
-        content: const Text('You can still browse as a guest on this device.'),
+        title: Text(l10n.profileSignOutDialogTitle),
+        content: Text(l10n.profileSignOutDialogContent),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
+            child: Text(l10n.commonCancel),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Sign out'),
+            child: Text(l10n.profileSignOut),
           ),
         ],
       ),
@@ -430,7 +500,7 @@ class ProfileScreen extends ConsumerWidget {
     await ref.read(authProvider.notifier).logout();
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Signed out')),
+      SnackBar(content: Text(l10n.profileSignOutSnack)),
     );
   }
 
@@ -440,6 +510,7 @@ class ProfileScreen extends ConsumerWidget {
     String currentName,
     String currentPhone,
   ) async {
+    final l10n = AppLocalizations.of(context)!;
     final nameCtrl = TextEditingController(text: currentName);
     final phoneCtrl = TextEditingController(
       text: currentPhone.startsWith('device:') ? '' : currentPhone,
@@ -448,20 +519,20 @@ class ProfileScreen extends ConsumerWidget {
     final saved = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Edit profile'),
+        title: Text(l10n.profileEditDialogTitle),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: nameCtrl,
-              decoration: const InputDecoration(labelText: 'Name'),
+              decoration: InputDecoration(labelText: l10n.profileEditNameLabel),
               textCapitalization: TextCapitalization.words,
             ),
             const SizedBox(height: 12),
             TextField(
               controller: phoneCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Phone (optional)',
+              decoration: InputDecoration(
+                labelText: l10n.profileEditPhoneLabel,
                 hintText: '+9617...',
               ),
               keyboardType: TextInputType.phone,
@@ -471,11 +542,11 @@ class ProfileScreen extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
+            child: Text(l10n.commonCancel),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Save'),
+            child: Text(l10n.commonSave),
           ),
         ],
       ),
@@ -489,15 +560,22 @@ class ProfileScreen extends ConsumerWidget {
           );
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Profile updated')),
+        SnackBar(content: Text(l10n.profileUpdatedSnack)),
       );
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not update profile: $e')),
+        SnackBar(content: Text(l10n.profileUpdateFailedSnack('$e'))),
       );
     }
   }
+}
+
+/// Wraps a nullable [Locale] so `showDialog<Locale?>` can distinguish
+/// "dialog dismissed" (null) from "system default selected" (Locale? null).
+class _LocaleChoice {
+  const _LocaleChoice(this.locale);
+  final Locale? locale;
 }
 
 class _SettingsTile extends StatelessWidget {

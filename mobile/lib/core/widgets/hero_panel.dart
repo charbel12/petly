@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_tokens.dart';
 
-/// A solid, warmly-colored hero surface for header/greeting blocks — the
-/// bigger, more spacious sibling of [SoftCard].
+/// A solid hero surface for header/greeting blocks — the bigger sibling of [SoftCard].
 class HeroPanel extends StatelessWidget {
   const HeroPanel({
     super.key,
@@ -28,12 +27,14 @@ class HeroPanel extends StatelessWidget {
       decoration: BoxDecoration(
         color: tokens.card,
         borderRadius: borderRadius,
+        border: Border.all(color: tokens.border),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.30 : 0.10),
-            blurRadius: 24,
-            offset: const Offset(0, 10),
-          ),
+          if (!isDark)
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 24,
+              offset: const Offset(0, 10),
+            ),
         ],
       ),
       child: Theme(

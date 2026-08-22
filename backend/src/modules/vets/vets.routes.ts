@@ -1,6 +1,23 @@
 import { Router } from 'express';
 import * as vetsService from './vets.service';
-import { VetFilters } from './vets.types';
+import { PetType, VetFilters } from './vets.types';
+
+const PET_TYPES: PetType[] = ['dog', 'cat', 'bird', 'fish', 'rabbit', 'other'];
+
+function parsePetType(value: unknown): PetType | undefined {
+  return typeof value === 'string' && (PET_TYPES as string[]).includes(value)
+    ? (value as PetType)
+    : undefined;
+}
+
+const SORT_VALUES = ['distance', 'rating', 'name'] as const;
+type SortValue = (typeof SORT_VALUES)[number];
+
+function parseSort(value: unknown): SortValue | undefined {
+  return typeof value === 'string' && (SORT_VALUES as readonly string[]).includes(value)
+    ? (value as SortValue)
+    : undefined;
+}
 
 const router = Router();
 
@@ -25,9 +42,11 @@ router.get('/', async (req, res, next) => {
       emergency: parseBool(req.query.emergency),
       verified: parseBool(req.query.verified),
       featured: parseBool(req.query.featured),
+      pet_type: parsePetType(req.query.pet_type),
       lat: parseNum(req.query.lat),
       lng: parseNum(req.query.lng),
       max_distance_km: parseNum(req.query.max_distance_km),
+      sort: parseSort(req.query.sort),
     };
     const vets = await vetsService.listVets(filters);
     res.json(vets);

@@ -1,5 +1,13 @@
 import { ListingHours } from '../listings/hours.schema';
-import { ListingStatus } from '../vets/vets.types';
+import { ListingStatus, PetType } from '../vets/vets.types';
+
+export type ItemCategory =
+  | 'food'
+  | 'toys'
+  | 'cleaning'
+  | 'health'
+  | 'accessories'
+  | 'other';
 
 export interface Store {
   id: string;
@@ -13,8 +21,11 @@ export interface Store {
   is_open_now: boolean;
   image_url: string | null;
   services: string[];
+  pet_types: PetType[];
   status: ListingStatus;
   hours: ListingHours | null;
+  avg_rating: number;
+  rating_count: number;
   created_at: Date;
   updated_at: Date;
   distance_km?: number | null;
@@ -33,9 +44,11 @@ export interface StoreFilters {
   type?: string;
   open_now?: boolean;
   featured?: boolean;
+  pet_type?: PetType;
   lat?: number;
   lng?: number;
   max_distance_km?: number;
+  sort?: 'distance' | 'rating' | 'name';
 }
 
 export interface StoreItem {
@@ -48,6 +61,8 @@ export interface StoreItem {
   image_url: string | null;
   in_stock: boolean;
   sort_order: number;
+  category: ItemCategory;
+  pet_types: PetType[];
   created_at: Date;
   updated_at: Date;
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/constants/pet_taxonomy.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/async_error_view.dart';
@@ -10,19 +11,6 @@ import '../providers/pets_providers.dart';
 
 class PetsScreen extends ConsumerWidget {
   const PetsScreen({super.key});
-
-  IconData _iconForType(String type) {
-    switch (type.toLowerCase()) {
-      case 'dog':
-        return Icons.pets_rounded;
-      case 'cat':
-        return Icons.cruelty_free_rounded;
-      case 'bird':
-        return Icons.flutter_dash_rounded;
-      default:
-        return Icons.pets_outlined;
-    }
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -87,7 +75,7 @@ class PetsScreen extends ConsumerWidget {
                 final pet = pets[index];
                 return _PetCard(
                   pet: pet,
-                  icon: _iconForType(pet.type),
+                  icon: pet.type.icon,
                   onDelete: () async {
                     final confirmed = await showDialog<bool>(
                       context: context,
@@ -161,7 +149,7 @@ class _PetCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${pet.type} · ${pet.ageLabel}',
+                  '${pet.type.label} · ${pet.ageLabel}',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: tokens.onCardMuted,
                       ),

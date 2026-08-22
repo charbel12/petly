@@ -2,7 +2,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/api/api_client.dart';
 import '../../data/repositories/analytics_repository.dart';
 import '../../data/repositories/auth_repository.dart';
+import '../../data/repositories/favorites_repository.dart';
+import '../../data/repositories/notifications_repository.dart';
 import '../../data/repositories/pets_repository.dart';
+import '../../data/repositories/reviews_repository.dart';
 import '../../data/repositories/stores_repository.dart';
 import '../../data/repositories/users_repository.dart';
 import '../../data/repositories/partners_repository.dart';
@@ -41,4 +44,16 @@ final analyticsRepositoryProvider = Provider<AnalyticsRepository>(
 
 final partnersRepositoryProvider = Provider<PartnersRepository>(
   (ref) => PartnersRepository(ref.watch(apiClientProvider)),
+);
+
+final favoritesRepositoryProvider = Provider<FavoritesRepository>(
+  (ref) => FavoritesRepository(ref.watch(apiClientProvider)),
+);
+
+final reviewsRepositoryProvider = Provider<ReviewsRepository>(
+  (ref) => ReviewsRepository(ref.watch(apiClientProvider)),
+);
+
+final notificationsRepositoryProvider = Provider<NotificationsRepository>(
+  (ref) => NotificationsRepository(ref.watch(apiClientProvider)),
 );

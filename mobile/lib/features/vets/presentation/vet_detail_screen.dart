@@ -6,10 +6,13 @@ import '../../../core/providers/user_provider.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/whatsapp.dart';
 import '../../../core/widgets/async_error_view.dart';
+import '../../../core/widgets/favorite_button.dart';
 import '../../../core/widgets/hours_schedule.dart';
 import '../../../core/widgets/listing_image.dart';
 import '../../../core/widgets/skeleton.dart';
 import '../../../core/widgets/soft_card.dart';
+import '../../../core/widgets/star_rating.dart';
+import '../../reviews/presentation/reviews_section.dart';
 import '../providers/vets_providers.dart';
 
 class VetDetailScreen extends ConsumerWidget {
@@ -28,7 +31,12 @@ class VetDetailScreen extends ConsumerWidget {
     final tokens = AppTokens.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Clinic details')),
+      appBar: AppBar(
+        title: const Text('Clinic details'),
+        actions: [
+          FavoriteButton(entityType: 'vet', entityId: vetId),
+        ],
+      ),
       body: vetAsync.when(
         loading: () => const Padding(
           padding: EdgeInsets.all(20),
@@ -85,6 +93,11 @@ class VetDetailScreen extends ConsumerWidget {
                             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                   color: tokens.onCardMuted,
                                 ),
+                          ),
+                          const SizedBox(height: 8),
+                          StarRatingDisplay(
+                            rating: vet.avgRating,
+                            count: vet.ratingCount,
                           ),
                           const SizedBox(height: 16),
                           _InfoRow(
@@ -162,6 +175,8 @@ class VetDetailScreen extends ConsumerWidget {
                         ),
                       ),
                     ],
+                    const SizedBox(height: 24),
+                    ReviewsSection(entityType: 'vet', entityId: vet.id),
                   ],
                 ),
               ),

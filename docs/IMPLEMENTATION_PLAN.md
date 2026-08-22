@@ -147,10 +147,9 @@ start Phase 3 in the same PR.
 
 ## Phase 4 - UI/UX polish: animations, backgrounds, colors — done (palette refresh)
 
-- Palette: olive-leaf `#606C38`, black-forest `#283618`, cornsilk `#FEFAE0`,
-  sunlit-clay `#DDA15E`, copperwood `#BC6C25`. Light pages use cornsilk + forest
-  text; dark pages invert to forest surfaces and cornsilk type. Copper/clay are
-  the warm accents (emergency, secondary). WhatsApp CTAs keep vendor green.
+- Palette: teal `#0D8275` / `#2DD4BF`, amber `#F59E0B` / `#FBBF24`, slate
+  surfaces (`#F8FAFC` light, `#0B0F19` dark), white/slate cards, emerald success,
+  rose alerts. WhatsApp CTAs keep vendor green.
 - Backgrounds: cornsilk→clay wash (dark: forest canopy) with 6 outline paw SVGs
   on Home, Auth, and Explore.
 - Listing photos: `image_url` on vets/stores, seeded bundled assets, 16:9 photo

@@ -10,6 +10,9 @@ import analyticsRoutes from './modules/analytics/analytics.routes';
 import authRoutes from './modules/auth/auth.routes';
 import partnersRoutes from './modules/partners/partners.routes';
 import adminRoutes from './modules/admin/admin.routes';
+import favoritesRoutes from './modules/favorites/favorites.routes';
+import reviewsRoutes from './modules/reviews/reviews.routes';
+import notificationsRoutes from './modules/notifications/notifications.routes';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import { env } from './config/env';
 
@@ -65,6 +68,9 @@ export function createApp() {
   app.use('/analytics', analyticsRoutes);
   app.use('/partners', partnersRoutes);
   app.use('/admin', adminRoutes);
+  app.use('/favorites', favoritesRoutes);
+  app.use('/reviews', reviewsRoutes);
+  app.use('/notifications', notificationsRoutes);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

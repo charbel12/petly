@@ -18,8 +18,12 @@ import type {
   StoreItem as PrismaStoreItem,
   WhatsAppClick as PrismaClick,
   RefreshToken as PrismaRefreshToken,
+  Favorite as PrismaFavorite,
+  Review as PrismaReview,
 } from '@prisma/client';
 import { Pet } from '../modules/pets/pets.types';
+import { Favorite } from '../modules/favorites/favorites.types';
+import { Review } from '../modules/reviews/reviews.types';
 
 export function isUniqueViolation(err: unknown): boolean {
   return (
@@ -58,7 +62,7 @@ export function mapPet(p: PrismaPet): Pet {
     id: p.id,
     user_id: p.userId,
     name: p.name,
-    type: p.type,
+    type: p.type as Pet['type'],
     age: Number(p.age),
     created_at: p.createdAt,
     updated_at: p.updatedAt,
@@ -74,6 +78,7 @@ function publicVetFields(v: PrismaVet, distanceKm: number | null = null): Vet {
     latitude: v.latitude,
     longitude: v.longitude,
     services: v.services,
+    pet_types: v.petTypes as Vet['pet_types'],
     verified: v.verified,
     is_emergency: v.isEmergency,
     is_open_now: v.isOpenNow,
@@ -81,6 +86,8 @@ function publicVetFields(v: PrismaVet, distanceKm: number | null = null): Vet {
     image_url: v.imageUrl,
     status: v.status,
     hours: parseHours(v.hours),
+    avg_rating: v.avgRating,
+    rating_count: v.ratingCount,
     created_at: v.createdAt,
     updated_at: v.updatedAt,
     distance_km: distanceKm,
@@ -115,8 +122,11 @@ function publicStoreFields(s: PrismaStore, distanceKm: number | null = null): St
     is_open_now: s.isOpenNow,
     image_url: s.imageUrl,
     services: s.services,
+    pet_types: s.petTypes as Store['pet_types'],
     status: s.status,
     hours: parseHours(s.hours),
+    avg_rating: s.avgRating,
+    rating_count: s.ratingCount,
     created_at: s.createdAt,
     updated_at: s.updatedAt,
     distance_km: distanceKm,
@@ -149,6 +159,8 @@ export function mapStoreItem(item: PrismaStoreItem): StoreItem {
     image_url: item.imageUrl,
     in_stock: item.inStock,
     sort_order: item.sortOrder,
+    category: item.category as StoreItem['category'],
+    pet_types: item.petTypes as StoreItem['pet_types'],
     created_at: item.createdAt,
     updated_at: item.updatedAt,
   };
@@ -163,6 +175,32 @@ export function mapClick(c: PrismaClick): WhatsAppClick {
     device_id: c.deviceId,
     source: c.source,
     created_at: c.createdAt,
+  };
+}
+
+export function mapFavorite(f: PrismaFavorite): Favorite {
+  return {
+    id: f.id,
+    user_id: f.userId,
+    entity_type: f.entityType as Favorite['entity_type'],
+    entity_id: f.entityId,
+    created_at: f.createdAt,
+  };
+}
+
+export function mapReview(
+  r: PrismaReview & { user?: { name: string } | null },
+): Review {
+  return {
+    id: r.id,
+    user_id: r.userId,
+    user_name: r.user?.name ?? null,
+    entity_type: r.entityType as Review['entity_type'],
+    entity_id: r.entityId,
+    rating: r.rating,
+    comment: r.comment,
+    created_at: r.createdAt,
+    updated_at: r.updatedAt,
   };
 }
 

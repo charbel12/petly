@@ -1,6 +1,7 @@
 import { prisma, deployMigrations, disconnectPrisma } from '../src/db/prisma';
 import { ensureStoreItems } from '../src/db/ensureStoreItems';
 import { ensureAdmin, ensurePartner } from '../src/modules/auth/auth.service';
+import { PetType } from '../src/modules/vets/vets.types';
 
 const DEMO_USER_ID = '11111111-1111-1111-1111-111111111111';
 
@@ -21,6 +22,25 @@ const STORE_IMAGES: Record<string, string> = {
   'Groom & Glow Salon': 'asset:listings/store_groom_glow.jpg',
 };
 
+// Empty array means "serves/sells to all pet types" (matches the has/isEmpty filter
+// semantics in stores.service.ts / vets.service.ts).
+const VET_PET_TYPES: Record<string, PetType[]> = {
+  'Beirut Pet Care Clinic': [],
+  'Paws & Claws Veterinary': ['dog', 'cat'],
+  'Lebanon Animal Hospital': [],
+  'Happy Tails Vet Center': ['dog', 'cat'],
+  'Mountain Pets Clinic': [],
+  'Saida Veterinary Services': ['dog', 'cat', 'rabbit', 'bird'],
+};
+
+const STORE_PET_TYPES: Record<string, PetType[]> = {
+  'Pet World Lebanon': [],
+  'Bark & Meow Supplies': ['dog', 'cat'],
+  'Aqua Pets Beirut': ['fish'],
+  'Farm & Fur Market': ['rabbit', 'other'],
+  'Groom & Glow Salon': [],
+};
+
 async function backfillListingImages() {
   for (const [name, imageUrl] of Object.entries(VET_IMAGES)) {
     await prisma.vet.updateMany({ where: { name }, data: { imageUrl } });
@@ -29,6 +49,16 @@ async function backfillListingImages() {
     await prisma.store.updateMany({ where: { name }, data: { imageUrl } });
   }
   console.log('✓ Listing photos backfilled');
+}
+
+async function backfillPetTypes() {
+  for (const [name, petTypes] of Object.entries(VET_PET_TYPES)) {
+    await prisma.vet.updateMany({ where: { name }, data: { petTypes } });
+  }
+  for (const [name, petTypes] of Object.entries(STORE_PET_TYPES)) {
+    await prisma.store.updateMany({ where: { name }, data: { petTypes } });
+  }
+  console.log('✓ Listing pet types backfilled');
 }
 
 async function ensurePendingDemoListing(partnerId: string) {
@@ -85,6 +115,7 @@ async function seed() {
   });
   if (catalogExists) {
     await backfillListingImages();
+    await backfillPetTypes();
     await ensureStoreItems();
     await ensurePendingDemoListing(partner.id);
     console.log('✓ Seed skipped — data already present');
@@ -104,8 +135,8 @@ async function seed() {
 
   await prisma.pet.createMany({
     data: [
-      { userId: DEMO_USER_ID, name: 'Max', type: 'Dog', age: 3 },
-      { userId: DEMO_USER_ID, name: 'Luna', type: 'Cat', age: 2 },
+      { userId: DEMO_USER_ID, name: 'Max', type: 'dog', age: 3 },
+      { userId: DEMO_USER_ID, name: 'Luna', type: 'cat', age: 2 },
     ],
   });
 
@@ -253,6 +284,7 @@ async function seed() {
   });
 
   await backfillListingImages();
+  await backfillPetTypes();
   await ensureStoreItems();
   await ensurePendingDemoListing(partner.id);
   console.log('✓ Seed data inserted');

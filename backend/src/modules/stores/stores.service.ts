@@ -12,23 +12,41 @@ const itemOrder = [
 
 export async function listStores(filters: StoreFilters = {}): Promise<Store[]> {
   const where: Prisma.StoreWhereInput = { status: 'approved' };
+  const and: Prisma.StoreWhereInput[] = [];
 
   if (filters.search?.trim()) {
     const q = filters.search.trim();
-    where.OR = [
-      { name: { contains: q, mode: 'insensitive' } },
-      { location: { contains: q, mode: 'insensitive' } },
-    ];
+    and.push({
+      OR: [
+        { name: { contains: q, mode: 'insensitive' } },
+        { location: { contains: q, mode: 'insensitive' } },
+      ],
+    });
   }
   if (filters.type?.trim()) {
     where.type = { equals: filters.type.trim(), mode: 'insensitive' };
   }
   if (filters.open_now === true) where.isOpenNow = true;
   if (filters.featured === true) where.featured = true;
+  if (filters.pet_type) {
+    and.push({
+      OR: [
+        { petTypes: { isEmpty: true } },
+        { petTypes: { has: filters.pet_type } },
+      ],
+    });
+  }
+  if (and.length) where.AND = and;
 
   const rows = await prisma.store.findMany({ where });
   const mapped = rows.map((row) => mapStore(row));
-  return withDistance(mapped, filters.lat, filters.lng, filters.max_distance_km);
+  return withDistance(
+    mapped,
+    filters.lat,
+    filters.lng,
+    filters.max_distance_km,
+    filters.sort,
+  );
 }
 
 export async function getStoreById(
@@ -44,22 +62,49 @@ export async function getStoreById(
 
 export async function listStoreItems(
   storeId: string,
-  options: { inStockOnly?: boolean; limit?: number } = {},
+  options: {
+    inStockOnly?: boolean;
+    limit?: number;
+    category?: StoreItem['category'];
+    petType?: StoreItem['pet_types'][number];
+    sort?: 'default' | 'price_asc' | 'price_desc';
+  } = {},
 ): Promise<StoreItem[]> {
   const store = await prisma.store.findUnique({ where: { id: storeId } });
   if (!store || store.status !== 'approved') {
     throw new AppError(404, 'Store not found');
   }
 
+  const where: Prisma.StoreItemWhereInput = {
+    storeId,
+    ...(options.inStockOnly ? { inStock: true } : {}),
+    ...(options.category ? { category: options.category } : {}),
+  };
+  if (options.petType) {
+    where.OR = [
+      { petTypes: { isEmpty: true } },
+      { petTypes: { has: options.petType } },
+    ];
+  }
+
   const rows = await prisma.storeItem.findMany({
-    where: {
-      storeId,
-      ...(options.inStockOnly ? { inStock: true } : {}),
-    },
+    where,
     orderBy: itemOrder,
     take: options.limit,
   });
-  return rows.map(mapStoreItem);
+  const items = rows.map(mapStoreItem);
+
+  if (options.sort === 'price_asc' || options.sort === 'price_desc') {
+    const direction = options.sort === 'price_asc' ? 1 : -1;
+    return [...items].sort((a, b) => {
+      if (a.price == null && b.price == null) return 0;
+      if (a.price == null) return 1;
+      if (b.price == null) return -1;
+      return (a.price - b.price) * direction;
+    });
+  }
+
+  return items;
 }
 
 export async function getNearestStoreItems(

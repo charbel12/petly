@@ -1,3 +1,4 @@
+import '../../core/constants/pet_taxonomy.dart';
 import 'listing_hours.dart';
 
 class Vet {
@@ -15,10 +16,13 @@ class Vet {
     this.latitude,
     this.longitude,
     this.distanceKm,
+    this.petTypes = const [],
     this.status,
     this.hours,
     this.rejectionReason,
     this.submittedAt,
+    this.avgRating = 0,
+    this.ratingCount = 0,
   });
 
   final String id;
@@ -34,10 +38,13 @@ class Vet {
   final double? latitude;
   final double? longitude;
   final double? distanceKm;
+  final List<PetType> petTypes;
   final String? status;
   final ListingHours? hours;
   final String? rejectionReason;
   final DateTime? submittedAt;
+  final double avgRating;
+  final int ratingCount;
 
   factory Vet.fromJson(Map<String, dynamic> json) {
     return Vet(
@@ -56,12 +63,15 @@ class Vet {
       latitude: (json['latitude'] as num?)?.toDouble(),
       longitude: (json['longitude'] as num?)?.toDouble(),
       distanceKm: (json['distance_km'] as num?)?.toDouble(),
+      petTypes: petTypesFromJson(json['pet_types']),
       status: json['status'] as String?,
       hours: ListingHours.tryParse(json['hours']),
       rejectionReason: json['rejection_reason'] as String?,
       submittedAt: json['submitted_at'] != null
           ? DateTime.tryParse(json['submitted_at'].toString())
           : null,
+      avgRating: (json['avg_rating'] as num?)?.toDouble() ?? 0,
+      ratingCount: (json['rating_count'] as num?)?.toInt() ?? 0,
     );
   }
 

@@ -4,8 +4,10 @@ import '../../../core/providers/app_providers.dart';
 import '../../../core/providers/user_provider.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/whatsapp.dart';
+import '../../../core/widgets/favorite_button.dart';
 import '../../../core/widgets/listing_image.dart';
 import '../../../core/widgets/soft_card.dart';
+import '../../../core/widgets/star_rating.dart';
 import '../../../data/models/vet.dart';
 
 class VetCard extends ConsumerWidget {
@@ -84,23 +86,40 @@ class VetCard extends ConsumerWidget {
                   ],
                 ),
               ),
-              if (vet.verified)
-                Positioned(
-                  top: 10,
-                  right: 10,
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: tokens.surface.withValues(alpha: 0.92),
-                      shape: BoxShape.circle,
+              Positioned(
+                top: 4,
+                right: 4,
+                child: Row(
+                  children: [
+                    if (vet.verified)
+                      Container(
+                        margin: const EdgeInsets.only(right: 4),
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: tokens.surface.withValues(alpha: 0.92),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.verified_rounded,
+                          size: 18,
+                          color: tokens.brandPrimary,
+                        ),
+                      ),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: tokens.surface.withValues(alpha: 0.92),
+                        shape: BoxShape.circle,
+                      ),
+                      child: FavoriteButton(
+                        entityType: 'vet',
+                        entityId: vet.id,
+                        color: tokens.onCardMuted,
+                        compact: true,
+                      ),
                     ),
-                    child: Icon(
-                      Icons.verified_rounded,
-                      size: 18,
-                      color: tokens.brandPrimary,
-                    ),
-                  ),
+                  ],
                 ),
+              ),
             ],
           ),
           Padding(
@@ -121,6 +140,12 @@ class VetCard extends ConsumerWidget {
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: tokens.onCardMuted,
                       ),
+                ),
+                const SizedBox(height: 4),
+                StarRatingDisplay(
+                  rating: vet.avgRating,
+                  count: vet.ratingCount,
+                  size: 14,
                 ),
                 if (!compact && services.isNotEmpty) ...[
                   const SizedBox(height: 8),

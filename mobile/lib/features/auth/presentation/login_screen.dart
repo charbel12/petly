@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/providers/auth_provider.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/api_error.dart';
+import '../../../l10n/app_localizations.dart';
 import '../widgets/auth_scaffold.dart';
 import '../widgets/google_sign_in_button.dart';
 
@@ -41,7 +42,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(friendlyErrorMessage(error))),
+        SnackBar(content: Text(friendlyErrorMessage(context, error))),
       );
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -50,9 +51,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AuthScaffold(
-      title: 'Welcome back',
-      subtitle: 'Sign in to sync your pets across devices and manage your account.',
+      title: l10n.loginTitle,
+      subtitle: l10n.loginSubtitle,
       child: Form(
         key: _formKey,
         child: Column(
@@ -62,11 +64,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               controller: _email,
               keyboardType: TextInputType.emailAddress,
               autocorrect: false,
-              decoration: const InputDecoration(labelText: 'Email'),
+              decoration: InputDecoration(labelText: l10n.authEmailLabel),
               validator: (value) {
                 final email = value?.trim() ?? '';
-                if (email.isEmpty) return 'Enter your email';
-                if (!email.contains('@')) return 'Enter a valid email';
+                if (email.isEmpty) return l10n.authEnterEmail;
+                if (!email.contains('@')) return l10n.authEnterValidEmail;
                 return null;
               },
             ),
@@ -75,9 +77,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               controller: _password,
               obscureText: _obscure,
               decoration: InputDecoration(
-                labelText: 'Password',
+                labelText: l10n.authPasswordLabel,
                 suffixIcon: IconButton(
-                  tooltip: _obscure ? 'Show password' : 'Hide password',
+                  tooltip: _obscure ? l10n.authShowPassword : l10n.authHidePassword,
                   onPressed: () => setState(() => _obscure = !_obscure),
                   icon: Icon(
                     _obscure
@@ -87,15 +89,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
               ),
               validator: (value) {
-                if (value == null || value.isEmpty) return 'Enter your password';
+                if (value == null || value.isEmpty) return l10n.authEnterPassword;
                 return null;
               },
             ),
             Align(
-              alignment: Alignment.centerRight,
+              alignment: AlignmentDirectional.centerEnd,
               child: TextButton(
                 onPressed: () => context.push('/forgot-password'),
-                child: const Text('Forgot password?'),
+                child: Text(l10n.loginForgotPassword),
               ),
             ),
             const SizedBox(height: 8),
@@ -110,7 +112,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         color: Theme.of(context).colorScheme.onPrimary,
                       ),
                     )
-                  : const Text('Sign in'),
+                  : Text(l10n.loginSignInButton),
             ),
             const AuthOrDivider(),
             ContinueWithGoogleButton(
@@ -126,12 +128,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             const SizedBox(height: 16),
             TextButton(
               onPressed: () => context.push('/register'),
-              child: const Text('Create an account'),
+              child: Text(l10n.loginCreateAccount),
             ),
             TextButton(
               onPressed: () => context.go('/home'),
               child: Text(
-                'Continue as guest',
+                l10n.loginContinueAsGuest,
                 style: TextStyle(color: AppTokens.of(context).textMuted),
               ),
             ),

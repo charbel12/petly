@@ -73,4 +73,16 @@ export const env = {
   google: {
     clientIds: parseOrigins(process.env.GOOGLE_CLIENT_IDS) ?? [],
   },
+  /**
+   * Firebase Cloud Messaging service-account credentials, used for push
+   * notifications (restock/promo alerts). Empty projectId = push disabled
+   * (notifications.service no-ops instead of throwing).
+   */
+  fcm: {
+    projectId: process.env.FCM_PROJECT_ID || '',
+    clientEmail: process.env.FCM_CLIENT_EMAIL || '',
+    // Private keys from env vars commonly arrive with literal "\n" sequences
+    // (e.g. pasted from a JSON service-account file) instead of real newlines.
+    privateKey: (process.env.FCM_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
+  },
 };

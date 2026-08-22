@@ -1,4 +1,5 @@
 import 'package:intl/intl.dart';
+import '../../core/constants/pet_taxonomy.dart';
 import 'store.dart';
 
 class StoreItem {
@@ -12,6 +13,8 @@ class StoreItem {
     this.price,
     this.imageUrl,
     this.sortOrder = 0,
+    this.category = ItemCategory.other,
+    this.petTypes = const [],
   });
 
   final String id;
@@ -23,6 +26,8 @@ class StoreItem {
   final String? imageUrl;
   final bool inStock;
   final int sortOrder;
+  final ItemCategory category;
+  final List<PetType> petTypes;
 
   factory StoreItem.fromJson(Map<String, dynamic> json) {
     return StoreItem(
@@ -35,6 +40,8 @@ class StoreItem {
       imageUrl: json['image_url'] as String?,
       inStock: json['in_stock'] as bool? ?? true,
       sortOrder: json['sort_order'] as int? ?? 0,
+      category: ItemCategoryX.fromApi(json['category'] as String?),
+      petTypes: petTypesFromJson(json['pet_types']),
     );
   }
 

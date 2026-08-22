@@ -5,17 +5,19 @@ import { validateBody } from '../../middleware/validate';
 
 const router = Router();
 
+const petTypeSchema = z.enum(['dog', 'cat', 'bird', 'fish', 'rabbit', 'other']);
+
 const createPetSchema = z.object({
   user_id: z.string().uuid('user_id must be a valid UUID'),
   name: z.string().trim().min(1, 'name is required'),
-  type: z.string().trim().min(1, 'type is required'),
+  type: petTypeSchema,
   age: z.coerce.number().min(0, 'age must be a non-negative number'),
 });
 
 const updatePetSchema = z
   .object({
     name: z.string().trim().min(1).optional(),
-    type: z.string().trim().min(1).optional(),
+    type: petTypeSchema.optional(),
     age: z.coerce.number().min(0).optional(),
   })
   .refine((v) => Object.keys(v).length > 0, {

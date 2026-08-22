@@ -4,6 +4,7 @@ import { hoursToJson } from '../listings/hours.schema';
 import { mapOwnedStore, mapOwnedVet, mapStoreItem } from '../../db/mappers';
 import { OwnedStore, StoreItem } from '../stores/stores.types';
 import { OwnedVet } from '../vets/vets.types';
+import * as notificationsService from '../notifications/notifications.service';
 import {
   CreateStoreItemDto,
   CreateStoreListingDto,
@@ -61,6 +62,7 @@ export async function createVet(
       latitude: dto.latitude ?? null,
       longitude: dto.longitude ?? null,
       services: dto.services ?? [],
+      petTypes: dto.pet_types ?? [],
       isEmergency: dto.is_emergency ?? false,
       isOpenNow: dto.is_open_now ?? true,
       imageUrl: dto.image_url ?? null,
@@ -101,6 +103,7 @@ export async function updateVet(
       ...(dto.latitude !== undefined ? { latitude: dto.latitude } : {}),
       ...(dto.longitude !== undefined ? { longitude: dto.longitude } : {}),
       ...(dto.services !== undefined ? { services: dto.services } : {}),
+      ...(dto.pet_types !== undefined ? { petTypes: dto.pet_types } : {}),
       ...(dto.is_emergency !== undefined ? { isEmergency: dto.is_emergency } : {}),
       ...(dto.is_open_now !== undefined ? { isOpenNow: dto.is_open_now } : {}),
       ...(dto.image_url !== undefined ? { imageUrl: dto.image_url } : {}),
@@ -123,6 +126,7 @@ export async function createStore(
       latitude: dto.latitude ?? null,
       longitude: dto.longitude ?? null,
       services: dto.services ?? [],
+      petTypes: dto.pet_types ?? [],
       isOpenNow: dto.is_open_now ?? true,
       imageUrl: dto.image_url ?? null,
       hours: hoursToJson(dto.hours),
@@ -162,6 +166,7 @@ export async function updateStore(
       ...(dto.latitude !== undefined ? { latitude: dto.latitude } : {}),
       ...(dto.longitude !== undefined ? { longitude: dto.longitude } : {}),
       ...(dto.services !== undefined ? { services: dto.services } : {}),
+      ...(dto.pet_types !== undefined ? { petTypes: dto.pet_types } : {}),
       ...(dto.is_open_now !== undefined ? { isOpenNow: dto.is_open_now } : {}),
       ...(dto.image_url !== undefined ? { imageUrl: dto.image_url } : {}),
       ...(dto.hours !== undefined ? { hours: hoursToJson(dto.hours) } : {}),
@@ -198,6 +203,8 @@ export async function createStoreItem(
       imageUrl: dto.image_url ?? null,
       inStock: dto.in_stock ?? true,
       sortOrder: dto.sort_order ?? 0,
+      category: dto.category ?? 'other',
+      petTypes: dto.pet_types ?? [],
     },
   });
   return mapStoreItem(row);
@@ -214,6 +221,27 @@ async function requireOwnedStoreItem(itemId: string, ownerUserId: string) {
   return row;
 }
 
+function notifyRestock(
+  store: { id: string; name: string },
+  item: { id: string; name: string },
+): void {
+  prisma.favorite
+    .findMany({
+      where: { entityType: 'store', entityId: store.id },
+      select: { userId: true },
+    })
+    .then((favorites) => {
+      const userIds = favorites.map((f) => f.userId);
+      if (userIds.length === 0) return undefined;
+      return notificationsService.sendToUsers(userIds, {
+        title: `${store.name} restocked!`,
+        body: `${item.name} is back in stock`,
+        data: { type: 'restock', store_id: store.id, item_id: item.id },
+      });
+    })
+    .catch((err) => console.error('[partners] restock notification failed:', err));
+}
+
 export async function updateStoreItem(
   ownerUserId: string,
   storeId: string,
@@ -224,6 +252,7 @@ export async function updateStoreItem(
   if (existing.storeId !== storeId) {
     throw new AppError(404, 'Item not found');
   }
+  const wasOutOfStock = existing.inStock === false;
   const row = await prisma.storeItem.update({
     where: { id: itemId },
     data: {
@@ -234,9 +263,35 @@ export async function updateStoreItem(
       ...(dto.image_url !== undefined ? { imageUrl: dto.image_url } : {}),
       ...(dto.in_stock !== undefined ? { inStock: dto.in_stock } : {}),
       ...(dto.sort_order !== undefined ? { sortOrder: dto.sort_order } : {}),
+      ...(dto.category !== undefined ? { category: dto.category } : {}),
+      ...(dto.pet_types !== undefined ? { petTypes: dto.pet_types } : {}),
     },
   });
+
+  if (wasOutOfStock && row.inStock === true) {
+    notifyRestock(existing.store, row);
+  }
+
   return mapStoreItem(row);
+}
+
+export async function notifyStoreFavoriters(
+  ownerUserId: string,
+  storeId: string,
+  payload: { title: string; body: string },
+): Promise<void> {
+  const store = await requireOwnedStore(storeId, ownerUserId);
+  const favorites = await prisma.favorite.findMany({
+    where: { entityType: 'store', entityId: storeId },
+    select: { userId: true },
+  });
+  const userIds = favorites.map((f) => f.userId);
+  if (userIds.length === 0) return;
+  await notificationsService.sendToUsers(userIds, {
+    title: payload.title,
+    body: payload.body,
+    data: { type: 'promo', store_id: store.id },
+  });
 }
 
 export async function deleteStoreItem(

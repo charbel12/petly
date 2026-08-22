@@ -13,6 +13,9 @@ const servicesSchema = z.array(z.string().trim().min(1).max(80)).max(20);
 const imageUrlSchema = z.string().trim().max(500);
 const latSchema = z.number().finite();
 const lngSchema = z.number().finite();
+const petTypesSchema = z
+  .array(z.enum(['dog', 'cat', 'bird', 'fish', 'rabbit', 'other']))
+  .max(6);
 
 const createVetSchema = z.object({
   name: z.string().trim().min(1, 'name is required').max(160),
@@ -21,6 +24,7 @@ const createVetSchema = z.object({
   latitude: latSchema.optional().nullable(),
   longitude: lngSchema.optional().nullable(),
   services: servicesSchema.optional(),
+  pet_types: petTypesSchema.optional(),
   is_emergency: z.boolean().optional(),
   is_open_now: z.boolean().optional(),
   image_url: imageUrlSchema.optional(),
@@ -35,6 +39,7 @@ const patchVetSchema = z
     latitude: latSchema.optional().nullable(),
     longitude: lngSchema.optional().nullable(),
     services: servicesSchema.optional(),
+    pet_types: petTypesSchema.optional(),
     is_emergency: z.boolean().optional(),
     is_open_now: z.boolean().optional(),
     image_url: imageUrlSchema.nullable().optional(),
@@ -52,6 +57,7 @@ const createStoreSchema = z.object({
   latitude: latSchema.optional().nullable(),
   longitude: lngSchema.optional().nullable(),
   services: servicesSchema.optional(),
+  pet_types: petTypesSchema.optional(),
   is_open_now: z.boolean().optional(),
   image_url: imageUrlSchema.optional(),
   hours: listingHoursSchema.optional(),
@@ -66,6 +72,7 @@ const patchStoreSchema = z
     latitude: latSchema.optional().nullable(),
     longitude: lngSchema.optional().nullable(),
     services: servicesSchema.optional(),
+    pet_types: petTypesSchema.optional(),
     is_open_now: z.boolean().optional(),
     image_url: imageUrlSchema.nullable().optional(),
     hours: listingHoursSchema.optional(),
@@ -73,6 +80,15 @@ const patchStoreSchema = z
   .refine((value) => Object.keys(value).length > 0, {
     message: 'at least one field is required',
   });
+
+const itemCategorySchema = z.enum([
+  'food',
+  'toys',
+  'cleaning',
+  'health',
+  'accessories',
+  'other',
+]);
 
 const createStoreItemSchema = z.object({
   name: z.string().trim().min(1, 'name is required').max(160),
@@ -82,6 +98,8 @@ const createStoreItemSchema = z.object({
   image_url: imageUrlSchema.optional(),
   in_stock: z.boolean().optional(),
   sort_order: z.number().int().min(0).max(9999).optional(),
+  category: itemCategorySchema.default('other'),
+  pet_types: petTypesSchema.default([]),
 });
 
 const patchStoreItemSchema = z
@@ -93,6 +111,8 @@ const patchStoreItemSchema = z
     image_url: imageUrlSchema.nullable().optional(),
     in_stock: z.boolean().optional(),
     sort_order: z.number().int().min(0).max(9999).optional(),
+    category: itemCategorySchema.optional(),
+    pet_types: petTypesSchema.optional(),
   })
   .refine((value) => Object.keys(value).length > 0, {
     message: 'at least one field is required',
@@ -214,6 +234,28 @@ router.patch(
         req.body,
       );
       res.json(item);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+const notifyStoreSchema = z.object({
+  title: z.string().trim().min(1, 'title is required').max(120),
+  body: z.string().trim().min(1, 'body is required').max(500),
+});
+
+router.post(
+  '/stores/:id/notify',
+  validateBody(notifyStoreSchema),
+  async (req, res, next) => {
+    try {
+      await partnersService.notifyStoreFavoriters(
+        req.auth!.userId,
+        String(req.params.id),
+        req.body,
+      );
+      res.status(202).json({ ok: true });
     } catch (err) {
       next(err);
     }

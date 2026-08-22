@@ -1,4 +1,6 @@
 import { prisma } from './prisma';
+import { ItemCategory } from '../modules/stores/stores.types';
+import { PetType } from '../modules/vets/vets.types';
 
 const STORE_ITEMS: Record<
   string,
@@ -8,6 +10,8 @@ const STORE_ITEMS: Record<
     price: number;
     currency: 'USD';
     sortOrder: number;
+    category: ItemCategory;
+    petTypes: PetType[];
   }>
 > = {
   'Pet World Lebanon': [
@@ -17,6 +21,8 @@ const STORE_ITEMS: Record<
       price: 42,
       currency: 'USD',
       sortOrder: 1,
+      category: 'food',
+      petTypes: ['dog'],
     },
     {
       name: 'Clumping cat litter',
@@ -24,6 +30,8 @@ const STORE_ITEMS: Record<
       price: 8,
       currency: 'USD',
       sortOrder: 2,
+      category: 'cleaning',
+      petTypes: ['cat'],
     },
     {
       name: 'Rubber chew toy',
@@ -31,6 +39,8 @@ const STORE_ITEMS: Record<
       price: 6,
       currency: 'USD',
       sortOrder: 3,
+      category: 'toys',
+      petTypes: ['dog'],
     },
     {
       name: 'Adjustable nylon collar',
@@ -38,6 +48,8 @@ const STORE_ITEMS: Record<
       price: 11,
       currency: 'USD',
       sortOrder: 4,
+      category: 'accessories',
+      petTypes: ['dog', 'cat'],
     },
   ],
   'Bark & Meow Supplies': [
@@ -47,6 +59,8 @@ const STORE_ITEMS: Record<
       price: 18.5,
       currency: 'USD',
       sortOrder: 1,
+      category: 'food',
+      petTypes: ['dog'],
     },
     {
       name: 'Salmon cat treats',
@@ -54,6 +68,8 @@ const STORE_ITEMS: Record<
       price: 5,
       currency: 'USD',
       sortOrder: 2,
+      category: 'food',
+      petTypes: ['cat'],
     },
     {
       name: 'Padded leash',
@@ -61,6 +77,8 @@ const STORE_ITEMS: Record<
       price: 9,
       currency: 'USD',
       sortOrder: 3,
+      category: 'accessories',
+      petTypes: ['dog'],
     },
   ],
   'Aqua Pets Beirut': [
@@ -70,6 +88,8 @@ const STORE_ITEMS: Record<
       price: 4,
       currency: 'USD',
       sortOrder: 1,
+      category: 'food',
+      petTypes: ['fish'],
     },
     {
       name: 'Hang-on aquarium filter',
@@ -77,6 +97,8 @@ const STORE_ITEMS: Record<
       price: 22,
       currency: 'USD',
       sortOrder: 2,
+      category: 'accessories',
+      petTypes: ['fish'],
     },
   ],
   'Farm & Fur Market': [
@@ -86,6 +108,8 @@ const STORE_ITEMS: Record<
       price: 7,
       currency: 'USD',
       sortOrder: 1,
+      category: 'food',
+      petTypes: ['rabbit'],
     },
     {
       name: 'Rabbit pellets 2kg',
@@ -93,6 +117,8 @@ const STORE_ITEMS: Record<
       price: 10,
       currency: 'USD',
       sortOrder: 2,
+      category: 'food',
+      petTypes: ['rabbit'],
     },
   ],
   'Groom & Glow Salon': [
@@ -102,6 +128,8 @@ const STORE_ITEMS: Record<
       price: 14,
       currency: 'USD',
       sortOrder: 1,
+      category: 'cleaning',
+      petTypes: [],
     },
     {
       name: 'Nail clippers',
@@ -109,6 +137,8 @@ const STORE_ITEMS: Record<
       price: 8,
       currency: 'USD',
       sortOrder: 2,
+      category: 'health',
+      petTypes: ['dog', 'cat'],
     },
   ],
 };
@@ -126,7 +156,15 @@ export async function ensureStoreItems() {
         where: { storeId: store.id, name: item.name },
         select: { id: true },
       });
-      if (existing) continue;
+      if (existing) {
+        // Keep older environments' demo rows (created before category/pet_types
+        // existed) in sync with the current catalog data.
+        await prisma.storeItem.update({
+          where: { id: existing.id },
+          data: { category: item.category, petTypes: item.petTypes },
+        });
+        continue;
+      }
       await prisma.storeItem.create({
         data: {
           storeId: store.id,
@@ -136,6 +174,8 @@ export async function ensureStoreItems() {
           currency: item.currency,
           inStock: true,
           sortOrder: item.sortOrder,
+          category: item.category,
+          petTypes: item.petTypes,
         },
       });
     }

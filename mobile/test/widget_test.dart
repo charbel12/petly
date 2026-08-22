@@ -7,6 +7,7 @@ import 'package:petly/features/auth/presentation/login_screen.dart';
 import 'package:petly/features/auth/presentation/register_screen.dart';
 import 'package:petly/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'support/localized_app.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -26,8 +27,8 @@ void main() {
 
   testWidgets('login screen validates empty fields', (tester) async {
     await tester.pumpWidget(
-      const ProviderScope(
-        child: MaterialApp(home: LoginScreen()),
+      ProviderScope(
+        child: localizedApp(home: const LoginScreen()),
       ),
     );
     await tester.pump();
@@ -46,8 +47,8 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
 
     await tester.pumpWidget(
-      const ProviderScope(
-        child: MaterialApp(home: RegisterScreen()),
+      ProviderScope(
+        child: localizedApp(home: const RegisterScreen()),
       ),
     );
     await tester.pump();
@@ -60,8 +61,8 @@ void main() {
 
   testWidgets('forgot password screen validates empty email', (tester) async {
     await tester.pumpWidget(
-      const ProviderScope(
-        child: MaterialApp(home: ForgotPasswordScreen()),
+      ProviderScope(
+        child: localizedApp(home: const ForgotPasswordScreen()),
       ),
     );
     await tester.pump();
@@ -69,5 +70,19 @@ void main() {
     await tester.tap(find.widgetWithText(ElevatedButton, 'Send reset link'));
     await tester.pump();
     expect(find.text('Enter your email'), findsOneWidget);
+  });
+
+  testWidgets('login screen renders Arabic strings under ar locale', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        child: localizedApp(
+          home: const LoginScreen(),
+          locale: const Locale('ar'),
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(find.text('أهلاً بعودتك'), findsOneWidget);
+    expect(find.text('تسجيل الدخول'), findsAtLeastNWidgets(1));
   });
 }

@@ -9,6 +9,7 @@ import '../../../core/auth/google_web_support.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/api_error.dart';
+import '../../../l10n/app_localizations.dart';
 
 class ContinueWithGoogleButton extends StatefulWidget {
   const ContinueWithGoogleButton({
@@ -67,7 +68,7 @@ class _ContinueWithGoogleButtonState extends State<ContinueWithGoogleButton> {
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(friendlyErrorMessage(error))),
+        SnackBar(content: Text(friendlyErrorMessage(context, error))),
       );
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -78,10 +79,8 @@ class _ContinueWithGoogleButtonState extends State<ContinueWithGoogleButton> {
     if (_busy || !widget.enabled) return;
     if (!AppConstants.googleSignInConfigured) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Google sign-in is not configured. Add GOOGLE_WEB_CLIENT_ID.',
-          ),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.authGoogleNotConfigured),
         ),
       );
       return;
@@ -95,7 +94,7 @@ class _ContinueWithGoogleButtonState extends State<ContinueWithGoogleButton> {
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(friendlyErrorMessage(error))),
+        SnackBar(content: Text(friendlyErrorMessage(context, error))),
       );
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -105,6 +104,7 @@ class _ContinueWithGoogleButtonState extends State<ContinueWithGoogleButton> {
   @override
   Widget build(BuildContext context) {
     final tokens = AppTokens.of(context);
+    final l10n = AppLocalizations.of(context)!;
     if (kIsWeb && AppConstants.googleSignInConfigured) {
       return Column(
         children: [
@@ -125,14 +125,14 @@ class _ContinueWithGoogleButtonState extends State<ContinueWithGoogleButton> {
                 color: tokens.brandPrimary,
               ),
             )
-          : const Row(
+          : Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.g_mobiledata_rounded, size: 22),
-                SizedBox(width: 6),
+                const Icon(Icons.g_mobiledata_rounded, size: 22),
+                const SizedBox(width: 6),
                 Flexible(
                   child: Text(
-                    'Continue with Google',
+                    l10n.authContinueWithGoogle,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -148,6 +148,7 @@ class AuthOrDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = AppTokens.of(context);
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Row(
@@ -156,7 +157,7 @@ class AuthOrDivider extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12),
             child: Text(
-              'or',
+              l10n.commonOr,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: tokens.onCardMuted,
                   ),
